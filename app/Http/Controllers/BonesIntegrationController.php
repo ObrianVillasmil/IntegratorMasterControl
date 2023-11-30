@@ -116,10 +116,10 @@ class BonesIntegrationController extends Controller
                         "CODIGO"=> $det->id_sucursal.'-'.$det->id_detalle_venta,
                         "CANTIDAD"=> $det->cantidad,
                         "PRECIO"=> $det->precio,
-                        "IVA"=> $imp,
-                        "SERVICIO"=> $servicio,
+                        "IVA"=> number_format($imp,2,'.',''),
+                        "SERVICIO"=> number_format($servicio,2,'.',''),
                         "TOTAL"=> 0,
-                        "DESCUENTO"=> $det->monto_descuento,
+                        "DESCUENTO"=> number_format($det->monto_descuento,2,'.',''),
                         "NOMBRE"=> $det->producto
                     ];
 
@@ -148,7 +148,7 @@ class BonesIntegrationController extends Controller
                     $data->FORMA_PAGO[] = [
                         "DOC_ID"=> $idVenta,
                         "CODIGO"=> $tipo,
-                        "MONTO"=> $tp->monto,
+                        "MONTO"=> number_format($tp->monto,2,'.',''),
                         "NOMBRE"=> $tipo ,
                         "LOTE" => !isset($tp->lote) || $tp->lote =='' ? '*' : $tp->lote
                     ];
