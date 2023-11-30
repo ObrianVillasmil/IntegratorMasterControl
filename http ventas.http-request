@@ -1,0 +1,15 @@
+{
+  "body": {
+    "content": "",
+    "file": false,
+    "fileSize": false
+  },
+  "headers": {
+    "authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9pbnRlcmdhdG9yLm1hc3RlcmNvbnRyb2wuZGV2ZWxvcFwvYXBpXC9hdXRoXC9sb2dpbiIsImlhdCI6MTcwMDk2OTY3OCwibmJmIjoxNzAwOTY5Njc4LCJqdGkiOiJ6UDljRzg0aU5PWXJQTkhuIiwic3ViIjoxLCJwcnYiOiIyM2JkNWM4OTQ5ZjYwMGFkYjM5ZTcwMWM0MDA4NzJkYjdhNTk3NmY3IiwiaWRfdXNlciI6MX0.hcfn6le4ThdYEotSnTNhgQ-eAtuavfWS3r3zhmYBv24",
+    "content-type": "application/json",
+    "accept": "application/json"
+  },
+  "method": "GET",
+  "title": "New HTTP Request",
+  "url": "http://intergator.mastercontrol.develop/api/auth/bones-ventas?company=1&from=2023-02-17&to=2023-02-17"
+}
