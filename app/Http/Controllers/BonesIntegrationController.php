@@ -24,7 +24,7 @@ class BonesIntegrationController extends Controller
 
             })->where(function($w) use($request){
 
-                isset($request->sucursal) && $w->where('id_sucursal',$request->sucursal);
+                isset($request->branch_office) && $w->where('id_sucursal',$request->branch_office);
 
             })->select('s.id_sucursal')->get()->pluck('id_sucursal')->toArray();
 

@@ -41,12 +41,12 @@ class ValidateUser extends FormRequest
 
                 }else{
 
-                    if(isset($request->sucursal)){
+                    if(isset($request->branch_office)){
 
                         $company = Company::find($value);
 
                         $sucursal = DB::connection($company->connect)->table('sucursal')
-                        ->where('id_sucursal',$request->sucursal)
+                        ->where('id_sucursal',$request->branch_office)
                         ->where('estatus',true)->exists();
 
                         if(!$sucursal)

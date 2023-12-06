@@ -18,6 +18,8 @@ class CreateUserCompaniesTable extends Migration
             $table->integer('id_user');
             $table->integer('id_company');
             $table->softDeletes();
+            $table->foreign('id_company')->references('id')->on('companies')->onUpdate('cascade');
+            $table->foreign('id_user')->references('id')->on('users')->onUpdate('cascade');
             $table->timestamps();
         });
     }

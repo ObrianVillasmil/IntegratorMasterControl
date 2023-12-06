@@ -1,0 +1,14 @@
+{
+  "body": {
+    "content": "",
+    "file": false,
+    "fileSize": false
+  },
+  "headers": {
+    "accept": "application/json",
+    "authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9hcGkubWFzdGVyY29udHJvbC5lYzo4MDk5XC9hcGlcL2F1dGhcL2xvZ2luIiwiaWF0IjoxNzAxNzA1MTI4LCJuYmYiOjE3MDE3MDUxMjgsImp0aSI6Im9iN0R3TnZLcVpWbEE4QUQiLCJzdWIiOjEsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjciLCJpZF91c2VyIjoxfQ.muglWa3832E3pYvG7uB0Y_rW5cRKlhvYKkSgz7WSav4"
+  },
+  "method": "GET",
+  "title": "New HTTP Request",
+  "url": "http://api.mastercontrol.ec:8099/api/auth/bones-ventas?company=1&connect=mastercontrol&from=2023-11-11&to=2023-11-11"
+}
