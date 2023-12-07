@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ValidateReceptionSales;
 use App\Http\Requests\ValidateUser;
 use App\Models\Company;
 use Carbon\Carbon;
-use Exception;
+
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 class BonesIntegrationController extends Controller
 {
-    public function getVentas(ValidateUser $request)
+    public function getSales(ValidateUser $request) : JsonResponse
     {
         try {
 
@@ -30,6 +32,7 @@ class BonesIntegrationController extends Controller
 
             $ventas = $connection->table('venta')
             ->where('estado',true)
+            ->where('venta_confirmada_externo',false)
             ->whereIn('id_sucursal',$idSucursales)
             ->whereBetween(DB::raw("fecha::date"),[$request->from,$request->to])
             ->get()->map(function($v) use($comprador,$connection){
@@ -87,7 +90,6 @@ class BonesIntegrationController extends Controller
 
                 $detalles = $connection->table('detalle_venta')
                 ->where('id_venta',$v->id_venta)
-                //->where('precio','>',0) ESPERAR A QUE DIGAN SI SOLO SE ENVÍA LOS DE PRECIO > 0
                 ->where('id_sucursal',$v->id_sucursal)->get();
 
                 $total = $v->base0 + $v->base12;
@@ -159,14 +161,57 @@ class BonesIntegrationController extends Controller
 
             });
 
-
             return response()->json([
                 'msg' =>'Intervalo de ventas '.$request->from.' - '.$request->to,
                 'success'=> true,
-                'ventas'=> $ventas
+                'sales'=> $ventas
             ],200);
 
         } catch (\Exception $e) {
+
+            return response()->json([
+                'msg' => $e->getMessage(),
+                'success' => false
+            ],500);
+
+        }
+
+    }
+
+    public function receptionSales(ValidateReceptionSales $request)
+    {
+        $company = Company::find($request->company);
+
+        $connection = DB::connection($company->connect);
+
+        $connection->beginTransaction();
+
+        try {
+
+            foreach ($request->salesid as $saleId) {
+
+                $arr = explode('-',$saleId);
+
+                $branchOfficeId = $arr[0];
+                $id = $arr[1];
+
+                $connection->table('venta')
+                ->where('id_sucursal', $branchOfficeId)
+                ->where('id_venta',$id)
+                ->update(['venta_confirmada_externo' => true]);
+
+            }
+
+            $connection->commit();
+
+            return response()->json([
+                'msg' =>'Ventas actualizadas',
+                'success'=> true
+            ],200);
+
+        } catch (\Exception $e) {
+
+            $connection->rollBack();
 
             return response()->json([
                 'msg' => $e->getMessage(),

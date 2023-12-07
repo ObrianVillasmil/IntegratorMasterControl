@@ -31,7 +31,8 @@ Route::group([
         Route::post('me', [AuthController::class, 'me']);
 
 
-        Route::get('bones-ventas',[BonesIntegrationController::class,'getVentas']);
+        Route::get('bones-ventas',[BonesIntegrationController::class,'getSales']);
+        Route::post('bones-recepcion-ventas',[BonesIntegrationController::class,'receptionSales']);
 
     });
 
