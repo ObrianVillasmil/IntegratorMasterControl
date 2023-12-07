@@ -33,24 +33,32 @@ class ValidateUser extends FormRequest
             'to' =>'required|date',
             'company' => ['required','numeric:min:1',function($attribute,$value,$failure) use($user, $request){
 
-                $idCompanies = $user->companies->pluck('id_company')->toArray();
+                if(!isset($user)){
 
-                if(!in_array($value,$idCompanies)){
-
-                    $failure('Usted no tiene asignada la empresa');
+                    $failure('Usuario no logueado');
 
                 }else{
 
-                    if(isset($request->branch_office)){
+                    $idCompanies = $user->companies->pluck('id_company')->toArray();
 
-                        $company = Company::find($value);
+                    if(!in_array($value,$idCompanies)){
 
-                        $sucursal = DB::connection($company->connect)->table('sucursal')
-                        ->where('id_sucursal',$request->branch_office)
-                        ->where('estatus',true)->exists();
+                        $failure('Usted no tiene asignada la empresa');
 
-                        if(!$sucursal)
-                            $failure('La sucursal que desea consultar no existe o está desactivada');
+                    }else{
+
+                        if(isset($request->branch_office)){
+
+                            $company = Company::find($value);
+
+                            $sucursal = DB::connection($company->connect)->table('sucursal')
+                            ->where('id_sucursal',$request->branch_office)
+                            ->where('estatus',true)->exists();
+
+                            if(!$sucursal)
+                                $failure('La sucursal que desea consultar no existe o está desactivada');
+
+                        }
 
                     }
 
