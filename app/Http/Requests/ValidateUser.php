@@ -32,7 +32,7 @@ class ValidateUser extends FormRequest
             'from' =>'required|date',
             'to' =>'required|date',
             'connect' => 'required|exists:companies,connect',
-            'ies' => ['required','numeric:min:1',function($attribute,$value,$failure) use($user, $request){
+            'company' => ['required','numeric:min:1',function($attribute,$value,$failure) use($user, $request){
 
                 if(!isset($user)){
 
