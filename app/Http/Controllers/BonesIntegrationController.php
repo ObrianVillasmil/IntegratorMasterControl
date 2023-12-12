@@ -220,6 +220,5 @@ class BonesIntegrationController extends Controller
 
         }
 
-
     }
 }
