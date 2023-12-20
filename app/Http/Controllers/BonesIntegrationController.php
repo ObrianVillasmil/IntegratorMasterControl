@@ -588,7 +588,7 @@ class BonesIntegrationController extends Controller
             foreach($idBranchOffice as $x)
                 $inQ[] = '?';
 
-            /* $sql= "
+            $sql= "
                 SELECT
                 sci.id_sub_categoria_item,
                 (
@@ -625,7 +625,7 @@ class BonesIntegrationController extends Controller
                 )"
             ;
 
-            $transactions = $connection->select($sql,[$request->from,$request->to, implode(',',$idBranchOffice)]);
+            /* $transactions = $connection->select($sql,[$request->from,$request->to, implode(',',$idBranchOffice)]);
 
             $transactions = collect($transactions)->map(function($obj){
 
@@ -640,7 +640,7 @@ class BonesIntegrationController extends Controller
             return response()->json([
                 'msg' =>'Intervalo costeo '.$request->from.' - '.$request->to,
                 'success'=> true,
-                'costs'=> $inQ
+                'costs'=>  $sql
             ],200);
 
         } catch (\Exception $e) {
