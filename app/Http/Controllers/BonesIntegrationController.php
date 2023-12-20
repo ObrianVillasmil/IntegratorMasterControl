@@ -568,7 +568,7 @@ class BonesIntegrationController extends Controller
             $connection = DB::connection($company->connect);
 
             $idBranchOffice = $connection->table('empresa as e')
-            ->where('e.status',true)
+            ->where('e.estatus',true)
             ->join('sucursal as s',function($j) {
 
                 $j->on('e.id_empresa','s.id_empresa')->where('s.estatus',true);
