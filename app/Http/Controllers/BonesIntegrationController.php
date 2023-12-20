@@ -609,7 +609,7 @@ class BonesIntegrationController extends Controller
                 JOIN sub_categoria_item AS sci ON sci.id_sub_categoria_item = i.id_sub_categoria_item
 
                 WHERE ti.fecha_registro::date BETWEEN ? AND ?
-                AND ti.id_sucursal IN (?,?)
+                AND ti.id_sucursal IN (".implode(',',$inQ).")
                 AND ti.tipo_transaccion IN ('DETALLE_VENTA','DETALLE_PRECUENTA','BAJA_ITEM_PRODUCTO','AUDITORIA_TOMA_FISICA_AERA_SUCURSAL')
 
                 GROUP BY
@@ -625,7 +625,12 @@ class BonesIntegrationController extends Controller
                 )"
             ;
 
-            $transactions = $connection->select($sql,[$request->from,$request->to, implode(',',$idBranchOffice)]);
+            $params = [$request->from,$request->to];
+
+            foreach ($idBranchOffice as $idbo)
+                $params[] = $idbo;
+
+            $transactions = $connection->select($sql, $params );
 
             $transactions = collect($transactions)->map(function($obj){
 
@@ -640,9 +645,7 @@ class BonesIntegrationController extends Controller
             return response()->json([
                 'msg' =>'Intervalo costeo '.$request->from.' - '.$request->to,
                 'success'=> true,
-                'costs'=> $transactions,
-                'idBranchOffice' =>  implode(',',$idBranchOffice),
-                'inQ' => implode(',',$inQ)
+                'costs'=> $transactions
             ],200);
 
         } catch (\Exception $e) {
