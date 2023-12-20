@@ -640,7 +640,7 @@ class BonesIntegrationController extends Controller
             return response()->json([
                 'msg' =>'Intervalo costeo '.$request->from.' - '.$request->to,
                 'success'=> true,
-                'costs'=> $transactions,
+                //'costs'=> $transactions,
                 'idBranchOffice' =>  implode(',',$idBranchOffice),
                 'inQ' => implode(',',$inQ)
             ],200);
