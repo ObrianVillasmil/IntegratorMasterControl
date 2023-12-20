@@ -4,10 +4,10 @@ namespace App\Http\Requests;
 
 use App\Models\Company;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
-class ValidateReceptionSales extends FormRequest
+class ValidateReceptionPurchase extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -45,7 +45,7 @@ class ValidateReceptionSales extends FormRequest
                 }
 
             },'exists:companies,id'],
-            'salesid' => ['required','Array','min:1',function($attribute,$value,$failure) use($request){
+            'purchasesid' => ['required','Array','min:1',function($attribute,$value,$failure) use($request){
 
                 foreach($value as $saleId){
 
@@ -55,9 +55,9 @@ class ValidateReceptionSales extends FormRequest
                     $id = $arr[1];
 
                     $company = Company::find($request->company);
-                    $sale =  DB::connection($company->connect)->table('venta')->where('id_sucursal', $branchOfficeId)->where('id_venta',$id)->exists();
+                    $prurchase =  DB::connection($company->connect)->table('factura')->where('id_sucursal', $branchOfficeId)->where('id_factura',$id)->exists();
 
-                    if(!$sale)
+                    if(!$prurchase)
                         $failure('No existe una venta con el ID '.$saleId);
 
                 }
@@ -65,6 +65,7 @@ class ValidateReceptionSales extends FormRequest
             }]
 
         ];
+
     }
 
     public function messages()
@@ -74,9 +75,9 @@ class ValidateReceptionSales extends FormRequest
             'company.exists' => 'El identificador de la empresa no existe',
             'company.numeric' => 'El identificador de la empresa debe ser un número',
             'company.min' => 'El identificador de la empresa debe ser un número mayor a 0',
-            'salesid.required' => 'Debe enviar al menos una venta para confirmar la recepción',
+            'purchasesid.required' => 'Debe enviar al menos una compra para confirmar la recepción',
             'Array.Array' => 'Las ventas deben ser enviadas como un arreglo de datos',
-            'Array.min' => 'Debe enviar al menos una venta para confirmar la recepción'
+            'Array.min' => 'Debe enviar al menos una compra para confirmar la recepción',
         ];
     }
 }

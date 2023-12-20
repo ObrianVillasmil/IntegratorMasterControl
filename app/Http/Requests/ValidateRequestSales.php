@@ -7,7 +7,7 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 
-class ValidateUser extends FormRequest
+class ValidateRequestSales extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -31,7 +31,6 @@ class ValidateUser extends FormRequest
         return [
             'from' =>'required|date',
             'to' =>'required|date',
-            'connect' => 'required|exists:companies,connect',
             'company' => ['required','numeric:min:1',function($attribute,$value,$failure) use($user, $request){
 
                 if(!isset($user)){
@@ -79,9 +78,7 @@ class ValidateUser extends FormRequest
             'from.required' => 'Debe enviar la fecha desde',
             'to.required' => 'Debe enviar la fecha hasta',
             'from.date' => 'La fecha desde debe ser en formato Y-m-d',
-            'to.date' => 'La fecha hasta debe ser en formato Y-m-d',
-            'connect.required' => 'El nombre de la conexión es obligatorio',
-            'connect.exists' => 'La conexión no existe'
+            'to.date' => 'La fecha hasta debe ser en formato Y-m-d'
         ];
     }
 

@@ -34,6 +34,11 @@ Route::group([
         Route::get('bones-ventas',[BonesIntegrationController::class,'getSales']);
         Route::post('bones-recepcion-ventas',[BonesIntegrationController::class,'receptionSales']);
 
+        Route::get('bones-compras',[BonesIntegrationController::class,'getPurchase']);
+        Route::get('bones-recepcion-compras',[BonesIntegrationController::class,'receptionPurchase']);
+
+        Route::get('bones-costeo',[BonesIntegrationController::class,'getCosteos']);
+
     });
 
 });
