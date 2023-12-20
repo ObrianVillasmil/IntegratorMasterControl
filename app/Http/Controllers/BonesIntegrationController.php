@@ -588,7 +588,7 @@ class BonesIntegrationController extends Controller
             foreach($idBranchOffice as $x)
                 $inQ[] = '?';
 
-            $sql= "
+            /* $sql= "
                 SELECT
                 sci.id_sub_categoria_item,
                 (
@@ -634,13 +634,13 @@ class BonesIntegrationController extends Controller
 
                 return $obj;
 
-            });
+            }); */
 
 
             return response()->json([
                 'msg' =>'Intervalo costeo '.$request->from.' - '.$request->to,
                 'success'=> true,
-                'costs'=> $transactions
+                'costs'=> $inQ
             ],200);
 
         } catch (\Exception $e) {
