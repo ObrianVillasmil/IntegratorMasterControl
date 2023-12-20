@@ -625,7 +625,7 @@ class BonesIntegrationController extends Controller
                 )"
             ;
 
-            $transactions = $connection->select($sql,[$request->from,$request->to, implode(',',$idBranchOffice)]);
+           /*  $transactions = $connection->select($sql,[$request->from,$request->to, implode(',',$idBranchOffice)]);
 
             $transactions = collect($transactions)->map(function($obj){
 
@@ -634,13 +634,15 @@ class BonesIntegrationController extends Controller
 
                 return $obj;
 
-            });
+            }); */
 
 
             return response()->json([
                 'msg' =>'Intervalo costeo '.$request->from.' - '.$request->to,
                 'success'=> true,
-                'costs'=> $transactions
+                'costs'=> $transactions,
+                'idBranchOffice' =>  implode(',',$idBranchOffice),
+                'inQ' => implode(',',$inQ)
             ],200);
 
         } catch (\Exception $e) {
