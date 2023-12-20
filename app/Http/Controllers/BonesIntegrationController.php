@@ -634,8 +634,8 @@ class BonesIntegrationController extends Controller
 
             $transactions = collect($transactions)->map(function($obj){
 
-                $obj->cuenta_categoria = '';
-                $obj->cuenta_transaccion = '';
+                $obj->cuenta_categoria = 'x.x.x.x.xx';
+                $obj->cuenta_transaccion = 'x.x.xx.xx';
 
                 return $obj;
 
