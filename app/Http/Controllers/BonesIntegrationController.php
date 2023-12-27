@@ -250,7 +250,9 @@ class BonesIntegrationController extends Controller
                         "SERVICIO"=> '0.00',
                         "TOTAL"=>  '0.00',
                         "DESCUENTO"=> $det->discount,
-                        "NOMBRE"=> $det->description
+                        "NOMBRE"=> $det->description,
+                        "CTA_CONTABLE" => "x.x.xx.x.x",
+                        "COD_CTA_CONTABLE" => "x.x.xx.x.x",
                     ];
 
                 }
@@ -392,6 +394,8 @@ class BonesIntegrationController extends Controller
                     "EMAIL"=> !isset($c->correo_proveedor) || $c->correo_proveedor =='' ? '*' : $c->correo_proveedor,
                     "TIPO_DOCUMENTO"=> $tipoIdentificacion,
                     "DETALLE" => [],
+                    "CTA_CONTABLE" => "x.x.xx.x.x",
+                    "COD_CTA_CONTABLE" => "x.x.xx.x.x",
                 ];
 
                 $detalles = $connection->table('detalle_factura')
@@ -440,7 +444,7 @@ class BonesIntegrationController extends Controller
                         $tipoIdentificacion = 'PASAPORTE';
                         break;
                 }
-                
+
 
                 $idPurchase = $c->id_sucursal.'-'.$c->id_factura.'-CN';
                 $supplier = $connection->table('proveedor')->where('id_proveedor',$c->id_proveedor)->first();
