@@ -45,20 +45,34 @@ class ValidateReceptionPurchase extends FormRequest
                 }
 
             },'exists:companies,id'],
-            'purchasesid' => ['required','Array','min:1',function($attribute,$value,$failure) use($request){
+            'purchasesid' => ['required',function($attribute,$value,$failure) use($request){
 
-                foreach($value as $saleId){
+                if(!is_array($value)){
 
-                    $arr = explode('-',$saleId);
+                    $failure('Los datos del parametro purchasesid deben ser un arreglo de datos');
 
-                    $branchOfficeId = $arr[0];
-                    $id = $arr[1];
+                }else if(!count($value)){
+
+                    $failure('Debe enviar almenos un elemento en el arreglo de datos del parametro purchasesid');
+
+                }else {
 
                     $company = Company::find($request->company);
-                    $prurchase =  DB::connection($company->connect)->table('factura')->where('id_sucursal', $branchOfficeId)->where('id_factura',$id)->exists();
+                    $conection = DB::connection($company->connect);
 
-                    if(!$prurchase)
-                        $failure('No existe una venta con el ID '.$saleId);
+                    foreach($value as $saleId){
+
+                        $arr = explode('-',$saleId);
+
+                        $branchOfficeId = $arr[0];
+                        $id = $arr[1];
+
+                        $prurchase =  $conection->table('factura')->where('id_sucursal', $branchOfficeId)->where('id_factura',$id)->exists();
+
+                        if(!$prurchase)
+                            $failure('No existe una venta con el ID '.$saleId);
+
+                    }
 
                 }
 
@@ -75,9 +89,7 @@ class ValidateReceptionPurchase extends FormRequest
             'company.exists' => 'El identificador de la empresa no existe',
             'company.numeric' => 'El identificador de la empresa debe ser un número',
             'company.min' => 'El identificador de la empresa debe ser un número mayor a 0',
-            'purchasesid.required' => 'Debe enviar al menos una compra para confirmar la recepción',
-            'Array.Array' => 'Las ventas deben ser enviadas como un arreglo de datos',
-            'Array.min' => 'Debe enviar al menos una compra para confirmar la recepción',
+            'purchasesid.required' => 'Debe enviar al menos una compra para confirmar la recepción'
         ];
     }
 }

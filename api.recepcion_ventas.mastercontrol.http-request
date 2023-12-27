@@ -9,7 +9,7 @@
     "content-type": "application/json",
     "accept": "application/json"
   },
-  "method": "GET",
+  "method": "POST",
   "title": "New HTTP Request",
-  "url": "http://intergator.mastercontrol.develop/api/auth/bones-ventas?company=1&from=2023-02-17&to=2023-02-17"
+  "url": "http://intergator.mastercontrol.develop/api/auth/bones-recepcion-ventas?company=1&salesid[0]=10-1234"
 }

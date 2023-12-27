@@ -11,5 +11,5 @@
   },
   "method": "GET",
   "title": "New HTTP Request",
-  "url": "http://api.mastercontrol.ec:8099/api/auth/bones-costeo?company=1&from=2023-12-15&to=2023-12-15"
+  "url": "http://api.mastercontrol.ec:8099/api/auth/bones-costeo?company=1&from=2023-12-20&to=2023-12-20"
 }

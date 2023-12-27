@@ -70,7 +70,7 @@ class BonesIntegrationController extends Controller
                     "FECHA"=> Carbon::parse($v->fecha)->format('Y-m-d'),
                     "NUMERO"=> !isset($v->secuencial) || $v->secuencial =='' ? '*' : substr($v->secuencial,24,15),
                     'AUTORIZACION' => $v->secuencial,
-                    "SUBTOTAL"=> $v->subtotal0+$v->subtotal12,
+                    "SUBTOTAL"=> number_format($v->subtotal0+$v->subtotal12,2,'.',''),
                     "IVA"=> $v->valor_impuesto,
                     "SERVICIO"=> $v->servicio,
                     "TOTAL"=> $v->total_a_pagar,
@@ -119,13 +119,15 @@ class BonesIntegrationController extends Controller
                     $data->DETALLE[] = [
                         "DOC_ID"=> $idVenta,
                         "CODIGO"=> $det->id_sucursal.'-'.$det->id_detalle_venta,
-                        "CANTIDAD"=> $det->cantidad,
-                        "PRECIO"=> $det->precio,
+                        "CANTIDAD"=> number_format($det->cantidad,2,'.',''),
+                        "PRECIO"=> number_format($det->precio,2,'.',''),
                         "IVA"=> number_format($imp,2,'.',''),
                         "SERVICIO"=> number_format($servicio,2,'.',''),
-                        "TOTAL"=> 0,
+                        "TOTAL"=> "0",
                         "DESCUENTO"=> number_format($det->monto_descuento,2,'.',''),
-                        "NOMBRE"=> $det->producto
+                        "NOMBRE"=> $det->producto,
+                        "CTA_CONTABLE" => "x.x.xx.x.x",
+                        "COD_CTA_CONTABLE" => "x.x.xx.x.x",
                     ];
 
                 }
@@ -483,7 +485,9 @@ class BonesIntegrationController extends Controller
                         "SERVICIO"=> 0,
                         "TOTAL"=> $det->total,
                         "DESCUENTO"=> 0,
-                        "NOMBRE"=> $item->nombre
+                        "NOMBRE"=> $item->nombre,
+                        "CTA_CONTABLE" => "x.x.xx.x.x",
+                        "COD_CTA_CONTABLE" => "x.x.xx.x.x",
                     ];
 
                 }
