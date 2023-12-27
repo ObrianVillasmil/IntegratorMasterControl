@@ -17,7 +17,7 @@ class ValidateReceptionPurchase extends FormRequest
     public function authorize()
     {
         return true;
-        
+
     }
 
     /**

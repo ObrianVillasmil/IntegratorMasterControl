@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\validateReceptionPurchase;
+use App\Http\Requests\ValidateReceptionPurchase;
 use App\Http\Requests\ValidateReceptionSales;
 use App\Http\Requests\ValidateRequestCosteos;
 use App\Http\Requests\ValidateRequestPurchase;
@@ -522,7 +522,7 @@ class BonesIntegrationController extends Controller
 
     }
 
-    public function receptionPurchase(validateReceptionPurchase $request) : JsonResponse
+    public function receptionPurchase(ValidateReceptionPurchase $request) : JsonResponse
     {
         $company = Company::find($request->company);
 
