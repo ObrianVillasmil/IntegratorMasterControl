@@ -440,6 +440,7 @@ class BonesIntegrationController extends Controller
                         $tipoIdentificacion = 'PASAPORTE';
                         break;
                 }
+                
 
                 $idPurchase = $c->id_sucursal.'-'.$c->id_factura.'-CN';
                 $supplier = $connection->table('proveedor')->where('id_proveedor',$c->id_proveedor)->first();
