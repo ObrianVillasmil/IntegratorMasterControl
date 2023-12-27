@@ -393,9 +393,7 @@ class BonesIntegrationController extends Controller
                     "TELEFONO"=> !isset($c->telefono_proveedor) || $c->telefono_proveedor =='' ? '*' : $c->telefono_proveedor,
                     "EMAIL"=> !isset($c->correo_proveedor) || $c->correo_proveedor =='' ? '*' : $c->correo_proveedor,
                     "TIPO_DOCUMENTO"=> $tipoIdentificacion,
-                    "DETALLE" => [],
-                    "CTA_CONTABLE" => "x.x.xx.x.x",
-                    "COD_CTA_CONTABLE" => "x.x.xx.x.x",
+                    "DETALLE" => []
                 ];
 
                 $detalles = $connection->table('detalle_factura')
@@ -414,7 +412,9 @@ class BonesIntegrationController extends Controller
                         "SERVICIO"=> 0,
                         "TOTAL"=> $det->total,
                         "DESCUENTO"=> 0,
-                        "NOMBRE"=> $item->nombre
+                        "NOMBRE"=> $item->nombre,
+                        "CTA_CONTABLE" => "x.x.xx.x.x",
+                        "COD_CTA_CONTABLE" => "x.x.xx.x.x",
                     ];
 
                 }
