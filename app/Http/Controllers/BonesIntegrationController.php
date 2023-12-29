@@ -629,7 +629,7 @@ class BonesIntegrationController extends Controller
                 sci.nombre AS sub_categoria,
                 ROUND(SUM(ti.cantidad * ti.costo_unitario)::numeric,2) AS monto,
                 ti.fecha_registro::date AS fecha_transaccion,
-                ti.transaccion AS tipo_transaccion,
+                ti.transaccion AS tipo_transaccion
                 FROM transaccion_inventario AS ti
 
                 JOIN item AS i ON ti.id_item = i.id_item
