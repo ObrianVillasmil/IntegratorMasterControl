@@ -108,6 +108,17 @@ class BonesIntegrationController extends Controller
 
                 foreach ($detalles as $det) {
 
+                    if($det->tipo_producto == 'R'){
+
+                        $account = DB::table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
+
+                    }else{
+
+
+                        $account = DB::table('item')->where('id_item',$det->id_producto)->first();
+
+                    }
+
                     $det->monto_descuento+= $det->precio * ($porcentaje / 100);
 
                     $precioSubTotal = ($det->precio-$det->monto_descuento);
@@ -126,8 +137,8 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> "0",
                         "DESCUENTO"=> number_format($det->monto_descuento,2,'.',''),
                         "NOMBRE"=> $det->producto,
-                        "CTA_CONTABLE" => "x.x.xx.x.x",
-                        "COD_CTA_CONTABLE" => "x.x.xx.x.x",
+                        "CTA_CONTABLE" => $account->cc_bones_nombre,
+                        "COD_CTA_CONTABLE" => $account->cc_bones,
                     ];
 
                 }
@@ -239,6 +250,16 @@ class BonesIntegrationController extends Controller
 
                 foreach ($cn->details as $det) {
 
+                    if($det->tipo_producto == 'R'){
+
+                        $account = DB::table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
+
+                    }else{
+
+                        $account = DB::table('item')->where('id_item',$det->id_producto)->first();
+
+                    }
+
                     $taxes = array_sum(array_column($det->credit_note_item_tax,'amount'));
 
                     $data->DETALLE[] = [
@@ -251,8 +272,8 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=>  '0.00',
                         "DESCUENTO"=> $det->discount,
                         "NOMBRE"=> $det->description,
-                        "CTA_CONTABLE" => "x.x.xx.x.x",
-                        "COD_CTA_CONTABLE" => "x.x.xx.x.x",
+                        "CTA_CONTABLE" => $account->cc_bones,
+                        "COD_CTA_CONTABLE" => $account->cc_bones_nombre,
                     ];
 
                 }
@@ -590,10 +611,6 @@ class BonesIntegrationController extends Controller
 
             })->select('s.id_sucursal')->get()->pluck('id_sucursal')->toArray();
 
-            $costeos = [];
-
-            $subCategorias = $connection->table('sub_categoria_item')->where('estado',true)->get();
-
             $inQ = [];
 
             foreach($idBranchOffice as $x)
@@ -641,12 +658,420 @@ class BonesIntegrationController extends Controller
             foreach ($idBranchOffice as $idbo)
                 $params[] = $idbo;
 
-            $transactions = $connection->select($sql, $params );
+            $transactions = $connection->select($sql, $params);
 
-            $transactions = collect($transactions)->map(function($obj){
+            $arrCtasContable = [
+                'VENTA' => [
+                    'INCREMENTO' => [
+                        8 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        9 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        10 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        11 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        12 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        13 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        14 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        15 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        16 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        17 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        18 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        19 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        20 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        21 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        22 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ],
+                        23 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ]
+                    ],
+                    'DECREMENTO' => [
+                        8 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        9 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        10 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        11 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        12 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        13 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        14 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        15 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        16 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        17 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        18 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        19 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        20 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        21 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        22 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ],
+                        23 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ]
+                    ]
+                ],
+                'TOMA_FISICA' => [
+                    'INCREMENTO' => [
+                        8 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        9 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        10 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        11 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        12 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        13 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        14 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        15 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        16 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        17 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        18 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        19 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        20 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        21 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        22 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ],
+                        23 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ]
+                    ],
+                    'DECREMENTO' => [
+                        8 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        9 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        10 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        11 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        12 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        13 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        14 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        15 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        16 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        17 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        18 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        19 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        20 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        21 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        22 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ],
+                        23 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ]
+                    ]
+                ],
+                'BAJA' => [
+                    'INCREMENTO' => [
+                        8 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        9 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        10 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        11 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        12 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        13 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        14 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        15 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        16 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        17 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        18 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        19 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        20 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        21 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        22 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ],
+                        23 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ]
+                    ],
+                    'DECREMENTO' => [
+                        8 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        9 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        10 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        11 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        12 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        13 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        14 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        15 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        16 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        17 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        18 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        19 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        20 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        21 => [
+                            'cta_contable' => 'BAR',
+                            'cod_cta_contable' => '51010540'
+                        ],
+                        22 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ],
+                        23 => [
+                            'cta_contable' => 'BOUTIQUE',
+                            'cod_cta_contable' => '51010541'
+                        ]
+                    ]
+                ]
+            ];
 
-                $obj->cuenta_categoria = 'x.x.x.x.xx';
-                $obj->cuenta_transaccion = 'x.x.xx.xx';
+            $transactions = collect($transactions)->map(function($obj) use($arrCtasContable){
+
+                $cta = $arrCtasContable[$obj->nombre_transaccion][$obj->tipo_transaccion][$obj->id_sub_categoria_item];
+                $account = DB::table('item')->where('id_item',$obj->id_item)->first();
+
+                $obj->cuenta_categoria = $account->cc_bones;
+                $obj->cuenta_transaccion = $cta['cod_cta_contable'];
 
                 return $obj;
 
