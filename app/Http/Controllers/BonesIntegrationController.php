@@ -1064,11 +1064,11 @@ class BonesIntegrationController extends Controller
                 ]
             ];
 
-            $transactions = collect($transactions)->map(function($obj) use($arrCtasContable){
+            $transactions = collect($transactions)->map(function($obj) use($arrCtasContable, $connection){
 
                 $cta = $arrCtasContable[$obj->nombre_transaccion][$obj->tipo_transaccion][$obj->id_sub_categoria_item];
 
-                $account = DB::table('item')->where('id_sub_categoria_item',$obj->id_sub_categoria_item)->first();
+                $account = $connection->table('item')->where('id_sub_categoria_item',$obj->id_sub_categoria_item)->first();
 
                 $obj->cuenta_categoria = $account->cc_bones;
                 $obj->cuenta_transaccion = $cta['cod_cta_contable'];
