@@ -114,7 +114,6 @@ class BonesIntegrationController extends Controller
 
                     }else{
 
-
                         $account = DB::table('item')->where('id_item',$det->id_producto)->first();
 
                     }
@@ -725,7 +724,43 @@ class BonesIntegrationController extends Controller
                         23 => [
                             'cta_contable' => 'BOUTIQUE',
                             'cod_cta_contable' => '51010541'
-                        ]
+                        ],
+                        26 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        27 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        28 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        29 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        30 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        31 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        32 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        33 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        34 => [
+                            'cta_contable' => 'IVA VENTAS',
+                            'cod_cta_contable' => '21050103'
+                        ],
                     ],
                     'DECREMENTO' => [
                         8 => [
@@ -791,7 +826,43 @@ class BonesIntegrationController extends Controller
                         23 => [
                             'cta_contable' => 'BOUTIQUE',
                             'cod_cta_contable' => '51010541'
-                        ]
+                        ],
+                        26 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        27 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        28 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        29 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        30 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        31 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        32 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        33 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        34 => [
+                            'cta_contable' => 'IVA VENTAS',
+                            'cod_cta_contable' => '21050103'
+                        ],
                     ]
                 ],
                 'TOMA_FISICA' => [
@@ -993,7 +1064,43 @@ class BonesIntegrationController extends Controller
                         23 => [
                             'cta_contable' => 'BOUTIQUE',
                             'cod_cta_contable' => '51010541'
-                        ]
+                        ],
+                        26 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        27 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        28 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        29 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        30 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        31 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        32 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        33 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        34 => [
+                            'cta_contable' => 'IVA VENTAS',
+                            'cod_cta_contable' => '21050103'
+                        ],
                     ],
                     'DECREMENTO' => [
                         8 => [
@@ -1059,14 +1166,52 @@ class BonesIntegrationController extends Controller
                         23 => [
                             'cta_contable' => 'BOUTIQUE',
                             'cod_cta_contable' => '51010541'
-                        ]
+                        ],
+                        26 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        27 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        28 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        29 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        30 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        31 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        32 => [
+                            'cta_contable' => 'HOSPEDAJE 12%',
+                            'cod_cta_contable' => '41020101'
+                        ],
+                        33 => [
+                            'cta_contable' => 'HOSPEDAJE 0%',
+                            'cod_cta_contable' => '41010101'
+                        ],
+                        34 => [
+                            'cta_contable' => 'IVA VENTAS',
+                            'cod_cta_contable' => '21050103'
+                        ],
                     ]
                 ]
             ];
 
             $transactions = collect($transactions)->map(function($obj) use($arrCtasContable, $connection){
 
-                $cta = $arrCtasContable[$obj->nombre_transaccion][$obj->tipo_transaccion][$obj->id_sub_categoria_item];
+                $cta = isset($arrCtasContable[$obj->nombre_transaccion][$obj->tipo_transaccion][$obj->id_sub_categoria_item])
+                ? $arrCtasContable[$obj->nombre_transaccion][$obj->tipo_transaccion][$obj->id_sub_categoria_item]
+                : ['cod_cta_contable' => ''];
 
                 $account = $connection->table('item')->where('id_sub_categoria_item',$obj->id_sub_categoria_item)->first();
 
