@@ -164,9 +164,9 @@ class BonesIntegrationController extends Controller
 
                     $data->FORMA_PAGO[] = [
                         "DOC_ID"=> $idVenta,
-                        "CODIGO"=> $tipo,
-                        "MONTO"=> number_format($tp->monto,2,'.',''),
-                        "NOMBRE"=> $tipo ,
+                        "CODIGO" => $tp->id_tipo_pago,///$tipo,
+                        "MONTO" => number_format($tp->monto,2,'.',''),
+                        "NOMBRE" => $tipo ,
                         "LOTE" => !isset($tp->lote) || $tp->lote =='' ? '*' : $tp->lote
                     ];
 
