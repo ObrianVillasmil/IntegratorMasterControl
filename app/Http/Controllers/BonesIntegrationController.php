@@ -110,11 +110,11 @@ class BonesIntegrationController extends Controller
 
                     if($det->tipo_producto == 'R'){
 
-                        $account = DB::table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
+                        $account = $connection->table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
 
                     }else{
 
-                        $account = DB::table('item')->where('id_item',$det->id_producto)->first();
+                        $account = $connection->table('item')->where('id_item',$det->id_producto)->first();
 
                     }
 
@@ -251,11 +251,11 @@ class BonesIntegrationController extends Controller
 
                     if($det->tipo_producto == 'R'){
 
-                        $account = DB::table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
+                        $account = $connection->table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
 
                     }else{
 
-                        $account = DB::table('item')->where('id_item',$det->id_producto)->first();
+                        $account = $connection->table('item')->where('id_item',$det->id_producto)->first();
 
                     }
 
