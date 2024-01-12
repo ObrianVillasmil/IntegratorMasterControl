@@ -104,7 +104,7 @@ class BonesIntegrationController extends Controller
                     $porcentaje = ($v->descuento2 * 100) / $total;
 
                 if($v->servicio > 0)
-                    $porcentajeServicio = ($v->servicio * 100) / $total;
+                    $porcentajeServicio = (int)($v->servicio * 100) / $total;
 
                 foreach ($detalles as $det) {
 
@@ -126,6 +126,8 @@ class BonesIntegrationController extends Controller
 
                     $imp = ($det->precio-$det->monto_descuento) * ($det->impuesto/100);
                     info('$porcentajeServicio '.$porcentajeServicio);
+                    info('$precioSubTotal '.$precioSubTotal.' $porcentajeServicio '.$porcentajeServicio );
+
                     $servicio = $precioSubTotal * ($porcentajeServicio / 100);
 
                     $data->DETALLE[] = [
