@@ -125,7 +125,7 @@ class BonesIntegrationController extends Controller
                     $precioSubTotal = ($det->precio-$det->monto_descuento);
 
                     $imp = ($det->precio-$det->monto_descuento) * ($det->impuesto/100);
-             
+
 
                     $servicio = ($precioSubTotal*$det->cantidad) * ($porcentajeServicio / 100);
 
@@ -155,13 +155,13 @@ class BonesIntegrationController extends Controller
 
                     $tipo = '';
 
-                    if(in_array($tp->id_tipo_pago,[1,4,6])){
+                    if(in_array($tp->id_tipo_pago,[1,4,6,5])){
 
                         $tipo = $tp->nombre;
 
                     }else{
 
-                        $tipo = (!isset($tp->tipo) || $tp->tipo =='') ? '*' : $tp->tipo;
+                        $tipo = (!isset($tp->tipo) || $tp->tipo == '') ? '*' : $tp->tipo;
 
                     }
 
