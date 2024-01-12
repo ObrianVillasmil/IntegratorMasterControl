@@ -66,14 +66,14 @@ class BonesIntegrationController extends Controller
                 $idVenta = $v->id_sucursal.'-'.$v->id_venta;
 
                 $data = (object)[
-                    "DOC_ID"=> $idVenta,
+                    "DOC_ID"=>(string) $idVenta,
                     "FECHA"=> Carbon::parse($v->fecha)->format('Y-m-d'),
                     "NUMERO"=> !isset($v->secuencial) || $v->secuencial =='' ? '*' : substr($v->secuencial,24,15),
-                    'AUTORIZACION' => $v->secuencial,
+                    'AUTORIZACION' => (string)$v->secuencial,
                     "SUBTOTAL"=> number_format($v->subtotal0+$v->subtotal12,2,'.',''),
-                    "IVA"=> $v->valor_impuesto,
-                    "SERVICIO"=> $v->servicio,
-                    "TOTAL"=> $v->total_a_pagar,
+                    "IVA"=> (string)$v->valor_impuesto,
+                    "SERVICIO"=> (string)$v->servicio,
+                    "TOTAL"=> (string)$v->total_a_pagar,
                     "FOLIO"=> "*",
                     "HABITACION"=> !isset($v->identificacion_cuenta) || $v->identificacion_cuenta =='' ? '*' : $v->identificacion_cuenta,
                     "HUESPED"=> "*",
@@ -81,7 +81,7 @@ class BonesIntegrationController extends Controller
                     "SALIDA"=> "*",
                     "NUMERO_MODIFICADO"=> "*",
                     "TIPO"=> "FQ",
-                    "RUC"=> $v->identificacion_comprador,
+                    "RUC"=> (string)$v->identificacion_comprador,
                     "NOMBRE"=> strtoupper($v->nombre_comprador),
                     "DIRECCION"=> !isset($v->direccion_comprador) || $v->direccion_comprador =='' ? '*' : $v->direccion_comprador,
                     "TELEFONO"=> !isset($v->telefono_comprador) || $v->telefono_comprador =='' ? '*' : $v->telefono_comprador,
@@ -163,8 +163,8 @@ class BonesIntegrationController extends Controller
                     }
 
                     $data->FORMA_PAGO[] = [
-                        "DOC_ID"=> $idVenta,
-                        "CODIGO" => $tp->id_tipo_pago,///$tipo,
+                        "DOC_ID"=> (string)$idVenta,
+                        "CODIGO" => (string)$tp->id_tipo_pago,///$tipo,
                         "MONTO" => number_format($tp->monto,2,'.',''),
                         "NOMBRE" => $tipo ,
                         "LOTE" => !isset($tp->lote) || $tp->lote =='' ? '*' : $tp->lote
@@ -225,12 +225,12 @@ class BonesIntegrationController extends Controller
                 $data = (object)[
                     "DOC_ID" => $idCreditNote,
                     "FECHA" => Carbon::parse($cn->date_doc)->format('Y-m-d'),
-                    "NUMERO" => $cn->sequential,
-                    'AUTORIZACION' => $cn->access_key,
-                    "SUBTOTAL" => $cn->total_without_tax,
+                    "NUMERO" => (string)$cn->sequential,
+                    'AUTORIZACION' => (string)$cn->access_key,
+                    "SUBTOTAL" => (string)$cn->total_without_tax,
                     "IVA" => $cn->modified_value - $cn->total_without_tax,
-                    "SERVICIO" => $serviceAmount,
-                    "TOTAL" => $cn->modified_value,
+                    "SERVICIO" => (string)$serviceAmount,
+                    "TOTAL" => (string)$cn->modified_value,
                     "FOLIO" => "*",
                     "HABITACION" => !isset($v->identificacion_cuenta) || $v->identificacion_cuenta =='' ? '*' : $v->identificacion_cuenta,
                     "HUESPED" => "*",
@@ -262,14 +262,14 @@ class BonesIntegrationController extends Controller
                     $taxes = array_sum(array_column($det->credit_note_item_tax,'amount'));
 
                     $data->DETALLE[] = [
-                        "DOC_ID"=> $idCreditNote,
-                        "CODIGO"=> $det->id_credit_note_item,
-                        "CANTIDAD"=> $det->quantity,
-                        "PRECIO"=> $det->unit_price,
+                        "DOC_ID"=> (string)$idCreditNote,
+                        "CODIGO"=> (string)$det->id_credit_note_item,
+                        "CANTIDAD"=> (string)$det->quantity,
+                        "PRECIO"=> (string)$det->unit_price,
                         "IVA"=> number_format($taxes/$det->quantity,2,'.',''),
                         "SERVICIO"=> '0.00',
                         "TOTAL"=>  '0.00',
-                        "DESCUENTO"=> $det->discount,
+                        "DESCUENTO"=> (string)$det->discount,
                         "NOMBRE"=> $det->description,
                         "CTA_CONTABLE" => $account->cc_bones,
                         "COD_CTA_CONTABLE" => $account->cc_bones_nombre,
@@ -427,11 +427,11 @@ class BonesIntegrationController extends Controller
                     $data->DETALLE[] = [
                         "DOC_ID"=> $idPurchase,
                         "CODIGO"=> $det->id_sucursal.'-'.$det->id_detalle_factura,
-                        "CANTIDAD"=> $det->cantidad < 0 ? $det->cantidad*-1 : $det->cantidad,
-                        "PRECIO"=> $det->neto,
+                        "CANTIDAD"=> number_format(($det->cantidad < 0 ? $det->cantidad*-1 : $det->cantidad),2,'.',''),
+                        "PRECIO"=> number_format($det->neto,2,'.',''),
                         "IVA"=> number_format($det->iva,2,'.',''),
                         "SERVICIO"=> 0,
-                        "TOTAL"=> $det->total,
+                        "TOTAL"=> number_format($det->total,2,'.',''),
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
                         "CTA_CONTABLE" => "x.x.xx.x.x",
