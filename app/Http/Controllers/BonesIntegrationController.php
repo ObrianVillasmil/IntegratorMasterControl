@@ -118,13 +118,15 @@ class BonesIntegrationController extends Controller
 
                     }
 
+                    $descTotal =  $det->monto_descuento;
+
                     $det->monto_descuento/= $det->cantidad;
 
                     $det->monto_descuento+= $det->precio * ($porcentaje / 100);
 
                     $precioSubTotal = ($det->precio-$det->monto_descuento);
 
-                    $imp = (($det->precio*$det->cantidad) - $det->monto_descuento) * ($det->impuesto/100);
+                    $imp = (($det->precio*$det->cantidad) - $descTotal) * ($det->impuesto/100);
 
                     $servicio = ($precioSubTotal*$det->cantidad) * ($porcentajeServicio / 100);
 
