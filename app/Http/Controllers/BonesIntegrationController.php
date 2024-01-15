@@ -108,15 +108,7 @@ class BonesIntegrationController extends Controller
 
                 foreach ($detalles as $det) {
 
-                    if($det->tipo_producto == 'R'){
-
-                        $account = $connection->table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
-
-                    }else{
-
-                        $account = $connection->table('item')->where('id_item',$det->id_producto)->first();
-
-                    }
+                    $account = $connection->table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
 
                     $descTotal =  $det->monto_descuento;
 
@@ -140,8 +132,8 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> "0",
                         "DESCUENTO"=> number_format($det->monto_descuento,2,'.',''),
                         "NOMBRE"=> $det->producto,
-                        "CTA_CONTABLE" => $account->cc_bones_nombre,
-                        "COD_CTA_CONTABLE" => $account->cc_bones,
+                        "CTA_CONTABLE" => $account->cc_general_nombre,
+                        "COD_CTA_CONTABLE" => $account->cc_general,
                     ];
 
                 }
@@ -275,8 +267,8 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=>  '0.00',
                         "DESCUENTO"=> (string)$det->discount,
                         "NOMBRE"=> $det->description,
-                        "CTA_CONTABLE" => $account->cc_bones,
-                        "COD_CTA_CONTABLE" => $account->cc_bones_nombre,
+                        "CTA_CONTABLE" => $account->cc_general,
+                        "COD_CTA_CONTABLE" => $account->cc_general_nombre
                     ];
 
                 }
@@ -381,6 +373,7 @@ class BonesIntegrationController extends Controller
             ->get()->map(function($c) use($connection){
 
                 switch(strlen(trim($c->ruc_proveedor))){
+
                     case 13:
                         $tipoIdentificacion = 'RUC';
                         break;
@@ -390,6 +383,7 @@ class BonesIntegrationController extends Controller
                     default:
                         $tipoIdentificacion = 'PASAPORTE';
                         break;
+
                 }
 
                 $idPurchase = $c->id_sucursal.'-'.$c->id_factura;
@@ -438,8 +432,8 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> number_format($det->total,2,'.',''),
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
-                        "CTA_CONTABLE" => "x.x.xx.x.x",
-                        "COD_CTA_CONTABLE" => "x.x.xx.x.x",
+                        "CTA_CONTABLE" => $item->cc_general,
+                        "COD_CTA_CONTABLE" =>  $item->cc_general_nombre,
                     ];
 
                 }
@@ -469,7 +463,6 @@ class BonesIntegrationController extends Controller
                         $tipoIdentificacion = 'PASAPORTE';
                         break;
                 }
-
 
                 $idPurchase = $c->id_sucursal.'-'.$c->id_factura.'-CN';
                 $supplier = $connection->table('proveedor')->where('id_proveedor',$c->id_proveedor)->first();
@@ -1219,7 +1212,7 @@ class BonesIntegrationController extends Controller
 
                 $account = $connection->table('item')->where('id_sub_categoria_item',$obj->id_sub_categoria_item)->first();
 
-                $obj->cuenta_categoria = $account->cc_bones;
+                $obj->cuenta_categoria = $account->cc_general;
                 $obj->cuenta_transaccion = $cta['cod_cta_contable'];
 
                 return $obj;
