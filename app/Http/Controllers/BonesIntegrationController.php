@@ -655,7 +655,7 @@ class BonesIntegrationController extends Controller
 
             $transactions = $connection->select($sql, $params);
 
-            $arrCtasContable = [
+            /* $arrCtasContable = [
                 'VENTA' => [
                     'INCREMENTO' => [
                         8 => [
@@ -1202,18 +1202,19 @@ class BonesIntegrationController extends Controller
                         ],
                     ]
                 ]
-            ];
+            ]; */
 
-            $transactions = collect($transactions)->map(function($obj) use($arrCtasContable, $connection){
+            $transactions = collect($transactions)->map(function($obj) use(/* $arrCtasContable,  */$connection){
 
-                $cta = isset($arrCtasContable[$obj->nombre_transaccion][$obj->tipo_transaccion][$obj->id_sub_categoria_item])
+                /* $cta = isset($arrCtasContable[$obj->nombre_transaccion][$obj->tipo_transaccion][$obj->id_sub_categoria_item])
                 ? $arrCtasContable[$obj->nombre_transaccion][$obj->tipo_transaccion][$obj->id_sub_categoria_item]
-                : ['cod_cta_contable' => ''];
+                : ['cod_cta_contable' => '']; */
 
-                $account = $connection->table('item')->where('id_sub_categoria_item',$obj->id_sub_categoria_item)->first();
+                $item = $connection->table('item')->where('id_sub_categoria_item',$obj->id_sub_categoria_item)->first();
+                $subCatItem = $connection->table('sub_categoria_item')->where('id_sub_categoria_item',$obj->id_sub_categoria_item)->first();
 
-                $obj->cuenta_categoria = $account->cc_general;
-                $obj->cuenta_transaccion = $cta['cod_cta_contable'];
+                $obj->cuenta_categoria = $item->cc_general;
+                $obj->cuenta_transaccion = $subCatItem->cc_general; //$cta['cod_cta_contable'];
 
                 return $obj;
 
