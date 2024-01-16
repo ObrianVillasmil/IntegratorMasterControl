@@ -70,7 +70,7 @@ class BonesIntegrationController extends Controller
                     "FECHA"=> Carbon::parse($v->fecha)->format('Y-m-d'),
                     "NUMERO"=> !isset($v->secuencial) || $v->secuencial =='' ? '*' : substr($v->secuencial,24,15),
                     "AUTORIZACION" => (string)$v->secuencial,
-                    "ID_TIPO_VENTA" => (string)$v->id_tipo_venta,
+                    "ID_TIPO_VENTA" => (string)$v->id_cliente_externo,
                     "CUENTA" => (string)$v->identificacion_cuenta,
                     "SUBTOTAL"=> number_format($v->subtotal0+$v->subtotal12,2,'.',''),
                     "IVA"=> (string)$v->valor_impuesto,
