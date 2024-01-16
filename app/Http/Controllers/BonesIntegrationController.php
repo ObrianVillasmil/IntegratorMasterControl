@@ -69,7 +69,9 @@ class BonesIntegrationController extends Controller
                     "DOC_ID"=>(string) $idVenta,
                     "FECHA"=> Carbon::parse($v->fecha)->format('Y-m-d'),
                     "NUMERO"=> !isset($v->secuencial) || $v->secuencial =='' ? '*' : substr($v->secuencial,24,15),
-                    'AUTORIZACION' => (string)$v->secuencial,
+                    "AUTORIZACION" => (string)$v->secuencial,
+                    "ID_TIPO_VENTA" => (string)$v->id_tipo_venta,
+                    "CUENTA" => (string)$v->identificacion_cuenta,
                     "SUBTOTAL"=> number_format($v->subtotal0+$v->subtotal12,2,'.',''),
                     "IVA"=> (string)$v->valor_impuesto,
                     "SERVICIO"=> (string)$v->servicio,
@@ -108,7 +110,7 @@ class BonesIntegrationController extends Controller
 
                 foreach ($detalles as $det) {
 
-                    $account = $connection->table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
+                    $pcp = $connection->table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
 
                     $descTotal =  $det->monto_descuento;
 
@@ -132,8 +134,8 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> "0",
                         "DESCUENTO"=> number_format($det->monto_descuento,2,'.',''),
                         "NOMBRE"=> $det->producto,
-                        "CTA_CONTABLE" => $account->cc_general_nombre,
-                        "COD_CTA_CONTABLE" => $account->cc_general,
+                        "CTA_CONTABLE" => $pcp->cc_general_nombre,
+                        "COD_CTA_CONTABLE" => $pcp->cc_general,
                     ];
 
                 }
@@ -245,15 +247,7 @@ class BonesIntegrationController extends Controller
 
                 foreach ($cn->details as $det) {
 
-                    if($det->tipo_producto == 'R'){
-
-                        $account = $connection->table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
-
-                    }else{
-
-                        $account = $connection->table('item')->where('id_item',$det->id_producto)->first();
-
-                    }
+                    $pcp = $connection->table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
 
                     $taxes = array_sum(array_column($det->credit_note_item_tax,'amount'));
 
@@ -267,8 +261,8 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=>  '0.00',
                         "DESCUENTO"=> (string)$det->discount,
                         "NOMBRE"=> $det->description,
-                        "CTA_CONTABLE" => $account->cc_general,
-                        "COD_CTA_CONTABLE" => $account->cc_general_nombre
+                        "CTA_CONTABLE" => $pcp->cc_general,
+                        "COD_CTA_CONTABLE" => $pcp->cc_general_nombre
                     ];
 
                 }
