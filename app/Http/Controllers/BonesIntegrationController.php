@@ -248,8 +248,7 @@ class BonesIntegrationController extends Controller
                 foreach ($cn->details as $det) {
 
                     $idProduto = (int) substr(explode('-',$det->main_code)[1],-6);
-                    info($idProduto);
-                    info('$det->main_code '.$det->main_code);
+
                     $pcp = $connection->table('pos_configuracion_producto')->where('id_producto',$idProduto)->first();
 
                     $taxes = array_sum(array_column($det->credit_note_item_tax,'amount'));
@@ -279,7 +278,8 @@ class BonesIntegrationController extends Controller
             return response()->json([
                 'msg' =>'Intervalo de ventas '.$request->from.' - '.$request->to,
                 'success'=> true,
-                'sales'=> $ventas
+                'sales'=> $ventas,
+                'cantidad' => count($ventas)
             ],200);
 
         } catch (\Exception $e) {
