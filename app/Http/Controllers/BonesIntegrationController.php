@@ -247,7 +247,7 @@ class BonesIntegrationController extends Controller
 
                 foreach ($cn->details as $det) {
 
-                    $idProduto = (int)explode('-',$det->main_code)[1];
+                    $idProduto = (int) substr(explode('-',$det->main_code)[1],6,-1);
                     info($idProduto);
                     info('$det->main_code '.$det->main_code);
                     $pcp = $connection->table('pos_configuracion_producto')->where('id_producto',$idProduto)->first();
