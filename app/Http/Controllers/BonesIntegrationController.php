@@ -122,7 +122,7 @@ class BonesIntegrationController extends Controller
 
                     $imp = (($det->precio*$det->cantidad) - $descTotal) * ($det->impuesto/100);
 
-                    $servicio = ($precioSubTotal*$det->cantidad) * ($porcentajeServicio / 100);
+                    $servicio = ($precioSubTotal*$det->cantidad) * ($porcentajeServicio/100);
 
                     $data->DETALLE[] = [
                         "DOC_ID"=> $idVenta,
@@ -247,7 +247,9 @@ class BonesIntegrationController extends Controller
 
                 foreach ($cn->details as $det) {
 
-                    $pcp = $connection->table('pos_configuracion_producto')->where('id_producto',$det->id_producto)->first();
+                    $idProduto = (int)explode('-',$det->main_code)[1];
+                    dd($idProduto);
+                    $pcp = $connection->table('pos_configuracion_producto')->where('id_producto',$idProduto)->first();
 
                     $taxes = array_sum(array_column($det->credit_note_item_tax,'amount'));
 
