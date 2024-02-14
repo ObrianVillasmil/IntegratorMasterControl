@@ -249,6 +249,7 @@ class BonesIntegrationController extends Controller
 
                     $idProduto = (int)explode('-',$det->main_code)[1];
                     info($idProduto);
+                    info('$det->main_code '.$det->main_code);
                     $pcp = $connection->table('pos_configuracion_producto')->where('id_producto',$idProduto)->first();
 
                     $taxes = array_sum(array_column($det->credit_note_item_tax,'amount'));
