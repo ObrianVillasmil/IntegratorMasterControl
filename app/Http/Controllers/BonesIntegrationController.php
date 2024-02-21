@@ -269,6 +269,36 @@ class BonesIntegrationController extends Controller
 
                 }
 
+                $tipoPAgos = $connection->table('venta_tipo_pago as vtp')
+                ->join('tipo_pago as tp','vtp.id_tipo_pago','tp.id_tipo_pago')
+                ->leftJoin('tarjeta_credito as tc', 'vtp.id_tarjeta_credito','tc.id_tarjeta_credito')
+                ->where('vtp.id_venta',$v->id_venta)
+                ->where('vtp.id_sucursal',$v->id_sucursal)->get();
+
+                foreach ($tipoPAgos as $tp) {
+
+                    $tipo = '';
+
+                    if(in_array($tp->id_tipo_pago,[1,4,6,5])){
+
+                        $tipo = $tp->nombre;
+
+                    }else{
+
+                        $tipo = (!isset($tp->tipo) || $tp->tipo == '') ? '*' : $tp->tipo;
+
+                    }
+
+                    $data->FORMA_PAGO[] = [
+                        "DOC_ID"=> $idCreditNote,
+                        "CODIGO" => (string)$tp->id_tipo_pago,///$tipo,
+                        "MONTO" => number_format($tp->monto,2,'.',''),
+                        "NOMBRE" => $tipo ,
+                        "LOTE" => !isset($tp->lote) || $tp->lote =='' ? '*' : $tp->lote
+                    ];
+
+                }
+
                 return $data;
 
             });
