@@ -178,9 +178,9 @@ class BonesIntegrationController extends Controller
             ->where('estado',false)
             ->where('cn_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
-            ->whereRaw("venta.json_cn->>date_doc::date BETWEEN ? AND ?",[$request->from,$request->to])
-            //->whereBetween(DB::raw("fecha::date"),[$request->from,$request->to])
             ->whereNotNull('secuencial_nota_credito')
+            ->whereRaw("json_cn->>date_doc::date BETWEEN ? AND ?",[$request->from,$request->to])
+            //->whereBetween(DB::raw("fecha::date"),[$request->from,$request->to])
             ->get()->map(function($v) use($connection){
 
                 $c = $connection->table('comprador')->where('identificacion', $v->identificacion_comprador)->first();
