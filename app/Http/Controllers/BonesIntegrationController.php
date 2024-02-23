@@ -178,7 +178,8 @@ class BonesIntegrationController extends Controller
             ->where('estado',false)
             ->where('cn_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
-            ->whereBetween(DB::raw("fecha::date"),[$request->from,$request->to])
+            ->whereRaw("venta.json_cn->>date_doc::date BETWEEN ? AND ?",[$request->from,$request->to])
+            //->whereBetween(DB::raw("fecha::date"),[$request->from,$request->to])
             ->whereNotNull('secuencial_nota_credito')
             ->get()->map(function($v) use($connection){
 
@@ -228,7 +229,7 @@ class BonesIntegrationController extends Controller
                     "ID_TIPO_VENTA" => (string)$v->id_cliente_externo,
                     "CUENTA" => (string)$v->identificacion_cuenta,
                     "SUBTOTAL" => (string)$cn->total_without_tax,
-                    "IVA" => (string)$cn->modified_value - $cn->total_without_tax,
+                    "IVA" => (string)($cn->modified_value - $cn->total_without_tax),
                     "SERVICIO" => (string)$serviceAmount,
                     "TOTAL" => (string)$cn->modified_value,
                     "FOLIO" => "*",
@@ -265,8 +266,8 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=>  '0.00',
                         "DESCUENTO"=> (string)$det->discount,
                         "NOMBRE"=> $det->description,
-                        "CTA_CONTABLE" => $pcp->cc_general,
-                        "COD_CTA_CONTABLE" => $pcp->cc_general_nombre
+                        "CTA_CONTABLE" => $pcp->cc_general_nombre,
+                        "COD_CTA_CONTABLE" => $pcp->cc_general
                     ];
 
                 }

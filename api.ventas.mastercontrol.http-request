@@ -10,5 +10,5 @@
   },
   "method": "GET",
   "title": "New HTTP Request",
-  "url": "https://api.mastercontrol.ec/api/auth/bones-ventas?company=1&connect=mastercontrol&from=2023-11-11&to=2023-11-11"
+  "url": "https://api.mastercontrol.ec/api/auth/bones-ventas?company=1&connect=mastercontrol&from=2024-01-25&to=2024-01-25"
 }
