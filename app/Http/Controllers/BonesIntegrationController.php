@@ -225,6 +225,8 @@ class BonesIntegrationController extends Controller
                     "FECHA" => Carbon::parse($cn->date_doc)->format('Y-m-d'),
                     "NUMERO" => (string)$cn->sequential,
                     'AUTORIZACION' => (string)$cn->access_key,
+                    "ID_TIPO_VENTA" => (string)$v->id_cliente_externo,
+                    "CUENTA" => (string)$v->identificacion_cuenta,
                     "SUBTOTAL" => (string)$cn->total_without_tax,
                     "IVA" => $cn->modified_value - $cn->total_without_tax,
                     "SERVICIO" => (string)$serviceAmount,
