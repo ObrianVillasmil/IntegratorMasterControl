@@ -228,7 +228,7 @@ class BonesIntegrationController extends Controller
                     "ID_TIPO_VENTA" => (string)$v->id_cliente_externo,
                     "CUENTA" => (string)$v->identificacion_cuenta,
                     "SUBTOTAL" => (string)$cn->total_without_tax,
-                    "IVA" => $cn->modified_value - $cn->total_without_tax,
+                    "IVA" => (string)$cn->modified_value - $cn->total_without_tax,
                     "SERVICIO" => (string)$serviceAmount,
                     "TOTAL" => (string)$cn->modified_value,
                     "FOLIO" => "*",
