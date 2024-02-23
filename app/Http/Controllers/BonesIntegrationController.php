@@ -179,7 +179,7 @@ class BonesIntegrationController extends Controller
             ->where('cn_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
             ->whereNotNull('secuencial_nota_credito')
-            ->whereRaw("json_cn->>date_doc::date BETWEEN ? AND ?",[$request->from,$request->to])
+            ->whereRaw("json_cn->>'date_doc'::date BETWEEN ? AND ?",[$request->from,$request->to])
             //->whereBetween(DB::raw("fecha::date"),[$request->from,$request->to])
             ->get()->map(function($v) use($connection){
 
