@@ -252,7 +252,11 @@ class BonesIntegrationController extends Controller
                     "DETALLE" => []
                 ];
 
-                foreach ($cn->details as $det) {
+                $details =  array_filter($cn->details, function($arr){
+                    return (int) substr(explode('-',$arr->main_code)[1],-6) != '999999';
+                });
+
+                foreach ($details as $det) {
 
                     $idProduto = (int) substr(explode('-',$det->main_code)[1],-6);
 
