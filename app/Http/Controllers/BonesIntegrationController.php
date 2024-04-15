@@ -260,7 +260,7 @@ class BonesIntegrationController extends Controller
 
                     if(!isset($pcp)){
 
-                        info('main_coide '.$det->main_code.' $idProduto: '.$idProduto);
+                        info('main_coide '.$det->main_code.' $idProduto: '.$idProduto.' venta: '.$v->id_venta);
 
                     }
 
