@@ -255,13 +255,14 @@ class BonesIntegrationController extends Controller
                 foreach ($cn->details as $det) {
 
                     $idProduto = (int) substr(explode('-',$det->main_code)[1],-6);
-                    if(!isset($idProduto)){
-
-                        info('main_coide '.$det->main_code.' '.$v->json_cn);
-
-                    }
 
                     $pcp = $connection->table('pos_configuracion_producto')->where('id_producto',$idProduto)->first();
+
+                    if(!isset($pcp)){
+
+                        info('main_coide '.$det->main_code.' $idProduto: '.$idProduto);
+
+                    }
 
                     $taxes = array_sum(array_column($det->credit_note_item_tax,'amount'));
 
