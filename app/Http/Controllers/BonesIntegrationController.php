@@ -8,6 +8,7 @@ use App\Http\Requests\ValidateRequestCosteos;
 use App\Http\Requests\ValidateRequestPurchase;
 use App\Http\Requests\ValidateRequestSales;
 use App\Models\Company;
+use App\Models\VentaBaseImpuesto;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -97,7 +98,10 @@ class BonesIntegrationController extends Controller
                 ->where('id_venta',$v->id_venta)
                 ->where('id_sucursal',$v->id_sucursal)->get();
 
-                $total = $v->base0 + $v->base12;
+                $vbi = $connection->table('venta_base_impuesto')->where('id_venta',$v->id_venta)
+                ->where('id_sucursal', $v->id_sucursal)->get();
+
+                $total = $vbi->sum('valor_base');//$v->base0 + $v->base12;
 
                 $porcentaje = 0;
                 $porcentajeServicio = 0;
@@ -318,7 +322,7 @@ class BonesIntegrationController extends Controller
         } catch (\Exception $e) {
 
             return response()->json([
-                'msg' => $e->getMessage(),
+                'msg' => $e->getMessage().' '.$e->getLine().' '.$e->getFile(),
                 'success' => false
             ],500);
 
