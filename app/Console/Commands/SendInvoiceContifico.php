@@ -6,21 +6,21 @@ use App\Http\Controllers\ContificoIntegrationController;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 
-class SendInvoiceContificoMarenostrum extends Command
+class SendInvoiceContifico extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'enviar_ventas:marenostrum_contifico {company}';
+    protected $signature = 'send_invoices:contifico {company}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Envía las venta de marenostrum a contifico';
+    protected $description = 'Envía las venta a contifico';
 
     /**
      * Create a new command instance.

@@ -13,7 +13,7 @@ class Company extends Model
     protected $fillable = [
         'name',
         'connect',
-        'access_token_gefacute'
+        'token2'
     ];
 
 }

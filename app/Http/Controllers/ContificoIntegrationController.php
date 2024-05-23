@@ -10,8 +10,9 @@ class ContificoIntegrationController extends Controller
 {
     static function sendInvoices(Request $request)
     {
-       /*  $company = Company::find($request->company);
-        $connection = DB::connection($company->connect);
+        $company = Company::where('name',$request->company)->first();
+      
+        /*$connection = DB::connection($company->connect);
 
         $idBranchOffice = $connection->table('empresa as e')->join('sucursal as s',function($j) {
 
@@ -35,7 +36,7 @@ class ContificoIntegrationController extends Controller
         try {
 
             $jsonVentas = json_encode([
-                "pos" => "dce704ae-189e-4545-bea3-257d9249a594",
+                "pos" => $company->token2,
                 "fecha_emision" => "22/05/2024",
                 "tipo_documento" => "FAC",
                 "documento" => "002-001-000001878",
@@ -49,8 +50,7 @@ class ContificoIntegrationController extends Controller
                     "telefonos"=> "0988800001",
                     "direccion"=> "Direccion cliente",
                     "tipo"=> "N",
-                    "email"=> "cliente@contifico.com",
-                    "es_extranjero"=> false
+                    "email"=> "cliente@contifico.com"
                 ],
                 "descripcion" => "FACTURA 21938",
                 "subtotal_0" => 0.00,
@@ -83,9 +83,9 @@ class ContificoIntegrationController extends Controller
 
             $header = [
                 'Content-Type' => 'application/json',
-                'Authorization: FrguR1kDpFHaXHLQwplZ2CwTX3p8p9XHVTnukL98V5U'
+                'Authorization: '.$company->token
             ];
-            //dd($jsonVentas);
+
             $curlClient = curl_init();
             curl_setopt($curlClient, CURLOPT_HTTPHEADER, $header);
             curl_setopt($curlClient, CURLOPT_URL, env('ENVIAR_VENTA_AUTORIZADA_CONTIFICO'));
