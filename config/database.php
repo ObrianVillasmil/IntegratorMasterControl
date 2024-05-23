@@ -73,6 +73,20 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        'marenostrum_mc' => [
+            'driver' => 'pgsql',
+            'host' => env('DB_HOST_MARENOSTRUM', '127.0.0.1'),
+            'port' => env('DB_PORT_MARENOSTRUM', '5432'),
+            'database' => env('DB_DATABASE_MARENOSTRUM', 'forge'),
+            'username' => env('DB_USERNAME_MARENOSTRUM', 'forge'),
+            'password' => env('DB_PASSWORD_MARENOSTRUM', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'schema' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
     ],
 
     /*

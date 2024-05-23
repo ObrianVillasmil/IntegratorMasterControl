@@ -180,7 +180,6 @@ class BonesIntegrationController extends Controller
             ->whereIn('id_sucursal',$idBranchOffice)
             ->whereNotNull('secuencial_nota_credito')
             ->whereRaw("CAST(json_cn->>'date_doc' AS DATE) BETWEEN ? AND ?",[$request->from,$request->to])
-            //->whereBetween(DB::raw("fecha::date"),[$request->from,$request->to])
             ->get()->map(function($v) use($connection){
 
                 $c = $connection->table('comprador')->where('identificacion', $v->identificacion_comprador)->first();
