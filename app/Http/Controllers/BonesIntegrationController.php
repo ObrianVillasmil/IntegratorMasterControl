@@ -8,6 +8,7 @@ use App\Http\Requests\ValidateRequestCosteos;
 use App\Http\Requests\ValidateRequestPurchase;
 use App\Http\Requests\ValidateRequestSales;
 use App\Models\Company;
+use App\Models\VentaBaseImpuesto;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -97,7 +98,10 @@ class BonesIntegrationController extends Controller
                 ->where('id_venta',$v->id_venta)
                 ->where('id_sucursal',$v->id_sucursal)->get();
 
-                $total = $v->base0 + $v->base12;
+                $vbi = $connection->table('venta_base_impuesto')->where('id_venta',$v->id_venta)
+                ->where('id_sucursal', $v->id_sucursal)->get();
+
+                $total = $vbi->sum('valor_base');//$v->base0 + $v->base12;
 
                 $porcentaje = 0;
                 $porcentajeServicio = 0;
@@ -247,11 +251,21 @@ class BonesIntegrationController extends Controller
                     "DETALLE" => []
                 ];
 
-                foreach ($cn->details as $det) {
+                $details =  array_filter($cn->details, function($arr){
+                    return (int) substr(explode('-',$arr->main_code)[1],-6) != '999999';
+                });
+
+                foreach ($details as $det) {
 
                     $idProduto = (int) substr(explode('-',$det->main_code)[1],-6);
 
                     $pcp = $connection->table('pos_configuracion_producto')->where('id_producto',$idProduto)->first();
+
+                    if(!isset($pcp)){
+
+                        info('main_coide '.$det->main_code.' $idProduto: '.$idProduto.' venta: '.$v->id_venta);
+
+                    }
 
                     $taxes = array_sum(array_column($det->credit_note_item_tax,'amount'));
 
@@ -317,7 +331,7 @@ class BonesIntegrationController extends Controller
         } catch (\Exception $e) {
 
             return response()->json([
-                'msg' => $e->getMessage(),
+                'msg' => $e->getMessage().' '.$e->getLine().' '.$e->getFile(),
                 'success' => false
             ],500);
 
