@@ -41,7 +41,6 @@ class SendInvoiceContifico extends Command
     {
         $company = $this->argument('company');
 
-
         if($company != null){
 
             ContificoIntegrationController::sendInvoices(new Request([

@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\SendInvoicesContifico;
 use App\Models\Company;
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class ContificoIntegrationController extends Controller
 {
@@ -30,7 +33,7 @@ class ContificoIntegrationController extends Controller
         ->where('estado',true)
         ->where('venta_confirmada_externo',false)
         ->whereIn('id_sucursal',$idBranchOffice)
-        ->where(DB::raw("fecha::date"),'>=','2024-05-31')
+        ->where(DB::raw("fecha::date"),'>=','2024-05-24')
         ->whereNull('secuencial_nota_credito')
         ->whereNotNull('secuencial')
         ->get();
@@ -119,7 +122,7 @@ class ContificoIntegrationController extends Controller
 
                     $pcp = $connection->table('pos_configuracion_producto')
                     ->where('tabla',($det->tipo_producto == 'R' ? 'receta' : 'item'))
-                    ->where('id_produto',$det->id_producto)->first();
+                    ->where('id_producto',$det->id_producto)->first();
 
                     $data['detalles'][] = [
                         "producto_id" => $pcp->id_externo,
@@ -155,6 +158,8 @@ class ContificoIntegrationController extends Controller
                     $data['cobros'][] = [
                         "forma_cobro" => $formaCobro,
                         "monto" => $pago->monto,
+                        "cuenta_bancaria_id" => $company->bank,
+                        "numero_comprobante" => $pago->referencia,
                         "tipo_ping" => "D"
                     ];
 
@@ -169,26 +174,56 @@ class ContificoIntegrationController extends Controller
                 curl_setopt($curlClient, CURLOPT_POST, true);
                 curl_setopt($curlClient, CURLOPT_POSTFIELDS, $jsonVentas);
                 curl_setopt($curlClient, CURLOPT_RETURNTRANSFER, true);
-                curl_setopt($curlClient, CURLOPT_CONNECTTIMEOUT, 15);
+                curl_setopt($curlClient, CURLOPT_CONNECTTIMEOUT, 30);
                 $response = curl_exec($curlClient);
 
                 $codigoHttp = curl_getinfo($curlClient, CURLINFO_HTTP_CODE);
 
                 curl_close($curlClient);
 
+                $response = json_decode($response);
 
-                sleep(2);
+                if($response!=null){
+
+                    if($codigoHttp == 201){
+                       
+                        $connection->table('venta')
+                        ->where('id_venta',$v->id_venta)
+                        ->where('id_sucursal',$v->id_sucursal)
+                        ->update([
+                            'id_externo' => $response->id,
+                            'venta_confirmada_externo' => true
+                        ]);
+
+                    }else{
+
+                        $html = "<div>Ha ocurrido un inconveniente al momento de enviar la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                        $html.=" <div><b>Error:</b> ".$response->mensaje." </div>" ;
+                        $html.= " <div><b>Codigo de error contifico:</b> ".$response->cod_error."</div>";
+                        throw new Exception($html);
+
+                    }
+
+                    sleep(2);
+
+                }else{
+
+                    throw new Exception("No se obtuvo respuesta de Contifico al momento de enviar la venta ".$v->secuencial." de la empresa ".$request->company);
+
+                }
 
                 dump('$codigoHttp: '.$codigoHttp);
                 dump('response');
-                dd($response);
+                dump($response);
 
             }
 
+            if(count($ventas))
+                Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico("Se han procesado ".count($ventas)." venta en el contifico de la empresa ".$request->company));
 
         } catch (\Exception $e) {
 
-            dd("Error: ".$e->getMessage()." \n En la linea: ".$e->getLine()." \n Del archivo: ".$e->getFile());
+            Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($e->getMessage(),false));
 
         }
 
