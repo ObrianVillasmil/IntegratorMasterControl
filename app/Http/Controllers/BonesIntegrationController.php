@@ -144,13 +144,13 @@ class BonesIntegrationController extends Controller
 
                 }
 
-                $tipoPAgos = $connection->table('venta_tipo_pago as vtp')
+                $tipoPagos = $connection->table('venta_tipo_pago as vtp')
                 ->join('tipo_pago as tp','vtp.id_tipo_pago','tp.id_tipo_pago')
                 ->leftJoin('tarjeta_credito as tc', 'vtp.id_tarjeta_credito','tc.id_tarjeta_credito')
                 ->where('vtp.id_venta',$v->id_venta)
                 ->where('vtp.id_sucursal',$v->id_sucursal)->get();
 
-                foreach ($tipoPAgos as $tp) {
+                foreach ($tipoPagos as $tp) {
 
                     $tipo = '';
 
@@ -261,12 +261,6 @@ class BonesIntegrationController extends Controller
 
                     $pcp = $connection->table('pos_configuracion_producto')->where('id_producto',$idProduto)->first();
 
-                    if(!isset($pcp)){
-
-                        info('main_code '.$det->main_code.' $idProduto: '.$idProduto.' venta: '.$v->id_venta);
-
-                    }
-
                     $taxes = array_sum(array_column($det->credit_note_item_tax,'amount'));
 
                     $data->DETALLE[] = [
@@ -285,13 +279,13 @@ class BonesIntegrationController extends Controller
 
                 }
 
-                $tipoPAgos = $connection->table('venta_tipo_pago as vtp')
+                $tipoPagos = $connection->table('venta_tipo_pago as vtp')
                 ->join('tipo_pago as tp','vtp.id_tipo_pago','tp.id_tipo_pago')
                 ->leftJoin('tarjeta_credito as tc', 'vtp.id_tarjeta_credito','tc.id_tarjeta_credito')
                 ->where('vtp.id_venta',$v->id_venta)
                 ->where('vtp.id_sucursal',$v->id_sucursal)->get();
 
-                foreach ($tipoPAgos as $tp) {
+                foreach ($tipoPagos as $tp) {
 
                     $tipo = '';
 
