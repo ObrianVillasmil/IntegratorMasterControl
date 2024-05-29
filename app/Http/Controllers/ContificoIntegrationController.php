@@ -14,7 +14,6 @@ class ContificoIntegrationController extends Controller
 {
     static function sendInvoices(Request $request)
     {
-
         try {
 
             $company = Company::where('name',$request->company)->first();
@@ -36,11 +35,16 @@ class ContificoIntegrationController extends Controller
             ->where('estado',true)
             ->where('venta_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
-            ->where(DB::raw("fecha::date"),'>=','2024-05-24')
+            ->where(DB::raw("fecha::date"),'>=','2024-03-25')
             ->whereNull('secuencial_nota_credito')
             ->whereNotNull('secuencial')->get();
 
             foreach ($ventas as $v) {
+
+                $productContifico = env('PRODUCTO_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal);
+
+                if($productContifico == null || $productContifico == '')
+                    throw new Exception("No se obtuvo el producto Contifico al momento de enviar la venta ".$v->secuencial." de la empresa ".$company->connect." para la tienda ".$v->id_sucursal);
 
                 $cedula = '';
                 $ruc = '';
@@ -72,7 +76,15 @@ class ContificoIntegrationController extends Controller
                 ->where('id_sucursal',$v->id_sucursal)
                 ->sum('valor_impuesto');
 
-                $data = [
+                $prod = $connection->table('detalle_venta')
+                ->where('id_venta',$v->id_venta)
+                ->where('id_sucursal',$v->id_sucursal)
+                ->selectRaw("SUM(precio*cantidad) AS precio")
+                ->select('impuesto')->first();
+
+                $prod->precio -= ($v->descuento1 + $v->descuento2);
+
+                $dataFactura = [
                     "pos" => $company->token2,
                     "fecha_emision" =>  Carbon::parse($v->fecha)->format('d/m/Y'),
                     "tipo_documento" => "FAC",
@@ -96,46 +108,119 @@ class ContificoIntegrationController extends Controller
                     "ice" =>0.00,
                     "servicio" => number_format($v->servicio,2,'.',''),
                     "total" => number_format($v->total_a_pagar,2,'.',''),
-                    "detalles"=> [],
-                    "cobros"=>[]
+                    "detalles"=> [
+                        "producto_id" => $productContifico,
+                        "cantidad" => 1,
+                        "precio" => number_format($prod->precio,2,'.',''),
+                        "porcentaje_iva" => $prod->impuesto,
+                        "porcentaje_descuento" => 0.00,
+                        "base_cero" => $base0,
+                        "base_gravable" => $baseMayor0,
+                        "base_no_gravable" => 0.00
+                    ]
                 ];
 
-                $detVenta = $connection->table('detalle_venta')
-                ->where('id_venta',$v->id_venta)
-                ->where('id_sucursal',$v->id_sucursal)->get();
+                //SE CREA LA FACTURA
+                $resFact = self::curlStoreTransaction($dataFactura,$header,env('CREAR_FACTURA_CONTIFICO'));
 
-                foreach ($detVenta as $det) {
+                if($resFact['response'] != null){
 
-                    $baseCero = 0;
-                    $baseGravable = 0;
-                    $base = ($det->precio*$det->cantidad)-$det->monto_descuento;
+                    if($resFact['http'] == 201){
 
-                    if($det->impuesto == 0){
+                        $connection->table('venta')
+                        ->where('id_venta',$v->id_venta)
+                        ->where('id_sucursal',$v->id_sucursal)
+                        ->update([
+                            'id_externo' => $resFact['response']->id,
+                            'venta_confirmada_externo' => true
+                        ]);
 
-                        $baseCero = $base;
+                        sleep(2);
 
                     }else{
 
-                        $baseGravable = $base;
+                        $html ="<div>Ha ocurrido un inconveniente al momento de enviar la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                        $html.="<div><b>Error:</b> ".$resFact['response']->mensaje." </div>" ;
+                        $html.="<div><b>Codigo de error contifico:</b> ".$resFact['response']->cod_error."</div>";
+                        throw new Exception($html);
 
                     }
 
-                    $pcp = $connection->table('pos_configuracion_producto')
-                    ->where('tabla',($det->tipo_producto == 'R' ? 'receta' : 'item'))
-                    ->where('id_producto',$det->id_producto)->first();
+                }else{
 
-                    $data['detalles'][] = [
-                        "producto_id" => $pcp->id_externo,
-                        "cantidad" => $det->cantidad,
-                        "precio" => $det->precio,
-                        "porcentaje_iva" => $det->impuesto,
-                        "porcentaje_descuento" => 0.00,
-                        "base_cero" => $baseCero,
-                        "base_gravable" => $baseGravable,
-                        "base_no_gravable" => 0.00
+                    throw new Exception("No se obtuvo respuesta de Contifico al momento de enviar la venta ".$v->secuencial." de la empresa ".$request->company);
+
+                }
+                //FIN SE CREA LA FACTURA
+
+                //SE CREAN LOS ASIENTOS DE LA FACTURA
+                $dataAsiento = [
+                    "fecha" => Carbon::parse($v->fecha)->format('d/m/Y'),
+                    "glosa" => "FACTURA ".$dataFactura['documento'],
+                    "gasto_no_deducible"=> 0,
+                    "prefijo"=> "ASI",
+                    "detalles" => [
+                        [
+                            "cuenta_id" => env('CUENTA_CLIENTES_VENTAS_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "valor" => $dataFactura['total'],
+                            "tipo"=> "D",
+                        ],
+                        [
+                            "cuenta_id" => env('CUENTA_IVA_VENTAS_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "valor" => $dataFactura['iva'],
+                            "tipo"=> "H",
+                        ],
+                        [
+                            "cuenta_id" => env('CUENTA_PRODUCTO_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "valor" => $dataFactura['detalles'][0]['precio'],
+                            "tipo"=> "H",
+                            "centro_costo_id" => env('CENTRO_COSTO_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal)
+                        ]
+                    ]
+                ];
+
+                if($v->servicio > 0){
+
+                    $detAsiento['detalles'][] = [
+                        "cuenta_id" => env('CUENTA_SERVICO_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                        "valor" => $dataFactura['servicio'],
+                        "tipo"=> "H",
                     ];
 
                 }
+
+                if($v->propina > 0){
+
+                    $detAsiento['detalles'][] = [
+                        "cuenta_id" => env('CUENTA_PROPINA_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                        "valor" => number_format($v->propina,2,'.',''),
+                        "tipo"=> "H",
+                    ];
+
+                }
+
+                $resAsientoFact = self::curlStoreTransaction($dataAsiento,$header,env('CREAR_ASIENTO_CONTIFICO'));
+
+                if($resAsientoFact['response'] == null){
+
+                    if($resAsientoFact['http'] != 201){
+
+                        $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                        $html.="<div><b>Error:</b> ".$resAsientoFact['response']->mensaje." </div>" ;
+                        $html.="<div><b>Codigo de error contifico:</b> ".$resAsientoFact['response']->cod_error."</div>";
+                        throw new Exception($html);
+
+                    }else{
+
+                        sleep(2);
+
+                    }
+
+                }
+                //FIN SE CREAN LOS ASIENTOS DE LA FACTURA
+
+                //CREAR Y CRUZAR COBROS DE LA FACTURA
+                $datosCobros = [];
 
                 $pagosVenta = $connection->table('venta_tipo_pago')
                 ->where('id_venta', $v->id_venta)
@@ -155,7 +240,7 @@ class ContificoIntegrationController extends Controller
 
                     }
 
-                    $data['cobros'][] = [
+                    $datosCobros[] = [
                         "forma_cobro" => $formaCobro,
                         "monto" => $pago->monto,
                         "cuenta_bancaria_id" => $company->bank,
@@ -165,40 +250,31 @@ class ContificoIntegrationController extends Controller
 
                 }
 
-                $response = self::curlSendInvoices($data,$header);
+                $resPago = self::curlStoreTransaction($dataFactura,$header,env('CREAR_FACTURA_CONTIFICO').$resFact['response']->id."/cobro/");
 
-                if($response['response'] != null){
+                if($resPago['response'] == null){
 
-                    if($response['http'] == 201){
+                    if($resPago['http'] != 201){
 
-                        $connection->table('venta')
-                        ->where('id_venta',$v->id_venta)
-                        ->where('id_sucursal',$v->id_sucursal)
-                        ->update([
-                            'id_externo' => $response['response']->id,
-                            'venta_confirmada_externo' => true
-                        ]);
+                        $html ="<div>Ha ocurrido un inconveniente al momento de crear el pago de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                        $html.="<div><b>Error:</b> ".$resPago['response']->mensaje." </div>" ;
+                        $html.="<div><b>Codigo de error contifico:</b> ".$resPago['response']->cod_error."</div>";
+                        throw new Exception($html);
 
                     }else{
 
-                        $html = "<div>Ha ocurrido un inconveniente al momento de enviar la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
-                        $html.=" <div><b>Error:</b> ".$response['response']->mensaje." </div>" ;
-                        $html.= " <div><b>Codigo de error contifico:</b> ".$response['response']->cod_error."</div>";
-                        throw new Exception($html);
+                        sleep(2);
 
                     }
 
-                    sleep(2);
-
-                }else{
-
-                    throw new Exception("No se obtuvo respuesta de Contifico al momento de enviar la venta ".$v->secuencial." de la empresa ".$request->company);
-
                 }
+                //FIN CREAR Y CRUZAR COBROS DE LA FACTURA
 
-                dump('$codigoHttp: '.$response['http']);
+                
+
+                /* dump('$codigoHttp: '.$response['http']);
                 dump('response');
-                dump($response);
+                dump($response); */
 
             }
 
@@ -207,7 +283,6 @@ class ContificoIntegrationController extends Controller
 
 
             /// NOTAS DE CREDITO ///
-
             /* $ventasNc = $connection->table('venta')
             ->where('estado',false)
             ->where('cn_confirmada_externo',false)
@@ -305,7 +380,7 @@ class ContificoIntegrationController extends Controller
 
                 }
 
-                $response = self::curlSendInvoices($data,$header);
+                $response = self::curlStoreTransaction($data,$header);
 
                 if($response['response'] != null){
 
@@ -350,14 +425,14 @@ class ContificoIntegrationController extends Controller
 
     }
 
-    static function curlSendInvoices($data,$header) {
+    static function curlStoreTransaction($data,$header,$url) {
 
         $jsonVentas = json_encode($data);
 
         $curlClient = curl_init();
 
         curl_setopt($curlClient, CURLOPT_HTTPHEADER, $header);
-        curl_setopt($curlClient, CURLOPT_URL, env('ENVIAR_VENTA_AUTORIZADA_CONTIFICO'));
+        curl_setopt($curlClient, CURLOPT_URL, $url);
         curl_setopt($curlClient, CURLOPT_POST, true);
         curl_setopt($curlClient, CURLOPT_POSTFIELDS, $jsonVentas);
         curl_setopt($curlClient, CURLOPT_RETURNTRANSFER, true);
