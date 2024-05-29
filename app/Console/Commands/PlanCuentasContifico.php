@@ -6,21 +6,21 @@ use App\Models\Company;
 use Exception;
 use Illuminate\Console\Command;
 
-class BancosContifico extends Command
+class PlanCuentasContifico extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'bancos:contifico {company}';
+    protected $signature = 'cuentas:contifico {company}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Obtiene los bancos de la empresa registrados en contifico';
+    protected $description = 'Obtiene las cunetas contables de la empresa en contifico';
 
     /**
      * Create a new command instance.
@@ -55,7 +55,7 @@ class BancosContifico extends Command
                 $curlClient = curl_init();
 
                 curl_setopt($curlClient, CURLOPT_HTTPHEADER, $header);
-                curl_setopt($curlClient, CURLOPT_URL, env('CONSULTAR_BANCOS_CONTIFICO'));
+                curl_setopt($curlClient, CURLOPT_URL, env('CONSULTAR_PLAN_CUENTAS_CONTIFICO'));
                 curl_setopt($curlClient, CURLOPT_RETURNTRANSFER, true);
                 curl_setopt($curlClient, CURLOPT_CONNECTTIMEOUT, 30);
                 $response = curl_exec($curlClient);
@@ -70,7 +70,8 @@ class BancosContifico extends Command
 
                     if($codigoHttp == 200){
 
-                        dd($response);
+                        info((array)$response);
+                        dd('Cuentas devueltas en el log');
 
                     }else{
 
@@ -80,7 +81,7 @@ class BancosContifico extends Command
 
                 }else{
 
-                    throw new Exception('No se obtuvo respuesta de contifico al consultar los bancos');
+                    throw new Exception('No se obtuvo respuesta de contifico al consultar el plan de cuentas');
 
                 }
 

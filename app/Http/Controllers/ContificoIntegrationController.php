@@ -226,17 +226,52 @@ class ContificoIntegrationController extends Controller
                 ->where('id_venta', $v->id_venta)
                 ->where('id_sucursal', $v->id_sucursal)->get();
 
-                foreach ($pagosVenta as $pago) {
+                //DATOS PARA EL ASIENTO CONTABLE DE LOS COBROS
+                $dataAsientoCobro = [
+                    "fecha" => Carbon::parse($v->fecha)->format('d/m/Y'),
+                    "glosa" => "COBRO FACTURA VENTA ".$dataFactura['documento'],
+                    "gasto_no_deducible"=> 0,
+                    "prefijo"=> "ASI",
+                    "detalles" => [
+                        [
+                            "cuenta_id" => env('CUENTA_COBRO_CONTRAPARTIDA_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "valor" => $dataFactura['total'],
+                            "tipo"=> "H",
+                        ],
+                    ]
+                ];
 
-                    $formaCobro = 'EF';
+                foreach ($pagosVenta as $pago) {
 
                     if($pago->id_tipo_pago == 6 || $pago->id_tipo_pago == 2){
 
                         $formaCobro = 'TRA';
 
+                        $dataAsientoCobro['detalles'][] =[
+                            "cuenta_id" => env('CUENTA_COBRO_TRANSFERENCIA_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "valor" => $pago->monto,
+                            "tipo"=> "D"
+                        ];
+
                     }else if($pago->id_tipo_pago == 3){
 
                         $formaCobro = 'TC';
+
+                        $dataAsientoCobro['detalles'][] =[
+                            "cuenta_id" => env('CUENTA_COBRO_TARJETA_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "valor" => $pago->monto,
+                            "tipo"=> "D"
+                        ];
+
+                    }else{
+
+                        $formaCobro = 'EF';
+
+                        $dataAsientoCobro['detalles'][] =[
+                            "cuenta_id" => env('CUENTA_COBRO_EFECTIVO_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "valor" => $pago->monto,
+                            "tipo"=> "D"
+                        ];
 
                     }
 
@@ -249,6 +284,7 @@ class ContificoIntegrationController extends Controller
                     ];
 
                 }
+                //FIN DATOS PARA EL ASIENTO CONTABLE DE LOS COBROS
 
                 $resPago = self::curlStoreTransaction($dataFactura,$header,env('CREAR_FACTURA_CONTIFICO').$resFact['response']->id."/cobro/");
 
@@ -270,7 +306,26 @@ class ContificoIntegrationController extends Controller
                 }
                 //FIN CREAR Y CRUZAR COBROS DE LA FACTURA
 
-                
+                // CREAR LOS ASIENTOS DEL COBRO
+                $resAsientoFact = self::curlStoreTransaction($dataAsientoCobro,$header,env('CREAR_ASIENTO_CONTIFICO'));
+
+                if($resAsientoFact['response'] == null){
+
+                    if($resAsientoFact['http'] != 201){
+
+                        $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de los pagos de la factura <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> en contifico </div>";
+                        $html.="<div><b>Error:</b> ".$resAsientoFact['response']->mensaje." </div>" ;
+                        $html.="<div><b>Codigo de error contifico:</b> ".$resAsientoFact['response']->cod_error."</div>";
+                        throw new Exception($html);
+
+                    }else{
+
+                        sleep(2);
+
+                    }
+
+                }
+                // FIN CREAR LOS ASIENTOS DEL COBRO
 
                 /* dump('$codigoHttp: '.$response['http']);
                 dump('response');
