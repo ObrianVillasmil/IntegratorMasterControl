@@ -6,14 +6,14 @@ use App\Http\Controllers\ContificoIntegrationController;
 use Illuminate\Console\Command;
 use Illuminate\Http\Request;
 
-class SendInvoiceContifico extends Command
+class SendTransactionContifico extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'send_invoices:contifico {company}';
+    protected $signature = 'transaction:contifico {company}';
 
     /**
      * The console command description.

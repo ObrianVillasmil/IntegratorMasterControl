@@ -41,7 +41,7 @@ class ContificoIntegrationController extends Controller
 
             foreach ($ventas as $v) {
 
-                $productContifico = env('PRODUCTO_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal);
+                $productContifico = env('PRODUCTO_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal);
 
                 if($productContifico == null || $productContifico == '')
                     throw new Exception("No se obtuvo el producto Contifico al momento de enviar la venta ".$v->secuencial." de la empresa ".$company->connect." para la tienda ".$v->id_sucursal);
@@ -70,7 +70,7 @@ class ContificoIntegrationController extends Controller
                 ->where('id_venta',$v->id_venta)
                 ->where('id_sucursal',$v->id_sucursal)
                 ->whereNotIn('id_impuesto',[1,2,3])->sum('valor_base');
-
+              
                 $iva =  $connection->table('venta_base_impuesto')
                 ->where('id_venta',$v->id_venta)
                 ->where('id_sucursal',$v->id_sucursal)
@@ -79,8 +79,10 @@ class ContificoIntegrationController extends Controller
                 $prod = $connection->table('detalle_venta')
                 ->where('id_venta',$v->id_venta)
                 ->where('id_sucursal',$v->id_sucursal)
-                ->selectRaw("SUM(precio*cantidad) AS precio")
-                ->select('impuesto')->first();
+                ->select(
+                    DB::raw("MAX(impuesto) AS impuesto"),
+                    DB::raw("ROUND(SUM(precio*cantidad)::numeric,2) AS precio")
+                )->first();
 
                 $prod->precio -= ($v->descuento1 + $v->descuento2);
 
@@ -109,17 +111,19 @@ class ContificoIntegrationController extends Controller
                     "servicio" => number_format($v->servicio,2,'.',''),
                     "total" => number_format($v->total_a_pagar,2,'.',''),
                     "detalles"=> [
-                        "producto_id" => $productContifico,
-                        "cantidad" => 1,
-                        "precio" => number_format($prod->precio,2,'.',''),
-                        "porcentaje_iva" => $prod->impuesto,
-                        "porcentaje_descuento" => 0.00,
-                        "base_cero" => $base0,
-                        "base_gravable" => $baseMayor0,
-                        "base_no_gravable" => 0.00
+                        [
+                            "producto_id" => $productContifico,
+                            "cantidad" => 1,
+                            "precio" => number_format($prod->precio,2,'.',''),
+                            "porcentaje_iva" => $prod->impuesto,
+                            "porcentaje_descuento" => 0.00,
+                            "base_cero" => $base0,
+                            "base_gravable" => $baseMayor0,
+                            "base_no_gravable" => 0.00
+                        ]
                     ]
                 ];
-
+                dd( $dataFactura);
                 //SE CREA LA FACTURA
                 $resFact = self::curlStoreTransaction($dataFactura,$header,env('CREAR_FACTURA_CONTIFICO'));
 
@@ -161,20 +165,20 @@ class ContificoIntegrationController extends Controller
                     "prefijo"=> "ASI",
                     "detalles" => [
                         [
-                            "cuenta_id" => env('CUENTA_CLIENTES_VENTAS_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "cuenta_id" => env('CUENTA_CLIENTES_VENTAS_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                             "valor" => $dataFactura['total'],
                             "tipo"=> "D",
                         ],
                         [
-                            "cuenta_id" => env('CUENTA_IVA_VENTAS_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "cuenta_id" => env('CUENTA_IVA_VENTAS_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                             "valor" => $dataFactura['iva'],
                             "tipo"=> "H",
                         ],
                         [
-                            "cuenta_id" => env('CUENTA_PRODUCTO_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "cuenta_id" => env('CUENTA_PRODUCTO_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                             "valor" => $dataFactura['detalles'][0]['precio'],
                             "tipo"=> "H",
-                            "centro_costo_id" => env('CENTRO_COSTO_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal)
+                            "centro_costo_id" => env('CENTRO_COSTO_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal)
                         ]
                     ]
                 ];
@@ -182,7 +186,7 @@ class ContificoIntegrationController extends Controller
                 if($v->servicio > 0){
 
                     $detAsiento['detalles'][] = [
-                        "cuenta_id" => env('CUENTA_SERVICO_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                        "cuenta_id" => env('CUENTA_SERVICO_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                         "valor" => $dataFactura['servicio'],
                         "tipo"=> "H",
                     ];
@@ -192,7 +196,7 @@ class ContificoIntegrationController extends Controller
                 if($v->propina > 0){
 
                     $detAsiento['detalles'][] = [
-                        "cuenta_id" => env('CUENTA_PROPINA_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                        "cuenta_id" => env('CUENTA_PROPINA_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                         "valor" => number_format($v->propina,2,'.',''),
                         "tipo"=> "H",
                     ];
@@ -234,7 +238,7 @@ class ContificoIntegrationController extends Controller
                     "prefijo"=> "ASI",
                     "detalles" => [
                         [
-                            "cuenta_id" => env('CUENTA_COBRO_CONTRAPARTIDA_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "cuenta_id" => env('CUENTA_COBRO_CONTRAPARTIDA_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                             "valor" => $dataFactura['total'],
                             "tipo"=> "H",
                         ],
@@ -248,7 +252,7 @@ class ContificoIntegrationController extends Controller
                         $formaCobro = 'TRA';
 
                         $dataAsientoCobro['detalles'][] =[
-                            "cuenta_id" => env('CUENTA_COBRO_TRANSFERENCIA_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "cuenta_id" => env('CUENTA_COBRO_TRANSFERENCIA_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                             "valor" => $pago->monto,
                             "tipo"=> "D"
                         ];
@@ -258,7 +262,7 @@ class ContificoIntegrationController extends Controller
                         $formaCobro = 'TC';
 
                         $dataAsientoCobro['detalles'][] =[
-                            "cuenta_id" => env('CUENTA_COBRO_TARJETA_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "cuenta_id" => env('CUENTA_COBRO_TARJETA_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                             "valor" => $pago->monto,
                             "tipo"=> "D"
                         ];
@@ -268,7 +272,7 @@ class ContificoIntegrationController extends Controller
                         $formaCobro = 'EF';
 
                         $dataAsientoCobro['detalles'][] =[
-                            "cuenta_id" => env('CUENTA_COBRO_EFECTIVO_CONTIFICO_'.strtoupper($company->connect).'_'.$v->id_sucursal),
+                            "cuenta_id" => env('CUENTA_COBRO_EFECTIVO_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                             "valor" => $pago->monto,
                             "tipo"=> "D"
                         ];
@@ -325,6 +329,9 @@ class ContificoIntegrationController extends Controller
                     }
 
                 }
+
+                dump('Factura '.$v->secuentcial.' enviada al contifico');
+
                 // FIN CREAR LOS ASIENTOS DEL COBRO
 
                 /* dump('$codigoHttp: '.$response['http']);
@@ -473,7 +480,7 @@ class ContificoIntegrationController extends Controller
                 Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico("Se han procesado ".count($ventasNc)." notas de crédito en el contifico de la empresa ".$request->company)); */
 
         } catch (\Exception $e) {
-
+            dd($e->getMessage());
             Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($e->getMessage(),false));
 
         }
