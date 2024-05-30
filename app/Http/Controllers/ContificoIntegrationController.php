@@ -70,7 +70,7 @@ class ContificoIntegrationController extends Controller
                 ->where('id_venta',$v->id_venta)
                 ->where('id_sucursal',$v->id_sucursal)
                 ->whereNotIn('id_impuesto',[1,2,3])->sum('valor_base');
-              
+
                 $iva =  $connection->table('venta_base_impuesto')
                 ->where('id_venta',$v->id_venta)
                 ->where('id_sucursal',$v->id_sucursal)
@@ -103,7 +103,7 @@ class ContificoIntegrationController extends Controller
                         "tipo"=> "N",
                         "email"=> $v->correo_comprador
                     ],
-                    "descripcion" => "FACTURA ".(int)substr($v->secuencial,30,9),
+                    "descripcion" => "FACTURA ".(substr($v->secuencial,24,3)."-".substr($v->secuencial,27,3)."-".substr($v->secuencial,30,9)),
                     "subtotal_0" => number_format($base0,2,'.',''),
                     "subtotal_12" => number_format($baseMayor0,2,'.',''),
                     "iva" => number_format($iva,2,'.',''),
@@ -123,7 +123,7 @@ class ContificoIntegrationController extends Controller
                         ]
                     ]
                 ];
-                dd( $dataFactura);
+               // dd($dataFactura);
                 //SE CREA LA FACTURA
                 $resFact = self::curlStoreTransaction($dataFactura,$header,env('CREAR_FACTURA_CONTIFICO'));
 
@@ -290,27 +290,36 @@ class ContificoIntegrationController extends Controller
                 }
                 //FIN DATOS PARA EL ASIENTO CONTABLE DE LOS COBROS
 
-                $resPago = self::curlStoreTransaction($dataFactura,$header,env('CREAR_FACTURA_CONTIFICO').$resFact['response']->id."/cobro/");
+                //CREAR Y CRUZAR COBROS DE LA FACTURA
 
-                if($resPago['response'] == null){
+                foreach ($datosCobros as  $cobro) {
 
-                    if($resPago['http'] != 201){
+                    $resCobro = self::curlStoreTransaction($cobro,$header,(env('CREAR_FACTURA_CONTIFICO').$resFact['response']->id."/cobro/"));
 
-                        $html ="<div>Ha ocurrido un inconveniente al momento de crear el pago de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
-                        $html.="<div><b>Error:</b> ".$resPago['response']->mensaje." </div>" ;
-                        $html.="<div><b>Codigo de error contifico:</b> ".$resPago['response']->cod_error."</div>";
-                        throw new Exception($html);
+                    if($resCobro['response'] == null){
 
-                    }else{
+                        if($resCobro['http'] != 201){
 
-                        sleep(2);
+                            $html ="<div>Ha ocurrido un inconveniente al momento de crear el pago de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                            $html.="<div><b>Error:</b> ".$resCobro['response']->mensaje." </div>" ;
+                            $html.="<div><b>Codigo de error contifico:</b> ".$resCobro['response']->cod_error."</div>";
+                            throw new Exception($html);
+
+                        }else{
+
+                            sleep(2);
+
+                        }
 
                     }
 
                 }
+
+
                 //FIN CREAR Y CRUZAR COBROS DE LA FACTURA
 
                 // CREAR LOS ASIENTOS DEL COBRO
+
                 $resAsientoFact = self::curlStoreTransaction($dataAsientoCobro,$header,env('CREAR_ASIENTO_CONTIFICO'));
 
                 if($resAsientoFact['response'] == null){
@@ -330,7 +339,7 @@ class ContificoIntegrationController extends Controller
 
                 }
 
-                dump('Factura '.$v->secuentcial.' enviada al contifico');
+                dump('Factura '.$v->secuencial.' enviada al contifico');
 
                 // FIN CREAR LOS ASIENTOS DEL COBRO
 
