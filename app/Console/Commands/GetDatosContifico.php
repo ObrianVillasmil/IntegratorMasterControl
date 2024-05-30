@@ -48,7 +48,7 @@ class GetDatosContifico extends Command
 
         $data = $this->choice(
             'Que datos desea obtener.?',
-            ['Plan de cuentas', 'Centro de costos']
+            ['Plan de cuentas', 'Centro de costos','Productos']
         );
 
         try {
@@ -71,6 +71,10 @@ class GetDatosContifico extends Command
             }else if($data == 'Centro de costos'){
 
                 $url = env('CONSULTAR_CENTROS_COSTO_CONTIFICO');
+
+            }else if($data == 'Productos'){
+
+                $url = env('CONSULTAR_PRODUCTOS_CONTIFICO');
 
             }
 
