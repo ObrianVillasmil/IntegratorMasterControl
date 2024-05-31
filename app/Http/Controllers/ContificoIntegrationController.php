@@ -35,7 +35,7 @@ class ContificoIntegrationController extends Controller
             ->where('estado',true)
             ->where('venta_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
-            ->where(DB::raw("fecha::date"),'>=','2024-03-25')
+            ->where(DB::raw("fecha::date"),'>=','2024-05-12')
             ->whereNull('secuencial_nota_credito')
             ->whereNotNull('secuencial')->get();
 
@@ -342,11 +342,6 @@ class ContificoIntegrationController extends Controller
                 dump('Factura '.$v->secuencial.' enviada al contifico');
 
                 // FIN CREAR LOS ASIENTOS DEL COBRO
-
-                /* dump('$codigoHttp: '.$response['http']);
-                dump('response');
-                dump($response); */
-
             }
 
             if(count($ventas))
@@ -354,16 +349,21 @@ class ContificoIntegrationController extends Controller
 
 
             /// NOTAS DE CREDITO ///
-            /* $ventasNc = $connection->table('venta')
+            $ventasNc = $connection->table('venta')
             ->where('estado',false)
             ->where('cn_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
             ->whereNotNull(['secuencial_nota_credito','json_cn','id_externo'])
-            ->where("CAST(json_cn->>'date_doc' AS DATE)",'>=','2024-05-24')->get();
+            ->whereRaw("CAST(json_cn->>'date_doc' AS DATE) >= ?",['2024-05-12'])->get();
 
             foreach ($ventasNc as $vnc) {
 
                 $cn = json_decode($vnc->json_cn);
+
+                $productContifico = env('PRODUCTO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal);
+
+                if($productContifico == null || $productContifico == '')
+                    throw new Exception("No se obtuvo el producto Contifico al momento de enviar la nota de crédito ".$cn->access_key." de la venta ".$v->secuencial." de la empresa ".$company->connect." para la tienda ".$v->id_sucursal);
 
                 $cedula = '';
                 $ruc = '';
@@ -382,26 +382,40 @@ class ContificoIntegrationController extends Controller
 
                 $base0 = 0;
                 $baseMayor0 = 0;
+                $price = 0;
+                $servicio = 0;
+                $propina = 0;
+                $porcentajeIva = 0;
 
                 foreach ($cn->details as $detCn) {
 
-                    foreach ($detCn->credit_note_item_tax as $tax) {
+                    if($detCn->description == 'Servicio'){
 
-                        if($tax->tariff == 0){
+                        $servicio += ($detCn->unit_price * $detCn->quantity) - $detCn->discount;
 
-                            $base0+= (float)$tax->tax_base;
+                    }else{
 
-                        }else{
+                        $price+= ($detCn->unit_price * $detCn->quantity) - $detCn->discount;
+                        $porcentajeIva = $detCn->credit_note_item_tax[0]->tariff;
 
-                            $baseMayor0+= (float)$tax->tax_base;
+                        foreach ($detCn->credit_note_item_tax as $tax) {
+
+                            if($tax->tariff == 0){
+
+                                $base0+= (float)$tax->tax_base;
+
+                            }else{
+
+                                $baseMayor0+= (float)$tax->tax_base;
+
+                            }
 
                         }
 
                     }
-
                 }
 
-                $data = [
+                $dataNc = [
                     "pos" => $company->token2,
                     "fecha_emision" =>  Carbon::parse((string)$cn->date_doc)->format('d/m/Y'),
                     "tipo_documento" => "NCT",
@@ -410,12 +424,13 @@ class ContificoIntegrationController extends Controller
                     "documento" => substr((string)$cn->access_key,24,3)."-".substr((string)$cn->access_key,27,3)."-".substr((string)$cn->access_key,30,9),
                     "autorizacion" => (string)$cn->access_key,
                     "estado" => "P",
+                    "servicio" => number_format($servicio,2,'.',''),
                     "cliente" => [
                         "ruc"=>  $ruc,
                         "cedula"=>  $cedula,
                         "razon_social"=> (string)$cn->buyer_business_name,
-                        "telefonos"=> $v->telefono_comprador,
-                        "direccion"=> $v->direccion_comprador,
+                        "telefonos"=> $vnc->telefono_comprador,
+                        "direccion"=> $vnc->direccion_comprador,
                         "tipo"=> "N",
                         "email"=> (string)$cn->emails
                     ],
@@ -424,34 +439,22 @@ class ContificoIntegrationController extends Controller
                     "subtotal_12" => number_format($baseMayor0,2,'.',''),
                     "iva" => number_format((float)$cn->modified_value - (float)$cn->total_without_tax,2,'.',''),
                     "total" => number_format((float)$cn->modified_value,2,'.',''),
-                    "detalles"=> [],
+                    "detalles"=> [
+                        [
+                            "producto_id" => $productContifico,
+                            "cantidad" => 1,
+                            "precio" => number_format($price,2,'.',''),
+                            "porcentaje_iva" => $porcentajeIva,
+                            "porcentaje_descuento" => 0.00,
+                            "base_cero" =>  number_format($base0,2,'.',''),
+                            "base_gravable" => number_format($baseMayor0,2,'.',''),
+                            "base_no_gravable" => 0.00
+                        ]
+                    ],
                 ];
 
-                foreach ($cn->details as $detCn){
-
-                    //VERIFICAR LO DEL PRODUCTO DEL SERVICIO
-
-                    $idProduto = (int)substr(explode('-',$detCn->main_code)[1],-6);
-                    $tipoProducto = substr(explode('-',$detCn->main_code)[1],0,1);
-
-                    $pcp = $connection->table('pos_configuracion_producto')
-                    ->where('tabla',($tipoProducto == 'R' ? 'receta' : 'item'))
-                    ->where('id_producto',$idProduto)->first();
-
-                    $data['detalles'][] = [
-                        "producto_id" => $pcp->id_externo,
-                        "cantidad" => number_format((float)$cn->quantity,2,'.',''),
-                        "precio" => number_format((float)$cn->unit_price,2,'.',''),
-                        "porcentaje_iva" => $detCn[0]->tariff,
-                        "porcentaje_descuento" => 0.00,
-                        "base_cero" => $baseCero,
-                        "base_gravable" => $baseGravable,
-                        "base_no_gravable" => 0.00
-                    ];
-
-                }
-
-                $response = self::curlStoreTransaction($data,$header);
+                //dd($dataNc);
+                $response = self::curlStoreTransaction($dataNc,$header,env('CREAR_FACTURA_CONTIFICO'));
 
                 if($response['response'] != null){
 
@@ -464,9 +467,9 @@ class ContificoIntegrationController extends Controller
 
                     }else{
 
-                        $html = "<div>Ha ocurrido un inconveniente al momento de enviar la nota de crédito <b>".$vnc->access_key."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
-                        $html.=" <div><b>Error:</b> ".$response['response']->mensaje." </div>" ;
-                        $html.= " <div><b>Codigo de error contifico:</b> ".$response['response']->cod_error."</div>";
+                        $html = "<div>Ha ocurrido un inconveniente al momento de enviar la nota de crédito <b>".$cn->access_key."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                        $html.= "<div><b>Error:</b> ".$response['response']->mensaje." </div>" ;
+                        $html.= "<div><b>Codigo de error contifico:</b> ".$response['response']->cod_error."</div>";
                         throw new Exception($html);
 
                     }
@@ -479,17 +482,65 @@ class ContificoIntegrationController extends Controller
 
                 }
 
-                dump('$codigoHttp: '.$response['http']);
-                dump('response');
-                dump($response);
+                //SE CREAN LOS ASIENTOS DE LA NOTA DE CREDITO
+                $dataAsiento = [
+                    "fecha" => Carbon::parse((string)$cn->date_doc)->format('d/m/Y'),
+                    "glosa" => "NOTA DE CREDITO ".$dataNc['documento']." - Factura ".$cn->mofied_doc_num,
+                    "gasto_no_deducible"=> 0,
+                    "prefijo"=> "ASI",
+                    "detalles" => [
+                        [
+                            "cuenta_id" => env('CUENTA_CLIENTES_VENTAS_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
+                            "valor" => $cn->modified_value,
+                            "tipo"=> "H",
+                        ],
+                        [
+                            "cuenta_id" => env('CUENTA_IVA_VENTAS_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
+                            "valor" => number_format($cn->modified_value - $cn->total_without_tax,2,'.',''),
+                            "tipo"=> "D",
+                        ],
+                        [
+                            "cuenta_id" => env('CUENTA_PRODUCTO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
+                            "valor" => number_format($price,2,'.',''),
+                            "tipo"=> "D",
+                            "centro_costo_id" => env('CENTRO_COSTO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal)
+                        ]
+                    ]
+                ];
+
+                if($vnc->servicio > 0){
+
+                    $detAsiento['detalles'][] = [
+                        "cuenta_id" => env('CUENTA_SERVICO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
+                        "valor" => $servicio,
+                        "tipo"=> "D",
+                    ];
+
+                }
+
+                if($vnc->propina > 0){
+
+                    $detAsiento['detalles'][] = [
+                        "cuenta_id" => env('CUENTA_PROPINA_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
+                        "valor" => number_format($propina,2,'.',''),
+                        "tipo"=> "D",
+                    ];
+
+                }
+
+                $resAsientoFact = self::curlStoreTransaction($dataAsiento,$header,env('CREAR_ASIENTO_CONTIFICO'));
+                //FIN SE CREAN LOS ASIENTOS DE LA NOTA DE CREDITO
+
+
+                dump('Nota de crédito '.$cn->access_key.' enviada al contifico');
 
             }
 
             if(count($ventasNc))
-                Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico("Se han procesado ".count($ventasNc)." notas de crédito en el contifico de la empresa ".$request->company)); */
+                Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico("Se han procesado ".count($ventasNc)." notas de crédito en el contifico de la empresa ".$request->company));
 
         } catch (\Exception $e) {
-            dd($e->getMessage());
+            dd($e->getMessage()."\nEn la línea: ".$e->getLine());
             Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($e->getMessage(),false));
 
         }
