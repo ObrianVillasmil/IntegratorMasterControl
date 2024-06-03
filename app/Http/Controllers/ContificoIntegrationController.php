@@ -38,7 +38,7 @@ class ContificoIntegrationController extends Controller
             ->where(DB::raw("fecha::date"),'>=','2024-05-12')
             ->whereNull('secuencial_nota_credito')
             ->whereNotNull('secuencial')->get();
-
+            //dd($ventas);
             foreach ($ventas as $v) {
 
                 $productContifico = env('PRODUCTO_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal);
@@ -146,6 +146,7 @@ class ContificoIntegrationController extends Controller
                         $html ="<div>Ha ocurrido un inconveniente al momento de enviar la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
                         $html.="<div><b>Error:</b> ".$resFact['response']->mensaje." </div>" ;
                         $html.="<div><b>Codigo de error contifico:</b> ".$resFact['response']->cod_error."</div>";
+                        $html.="<div><b>DATA:</b> ".json_encode($dataFactura)."</div>";
                         throw new Exception($html);
 
                     }
@@ -212,6 +213,7 @@ class ContificoIntegrationController extends Controller
                         $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
                         $html.="<div><b>Error:</b> ".$resAsientoFact['response']->mensaje." </div>" ;
                         $html.="<div><b>Codigo de error contifico:</b> ".$resAsientoFact['response']->cod_error."</div>";
+                        $html.="<div><b>DATA:</b> ".json_encode($dataAsiento)."</div>";
                         throw new Exception($html);
 
                     }else{
@@ -329,6 +331,7 @@ class ContificoIntegrationController extends Controller
                         $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de los pagos de la factura <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> en contifico </div>";
                         $html.="<div><b>Error:</b> ".$resAsientoFact['response']->mensaje." </div>" ;
                         $html.="<div><b>Codigo de error contifico:</b> ".$resAsientoFact['response']->cod_error."</div>";
+                        $html.="<div><b>DATA:</b> ".json_encode($dataAsientoCobro)."</div>";
                         throw new Exception($html);
 
                     }else{
@@ -470,6 +473,7 @@ class ContificoIntegrationController extends Controller
                         $html = "<div>Ha ocurrido un inconveniente al momento de enviar la nota de crédito <b>".$cn->access_key."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
                         $html.= "<div><b>Error:</b> ".$response['response']->mensaje." </div>" ;
                         $html.= "<div><b>Codigo de error contifico:</b> ".$response['response']->cod_error."</div>";
+                        $html.="<div><b>DATA:</b> ".json_encode($dataNc)."</div>";
                         throw new Exception($html);
 
                     }
@@ -529,6 +533,27 @@ class ContificoIntegrationController extends Controller
                 }
 
                 $resAsientoFact = self::curlStoreTransaction($dataAsiento,$header,env('CREAR_ASIENTO_CONTIFICO'));
+
+                if($response['response'] != null){
+
+                    if($response['http'] != 201){
+
+                        $html = "<div>Ha ocurrido un inconveniente al momento de crear la  la nota de crédito <b>".$cn->access_key."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                        $html.= "<div><b>Error:</b> ".$response['response']->mensaje." </div>" ;
+                        $html.= "<div><b>Codigo de error contifico:</b> ".$response['response']->cod_error."</div>";
+                        $html.="<div><b>DATA:</b> ".json_encode($dataAsiento)."</div>";
+                        throw new Exception($html);
+
+                    }
+
+                    sleep(2);
+
+                }else{
+
+                    throw new Exception("No se obtuvo respuesta de Contifico al momento de enviar la nota de crédito <b>".$vnc->access_key." de la empresa ".$request->company);
+
+                }
+
                 //FIN SE CREAN LOS ASIENTOS DE LA NOTA DE CREDITO
 
 
@@ -540,8 +565,8 @@ class ContificoIntegrationController extends Controller
                 Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico("Se han procesado ".count($ventasNc)." notas de crédito en el contifico de la empresa ".$request->company));
 
         } catch (\Exception $e) {
-            dd($e->getMessage()."\nEn la línea: ".$e->getLine());
             Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($e->getMessage(),false));
+            dd($e->getMessage()."\nEn la línea: ".$e->getLine());
 
         }
 
