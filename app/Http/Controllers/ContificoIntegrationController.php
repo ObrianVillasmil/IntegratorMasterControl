@@ -18,6 +18,8 @@ class ContificoIntegrationController extends Controller
 
             $accionesFallidas = [];
 
+            $accionesCompletadas = [];
+
             $company = Company::where('name',$request->company)->first();
 
             $header = [
@@ -27,7 +29,8 @@ class ContificoIntegrationController extends Controller
 
             $connection = DB::connection($company->connect);
 
-            $idBranchOffice = $connection->table('empresa as e')->join('sucursal as s',function($j) {
+            $idBranchOffice = $connection->table('empresa as e')
+            ->join('sucursal as s',function($j) {
 
                 $j->on('e.id_empresa','s.id_empresa')->where('s.estatus',true);
 
@@ -38,9 +41,9 @@ class ContificoIntegrationController extends Controller
             ->where('venta_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
             ->where(DB::raw("fecha::date"),'>=','2024-06-04')
-            ->whereNull('secuencial_nota_credito')
+            ->whereNull(['secuencial_nota_credito','id_externo'])
             ->whereNotNull('secuencial')->get();
-            //dd($ventas);
+           // dd($ventas);
             foreach ($ventas as $v) {
 
                 $productContifico = env('PRODUCTO_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal);
@@ -66,12 +69,12 @@ class ContificoIntegrationController extends Controller
                 $base0 = $connection->table('venta_base_impuesto')
                 ->where('id_venta',$v->id_venta)
                 ->where('id_sucursal',$v->id_sucursal)
-                ->where('id_impuesto',1)->sum('valor_base');
+                ->where('id_impuesto',1)->sum('sub_total');
 
                 $baseMayor0 = $connection->table('venta_base_impuesto')
                 ->where('id_venta',$v->id_venta)
                 ->where('id_sucursal',$v->id_sucursal)
-                ->whereNotIn('id_impuesto',[1,2,3])->sum('valor_base');
+                ->whereNotIn('id_impuesto',[1,2,3])->sum('sub_total');
 
                 $iva =  $connection->table('venta_base_impuesto')
                 ->where('id_venta',$v->id_venta)
@@ -81,12 +84,7 @@ class ContificoIntegrationController extends Controller
                 $prod = $connection->table('detalle_venta')
                 ->where('id_venta',$v->id_venta)
                 ->where('id_sucursal',$v->id_sucursal)
-                ->select(
-                    DB::raw("MAX(impuesto) AS impuesto"),
-                    DB::raw("ROUND(SUM(precio*cantidad)::numeric,2) AS precio")
-                )->first();
-
-                $prod->precio -= ($v->descuento1 + $v->descuento2);
+                ->select('impuesto')->first();
 
                 $dataFactura = [
                     "pos" => $company->token2,
@@ -96,6 +94,13 @@ class ContificoIntegrationController extends Controller
                     "estado" => "P",
                     "autorizacion" => $v->secuencial,
                     "caja_id" => null,
+                    "descripcion" => "FACTURA ".(substr($v->secuencial,24,3)."-".substr($v->secuencial,27,3)."-".substr($v->secuencial,30,9)),
+                    "subtotal_0" => number_format($base0,2,'.',''),
+                    "subtotal_12" => number_format($baseMayor0,2,'.',''),
+                    "iva" => number_format($iva,2,'.',''),
+                    "ice" =>0.00,
+                    "servicio" => number_format($v->servicio,2,'.',''),
+                    "total" => number_format($v->total_a_pagar,2,'.',''),
                     "cliente" => [
                         "ruc"=>  $ruc,
                         "cedula"=>  $cedula,
@@ -105,18 +110,11 @@ class ContificoIntegrationController extends Controller
                         "tipo"=> "N",
                         "email"=> $v->correo_comprador
                     ],
-                    "descripcion" => "FACTURA ".(substr($v->secuencial,24,3)."-".substr($v->secuencial,27,3)."-".substr($v->secuencial,30,9)),
-                    "subtotal_0" => number_format($base0,2,'.',''),
-                    "subtotal_12" => number_format($baseMayor0,2,'.',''),
-                    "iva" => number_format($iva,2,'.',''),
-                    "ice" =>0.00,
-                    "servicio" => number_format($v->servicio,2,'.',''),
-                    "total" => number_format($v->total_a_pagar-$v->propina,2,'.',''),
                     "detalles"=> [
                         [
                             "producto_id" => $productContifico,
                             "cantidad" => 1,
-                            "precio" => number_format($prod->precio,2,'.',''),
+                            "precio" => $baseMayor0,
                             "porcentaje_iva" => $prod->impuesto,
                             "porcentaje_descuento" => 0.00,
                             "base_cero" => $base0,
@@ -126,6 +124,21 @@ class ContificoIntegrationController extends Controller
                     ]
 
                 ];
+
+                if($v->propina > 0){
+
+                    $dataFactura['detalles'][] = [
+                        "cuenta_id" => env('CUENTA_PROPINA_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
+                        "cantidad" => 1,
+                        "precio" => $v->propina,
+                        "porcentaje_iva" => 0,
+                        "porcentaje_descuento" => 0.00,
+                        "base_cero" => $v->propina,
+                        "base_gravable" => 0.00,
+                        "base_no_gravable" => 0.00
+                    ];
+
+                }
                 //dd($dataFactura);
                 //SE CREA LA FACTURA
                 $resFact = self::curlStoreTransaction($dataFactura,$header,env('CREAR_FACTURA_CONTIFICO'));
@@ -194,16 +207,7 @@ class ContificoIntegrationController extends Controller
 
                         if($resAsientoFact['response'] != null){
 
-                            if($resAsientoFact['http'] != 201){
-
-                                $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
-                                $html.="<div><b>Error:</b> ".$resAsientoFact['response']->mensaje." </div>" ;
-                                $html.="<div><b>Codigo de error contifico:</b> ".$resAsientoFact['response']->cod_error."</div>";
-                                $html.="<div><b>DATA:</b> ".json_encode($dataAsientoFact)."</div>";
-                                $accionesFallidas[] = $html;
-                                //throw new Exception($html);
-
-                            }else{
+                            if($resAsientoFact['http'] == 201){
 
                                 sleep(2);
 
@@ -269,64 +273,83 @@ class ContificoIntegrationController extends Controller
                                 //FIN DATOS PARA EL ASIENTO CONTABLE DE LOS COBROS
 
                                 //CREAR Y CRUZAR COBROS DE LA FACTURA
-                                foreach ($datosCobros as  $cobro) {
+                                if(count($datosCobros)){
 
-                                    $resCobro = self::curlStoreTransaction($cobro,$header,(env('CREAR_FACTURA_CONTIFICO').$resFact['response']->id."/cobro/"));
+                                    foreach ($datosCobros as  $cobro) {
 
-                                    if($resCobro['response'] != null){
+                                        $resCobro = self::curlStoreTransaction($cobro,$header,(env('CREAR_FACTURA_CONTIFICO').$resFact['response']->id."/cobro/"));
 
-                                        if($resCobro['http'] != 201){
+                                        if($resCobro['response'] != null){
 
-                                            $html ="<div>Ha ocurrido un inconveniente al momento de crear el pago de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
-                                            $html.="<div><b>Error:</b> ".$resCobro['response']->mensaje." </div>" ;
-                                            $html.="<div><b>Codigo de error contifico:</b> ".$resCobro['response']->cod_error."</div>";
-                                            $accionesFallidas[] = $html;
-                                            //throw new Exception($html);
+                                            if($resCobro['http'] == 201){
 
-                                        }else{
+                                                sleep(2);
 
-                                            sleep(2);
+                                                // CREAR LOS ASIENTOS DEL COBRO
+                                                $resAsientoCobro = self::curlStoreTransaction($dataAsientoCobro,$header,env('CREAR_ASIENTO_CONTIFICO'));
 
-                                            // CREAR LOS ASIENTOS DEL COBRO
-                                            $resAsientoCobro = self::curlStoreTransaction($dataAsientoCobro,$header,env('CREAR_ASIENTO_CONTIFICO'));
+                                                if($resAsientoCobro['response'] != null){
 
-                                            if($resAsientoCobro['response'] != null){
+                                                    if($resAsientoCobro['http'] == 201){
 
-                                                if($resAsientoCobro['http'] != 201){
+                                                        $accionesCompletadas[] = 'Factura '.$v->secuencial.' enviada al contifico';
+                                                        sleep(2);
 
-                                                    $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de los pagos de la factura <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> en contifico </div>";
-                                                    $html.="<div><b>Error:</b> ".$resAsientoCobro['response']->mensaje." </div>" ;
-                                                    $html.="<div><b>Codigo de error contifico:</b> ".$resAsientoCobro['response']->cod_error."</div>";
-                                                    $html.="<div><b>DATA:</b> ".json_encode($dataAsientoCobro)."</div>";
-                                                    $accionesFallidas[] = $html;
-                                                    //throw new Exception($html);
+                                                    }else{
+
+                                                        $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de los pagos de la factura <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> en contifico </div>";
+                                                        $html.="<div><b>Error:</b> ".$resAsientoCobro['response']->mensaje." </div>" ;
+                                                        $html.="<div><b>Codigo de error contifico:</b> ".$resAsientoCobro['response']->cod_error."</div>";
+                                                        $html.="<div><b>DATA:</b> ".json_encode($dataAsientoCobro)."</div>";
+                                                        $accionesFallidas[] = $html;
+                                                        //throw new Exception($html);
+
+                                                    }
 
                                                 }else{
 
-                                                    sleep(2);
-
-                                                    dump('Factura '.$v->secuencial.' enviada al contifico');
+                                                    $accionesFallidas[] = "No se obtuvo respuesta de Contifico al momento de crear el asiento de los cobros de la venta ".$v->secuencial." de la empresa ".$request->company;
+                                                    //throw new Exception("No se obtuvo respuesta de Contifico al momento de crear el asiento de los cobros de la venta ".$v->secuencial." de la empresa ".$request->company);
 
                                                 }
 
+                                                // FIN CREAR LOS ASIENTOS DEL COBRO
+
                                             }else{
 
-                                                throw new Exception("No se obtuvo respuesta de Contifico al momento de crear el asiento de los cobros de la venta ".$v->secuencial." de la empresa ".$request->company);
+                                                $html ="<div>Ha ocurrido un inconveniente al momento de crear el pago de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                                                $html.="<div><b>Error:</b> ".$resCobro['response']->mensaje." </div>" ;
+                                                $html.="<div><b>Codigo de error contifico:</b> ".$resCobro['response']->cod_error."</div>";
+                                                $accionesFallidas[] = $html;
+                                                //throw new Exception($html);
 
                                             }
 
-                                            // FIN CREAR LOS ASIENTOS DEL COBRO
+                                        }else{
+
+                                            $accionesFallidas[] = "No se obtuvo respuesta de Contifico al momento de crear los cobros de la venta ".$v->secuencial." de la empresa ".$request->company;
+                                            //throw new Exception("No se obtuvo respuesta de Contifico al momento de crear los cobros de la venta ".$v->secuencial." de la empresa ".$request->company);
 
                                         }
 
-                                    }else{
-
-                                        throw new Exception("No se obtuvo respuesta de Contifico al momento de crear los cobros de la venta ".$v->secuencial." de la empresa ".$request->company);
-
                                     }
 
+                                }else{
+
+                                    $accionesCompletadas[] = 'Factura '.$v->secuencial.' enviada al contifico';
+
                                 }
+
                                 //FIN CREAR Y CRUZAR COBROS DE LA FACTURA
+
+                            }else{
+
+                                $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                                $html.="<div><b>Error:</b> ".$resAsientoFact['response']->mensaje." </div>" ;
+                                $html.="<div><b>Codigo de error contifico:</b> ".$resAsientoFact['response']->cod_error."</div>";
+                                $html.="<div><b>DATA:</b> ".json_encode($dataAsientoFact)."</div>";
+                                $accionesFallidas[] = $html;
+                                //throw new Exception($html);
 
                             }
 
@@ -344,9 +367,14 @@ class ContificoIntegrationController extends Controller
                         $html.="<div><b>Error:</b> ".$resFact['response']->mensaje." </div>" ;
                         $html.="<div><b>Codigo de error contifico:</b> ".$resFact['response']->cod_error."</div>";
                         $html.="<div><b>DATA:</b> ".json_encode($dataFactura)."</div>";
-                        $accionesFallidas[] = $html;
-                        //throw new Exception($html);
 
+                        $accionesFallidas[] = $html;
+                        $resFact['data'] = $dataFactura;
+
+                        $connection->table('venta')
+                        ->where('id_venta',$v->id_venta)
+                        ->where('id_sucursal',$v->id_sucursal)
+                        ->update(['id_externo' => json_encode($resFact)]);
                     }
 
                 }else{
@@ -358,10 +386,6 @@ class ContificoIntegrationController extends Controller
 
             }
 
-            if(count($ventas))
-                Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico("Se han procesado ".count($ventas)." venta en el contifico de la empresa ".$request->company));
-
-
             /// NOTAS DE CREDITO ///
             $ventasNc = $connection->table('venta')
             ->where('estado',false)
@@ -369,7 +393,7 @@ class ContificoIntegrationController extends Controller
             ->whereIn('id_sucursal',$idBranchOffice)
             ->whereNotNull(['secuencial_nota_credito','json_cn','id_externo'])
             ->whereRaw("CAST(json_cn->>'date_doc' AS DATE) >= ?",['2024-06-04'])->get();
-    
+
             foreach ($ventasNc as $vnc) {
 
                 $cn = json_decode($vnc->json_cn);
@@ -479,101 +503,123 @@ class ContificoIntegrationController extends Controller
                         ->where('id_sucursal',$vnc->id_sucursal)
                         ->update(['cn_confirmada_externo' => true]);
 
+                        sleep(2);
+
+                        //SE CREAN LOS ASIENTOS DE LA NOTA DE CREDITO
+                        $dataAsientoNc = [
+                            "fecha" => Carbon::parse((string)$cn->date_doc)->format('d/m/Y'),
+                            "glosa" => "NOTA DE CREDITO ".$dataNc['documento']." - Factura ".$cn->mofied_doc_num,
+                            "gasto_no_deducible"=> 0,
+                            "prefijo"=> "ASI",
+                            "detalles" => [
+                                [
+                                    "cuenta_id" => env('CUENTA_CLIENTES_VENTAS_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
+                                    "valor" => $cn->modified_value,
+                                    "tipo"=> "H",
+                                ],
+                                [
+                                    "cuenta_id" => env('CUENTA_IVA_VENTAS_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
+                                    "valor" => number_format($cn->modified_value - $cn->total_without_tax,2,'.',''),
+                                    "tipo"=> "D",
+                                ],
+                                [
+                                    "cuenta_id" => env('CUENTA_PRODUCTO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
+                                    "valor" => number_format($price,2,'.',''),
+                                    "tipo"=> "D",
+                                    "centro_costo_id" => env('CENTRO_COSTO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal)
+                                ]
+                            ]
+                        ];
+
+                        if($vnc->servicio > 0){
+
+                            $dataAsientoNc['detalles'][] = [
+                                "cuenta_id" => env('CUENTA_SERVICO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
+                                "valor" => $servicio,
+                                "tipo"=> "D",
+                            ];
+
+                        }
+
+                        if($vnc->propina > 0){
+
+                            $dataAsientoNc['detalles'][] = [
+                                "cuenta_id" => env('CUENTA_PROPINA_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
+                                "valor" => number_format($propina,2,'.',''),
+                                "tipo"=> "D",
+                            ];
+
+                        }
+
+                        $resAsientoFact = self::curlStoreTransaction($dataAsientoNc,$header,env('CREAR_ASIENTO_CONTIFICO'));
+
+                        if($response['response'] != null){
+
+                            if($response['http'] == 201){
+
+                                $accionesCompletadas[] = 'Nota de crédito '.$cn->access_key.' enviada al contifico';
+                                sleep(2);
+
+                            }else{
+
+                                $html = "<div>Ha ocurrido un inconveniente al momento de crear la  la nota de crédito <b>".$cn->access_key."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                                $html.= "<div><b>Error:</b> ".$response['response']->mensaje." </div>" ;
+                                $html.= "<div><b>Codigo de error contifico:</b> ".$response['response']->cod_error."</div>";
+                                $html.="<div><b>DATA:</b> ".json_encode($dataAsientoNc)."</div>";
+                                $accionesFallidas[] = $html;
+                                //throw new Exception($html);
+
+                            }
+
+                        }else{
+
+                            $accionesFallidas[] = "No se obtuvo respuesta de Contifico al momento de enviar la nota de crédito <b>".$vnc->access_key." de la empresa ".$request->company;
+                            //throw new Exception("No se obtuvo respuesta de Contifico al momento de enviar la nota de crédito <b>".$vnc->access_key." de la empresa ".$request->company);
+
+                        }
+
+                        //FIN SE CREAN LOS ASIENTOS DE LA NOTA DE CREDITO
+
                     }else{
 
                         $html = "<div>Ha ocurrido un inconveniente al momento de enviar la nota de crédito <b>".$cn->access_key."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
                         $html.= "<div><b>Error:</b> ".$response['response']->mensaje." </div>" ;
                         $html.= "<div><b>Codigo de error contifico:</b> ".$response['response']->cod_error."</div>";
                         $html.="<div><b>DATA:</b> ".json_encode($dataNc)."</div>";
-                        throw new Exception($html);
+                        $accionesFallidas[] = $html;
+                        //throw new Exception($html);
 
                     }
-
-                    sleep(2);
 
                 }else{
 
                     throw new Exception("No se obtuvo respuesta de Contifico al momento de enviar la nota de crédito <b>".$vnc->access_key." de la empresa ".$request->company);
 
                 }
-
-                //SE CREAN LOS ASIENTOS DE LA NOTA DE CREDITO
-                $dataAsientoNc = [
-                    "fecha" => Carbon::parse((string)$cn->date_doc)->format('d/m/Y'),
-                    "glosa" => "NOTA DE CREDITO ".$dataNc['documento']." - Factura ".$cn->mofied_doc_num,
-                    "gasto_no_deducible"=> 0,
-                    "prefijo"=> "ASI",
-                    "detalles" => [
-                        [
-                            "cuenta_id" => env('CUENTA_CLIENTES_VENTAS_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
-                            "valor" => $cn->modified_value,
-                            "tipo"=> "H",
-                        ],
-                        [
-                            "cuenta_id" => env('CUENTA_IVA_VENTAS_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
-                            "valor" => number_format($cn->modified_value - $cn->total_without_tax,2,'.',''),
-                            "tipo"=> "D",
-                        ],
-                        [
-                            "cuenta_id" => env('CUENTA_PRODUCTO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
-                            "valor" => number_format($price,2,'.',''),
-                            "tipo"=> "D",
-                            "centro_costo_id" => env('CENTRO_COSTO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal)
-                        ]
-                    ]
-                ];
-
-                if($vnc->servicio > 0){
-
-                    $dataAsientoNc['detalles'][] = [
-                        "cuenta_id" => env('CUENTA_SERVICO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
-                        "valor" => $servicio,
-                        "tipo"=> "D",
-                    ];
-
-                }
-
-                if($vnc->propina > 0){
-
-                    $dataAsientoNc['detalles'][] = [
-                        "cuenta_id" => env('CUENTA_PROPINA_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
-                        "valor" => number_format($propina,2,'.',''),
-                        "tipo"=> "D",
-                    ];
-
-                }
-
-                $resAsientoFact = self::curlStoreTransaction($dataAsientoNc,$header,env('CREAR_ASIENTO_CONTIFICO'));
-
-                if($response['response'] != null){
-
-                    if($response['http'] != 201){
-
-                        $html = "<div>Ha ocurrido un inconveniente al momento de crear la  la nota de crédito <b>".$cn->access_key."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
-                        $html.= "<div><b>Error:</b> ".$response['response']->mensaje." </div>" ;
-                        $html.= "<div><b>Codigo de error contifico:</b> ".$response['response']->cod_error."</div>";
-                        $html.="<div><b>DATA:</b> ".json_encode($dataAsientoNc)."</div>";
-                        throw new Exception($html);
-
-                    }
-
-                    sleep(2);
-
-                }else{
-
-                    throw new Exception("No se obtuvo respuesta de Contifico al momento de enviar la nota de crédito <b>".$vnc->access_key." de la empresa ".$request->company);
-
-                }
-
-                //FIN SE CREAN LOS ASIENTOS DE LA NOTA DE CREDITO
-
-
-                dump('Nota de crédito '.$cn->access_key.' enviada al contifico');
 
             }
 
-            if(count($ventasNc))
-                Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico("Se han procesado ".count($ventasNc)." notas de crédito en el contifico de la empresa ".$request->company));
+            if(count($accionesCompletadas)){
+
+                $successHtml = "Se han enviado ".count($accionesCompletadas)." de ".(count($ventas)+count($ventasNc))." documentos al contifico de la empresa ".$request->company." \n";
+
+                foreach($accionesCompletadas as $ac)
+                    $successHtml.= "<div>".$ac."</div>";
+
+                Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($successHtml));
+
+            }
+
+            if(count($accionesFallidas)){
+
+                $htmlError = "Han ocurrido los siguiente inconvenientes al enviar las siguiente venta al contifico \n";
+
+                foreach ($accionesFallidas as $af)
+                    $htmlError.= "<div>".$af."</div>";
+
+                Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($htmlError,false));
+
+            }
 
         } catch (\Exception $e) {
             Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($e->getMessage(),false));
@@ -606,6 +652,29 @@ class ContificoIntegrationController extends Controller
             'response' => $response
         ];
 
+    }
+
+    static function consultarFactura() {
+
+        $curlClient = curl_init();
+
+        $header = [
+            'Content-Type' => 'application/json',
+            'Authorization: FrguR1kDpFHaXHLQwplZ2CwTX3p8p9XHVTnukL98V5U'
+        ];
+
+        curl_setopt($curlClient, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($curlClient, CURLOPT_URL, 'https://api.contifico.com/sistema/api/v1/documento/gQbWnojwW6fmoa6w/');
+        curl_setopt($curlClient, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($curlClient, CURLOPT_CONNECTTIMEOUT, 30);
+        $response = curl_exec($curlClient);
+
+        $codigoHttp = curl_getinfo($curlClient, CURLINFO_HTTP_CODE);
+
+        curl_close($curlClient);
+
+        dd($codigoHttp,$response);
+        //
     }
 
 }
