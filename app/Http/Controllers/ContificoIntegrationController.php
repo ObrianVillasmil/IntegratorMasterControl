@@ -143,7 +143,6 @@ class ContificoIntegrationController extends Controller
 
                 }
 
-
                 //dd($dataFactura);
                 //SE CREA LA FACTURA
                 $resFact = self::curlStoreTransaction($dataFactura,$header,env('CREAR_FACTURA_CONTIFICO'));
