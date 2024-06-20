@@ -194,7 +194,7 @@ class ContificoIntegrationController extends Controller
 
                 }
 
-                if($v->propina > 0){
+                /* if($v->propina > 0){
 
                     $dataAsientoFact['detalles'][] = [
                         "cuenta_id" => env('CUENTA_PROPINA_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
@@ -202,7 +202,7 @@ class ContificoIntegrationController extends Controller
                         "tipo"=> "H",
                     ];
 
-                }
+                } */
 
                 $resAsientoFact = self::curlStoreTransaction($dataAsientoFact,$header,env('CREAR_ASIENTO_CONTIFICO'));
 
