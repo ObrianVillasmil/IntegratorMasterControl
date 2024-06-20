@@ -420,7 +420,6 @@ class ContificoIntegrationController extends Controller
                 $baseMayor0 = 0;
                 $price = 0;
                 $servicio = 0;
-                $propina = 0;
                 $porcentajeIva = 0;
 
                 foreach ($cn->details as $detCn) {
@@ -534,16 +533,6 @@ class ContificoIntegrationController extends Controller
                             $dataAsientoNc['detalles'][] = [
                                 "cuenta_id" => env('CUENTA_SERVICO_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
                                 "valor" => $servicio,
-                                "tipo"=> "D",
-                            ];
-
-                        }
-
-                        if($vnc->propina > 0){
-
-                            $dataAsientoNc['detalles'][] = [
-                                "cuenta_id" => env('CUENTA_PROPINA_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
-                                "valor" => number_format($propina,2,'.',''),
                                 "tipo"=> "D",
                             ];
 
