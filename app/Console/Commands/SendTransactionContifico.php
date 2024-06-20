@@ -43,6 +43,7 @@ class SendTransactionContifico extends Command
 
         if($company != null){
 
+            //ContificoIntegrationController::consultarFactura();
             ContificoIntegrationController::sendInvoices(new Request(['company' => $company]));
 
         }else{
@@ -53,4 +54,5 @@ class SendTransactionContifico extends Command
 
 
     }
+
 }
