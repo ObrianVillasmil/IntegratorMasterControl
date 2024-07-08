@@ -87,7 +87,7 @@ class ContificoIntegrationController extends Controller
                 ->select('impuesto')->first();
 
                 $dataFactura = [
-                    "pos" => $company->token2,
+                    "pos" => env('API_POS_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                     "fecha_emision" =>  Carbon::parse($v->fecha)->format('d/m/Y'),
                     "tipo_documento" => "FAC",
                     "documento" => substr($v->secuencial,24,3)."-".substr($v->secuencial,27,3)."-".substr($v->secuencial,30,9),
@@ -222,7 +222,7 @@ class ContificoIntegrationController extends Controller
                                         "prefijo"=> "ASI",
                                         "detalles" => [
                                             [
-                                                "cuenta_id" => env('CUENTA_COBRO_CONTRAPARTIDA_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
+                                                "cuenta_id" => env('CUENTA_COBRO_PARTIDADOBLE_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                                                 "valor" => $dataFactura['total'],
                                                 "tipo"=> "H",
                                             ],
@@ -451,7 +451,7 @@ class ContificoIntegrationController extends Controller
                 }
 
                 $dataNc = [
-                    "pos" => $company->token2,
+                    "pos" => env('API_POS_CONTIFICO_'.strtoupper($company->name).'_'.$vnc->id_sucursal),
                     "fecha_emision" =>  Carbon::parse((string)$cn->date_doc)->format('d/m/Y'),
                     "tipo_documento" => "NCT",
                     "documento_relacionado_id" => $vnc->id_externo,
