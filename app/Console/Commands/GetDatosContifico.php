@@ -51,6 +51,15 @@ class GetDatosContifico extends Command
             ['Plan de cuentas', 'Centro de costos','Productos']
         );
 
+        if($data == 'Productos'){
+
+            $page = $this->ask('Ingrese la página a consultar');
+
+            while($page == null || !is_numeric($page))
+                $page = $this->ask('Ingrese con un número la página a consultar');
+
+        }
+
         try {
 
             $company = Company::where('name',$company)->first();
@@ -74,7 +83,7 @@ class GetDatosContifico extends Command
 
             }else if($data == 'Productos'){
 
-                $url = env('CONSULTAR_PRODUCTOS_CONTIFICO');
+                $url = env('CONSULTAR_PRODUCTOS_CONTIFICO').'?page='.$page;
 
             }
 
