@@ -40,10 +40,10 @@ class ContificoIntegrationController extends Controller
             ->where('estado',true)
             ->where('venta_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
-            ->where(DB::raw("fecha::date"),'>=','2024-06-04')
+            ->where(DB::raw("fecha::date"),'>=','2024-06-03')
             ->whereNull(['secuencial_nota_credito','id_externo'])
             ->whereNotNull('secuencial')->get();
-           // dd($ventas);
+            //dd($ventas);
             foreach ($ventas as $v) {
 
                 $productContifico = env('PRODUCTO_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal);
@@ -90,6 +90,7 @@ class ContificoIntegrationController extends Controller
                     "pos" => env('API_POS_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                     "fecha_emision" =>  Carbon::parse($v->fecha)->format('d/m/Y'),
                     "tipo_documento" => "FAC",
+                    "tipo_registro" => "CLI",
                     "documento" => substr($v->secuencial,24,3)."-".substr($v->secuencial,27,3)."-".substr($v->secuencial,30,9),
                     "estado" => "P",
                     "autorizacion" => $v->secuencial,
@@ -129,7 +130,7 @@ class ContificoIntegrationController extends Controller
                     $dataFactura["adicional1"] = 'Propina USD'.$v->propina;
 
                     $pagosVenta = $connection->table('venta_tipo_pago as vtp')
-                    ->join('tipo_pago as tp','tp.id_tipo_pago = vtp.id_tipo_pago')
+                    ->join('tipo_pago as tp','tp.id_tipo_pago','vtp.id_tipo_pago')
                     ->where('id_venta', $v->id_venta)
                     ->where('id_sucursal', $v->id_sucursal)
                     ->select('vtp.*','tp.nombre')->get();
@@ -170,7 +171,7 @@ class ContificoIntegrationController extends Controller
                             "detalles" => [
                                 [
                                     "cuenta_id" => env('CUENTA_CLIENTES_VENTAS_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
-                                    "valor" => $v->total_a_pagar,
+                                    "valor" => number_format($v->total_a_pagar-$v->propina,2,'.',''),
                                     "tipo"=> "D",
                                 ],
                                 [
@@ -296,9 +297,8 @@ class ContificoIntegrationController extends Controller
                                                     }else{
 
                                                         $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de los pagos de la factura <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> en contifico </div>";
-                                                        $html.="<div><b>Error:</b> ".$resAsientoCobro['response']->mensaje." </div>" ;
-                                                        $html.="<div><b>Codigo de error contifico:</b> ".$resAsientoCobro['response']->cod_error."</div>";
-                                                        $html.="<div><b>DATA:</b> ".json_encode($dataAsientoCobro)."</div>";
+                                                        $html.="<div><b>DATA RECIBIDA:</b> ".json_encode($resAsientoCobro['response'])."</div>";
+                                                        $html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataAsientoCobro)."</div>";
                                                         $accionesFallidas[] = $html;
                                                         //throw new Exception($html);
 
@@ -316,8 +316,8 @@ class ContificoIntegrationController extends Controller
                                             }else{
 
                                                 $html ="<div>Ha ocurrido un inconveniente al momento de crear el pago de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
-                                                $html.="<div><b>Error:</b> ".$resCobro['response']->mensaje." </div>" ;
-                                                $html.="<div><b>Codigo de error contifico:</b> ".$resCobro['response']->cod_error."</div>";
+                                                $html.="<div><b>DATA RECIBIDA:</b> ".json_encode($resCobro['response'])."</div>";
+                                                $html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataAsientoCobro)."</div>";
                                                 $accionesFallidas[] = $html;
                                                 //throw new Exception($html);
 
@@ -343,9 +343,8 @@ class ContificoIntegrationController extends Controller
                             }else{
 
                                 $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
-                                $html.="<div><b>Error:</b> ".$resAsientoFact['response']->mensaje." </div>" ;
-                                $html.="<div><b>Codigo de error contifico:</b> ".$resAsientoFact['response']->cod_error."</div>";
-                                $html.="<div><b>DATA:</b> ".json_encode($dataAsientoFact)."</div>";
+                                $html.="<div><b>DATA RECIBIDA:</b> ".json_encode($resAsientoFact['response'])."</div>";
+                                $html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataAsientoFact)."</div>";
                                 $accionesFallidas[] = $html;
                                 //throw new Exception($html);
 
@@ -362,9 +361,8 @@ class ContificoIntegrationController extends Controller
                     }else{
 
                         $html ="<div>Ha ocurrido un inconveniente al momento de enviar la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
-                        $html.="<div><b>Error:</b> ".$resFact['response']->mensaje." </div>" ;
-                        $html.="<div><b>Codigo de error contifico:</b> ".$resFact['response']->cod_error."</div>";
-                        $html.="<div><b>DATA:</b> ".json_encode($dataFactura)."</div>";
+                        $html.="<div><b>DATA RECIBIDA:</b> ".json_encode($resFact['response'])."</div>";
+                        $html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataFactura)."</div>";
 
                         $accionesFallidas[] = $html;
                         $resFact['data'] = $dataFactura;
