@@ -40,7 +40,7 @@ class ContificoIntegrationController extends Controller
             ->where('estado',true)
             ->where('venta_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
-            ->where(DB::raw("fecha::date"),'>=','2024-06-03')
+            ->where(DB::raw("fecha::date"),'>=','2024-08-23')
             ->whereNull(['secuencial_nota_credito','id_externo'])
             ->whereNotNull('secuencial')->get();
             //dd($ventas);

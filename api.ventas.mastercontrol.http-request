@@ -1,14 +1,14 @@
 {
   "body": {
-    "content": "",
-    "file": false,
-    "fileSize": false
+    "content": "ew0KICAiYm9keSI6IHsNCiAgICAiY29udGVudCI6ICIiLA0KICAgICJmaWxlIjogZmFsc2UsDQogICAgImZpbGVTaXplIjogZmFsc2UNCiAgfSwNCiAgImhlYWRlcnMiOiB7DQogICAgImFjY2VwdCI6ICJhcHBsaWNhdGlvbi9qc29uIiwNCiAgICAiYXV0aG9yaXphdGlvbiI6ICJCZWFyZXIgZXlKMGVYQWlPaUpLVjFRaUxDSmhiR2NpT2lKSVV6STFOaUo5LmV5SnBjM01pT2lKb2RIUndPbHd2WEM5aGNHa3ViV0Z6ZEdWeVkyOXVkSEp2YkM1bFl6bzRNRGs1WEM5aGNHbGNMMkYxZEdoY0wyeHZaMmx1SWl3aWFXRjBJam94TnpBeE56QTFNVEk0TENKdVltWWlPakUzTURFM01EVXhNamdzSW1wMGFTSTZJbTlpTjBSM1RuWkxjVnBXYkVFNFFVUWlMQ0p6ZFdJaU9qRXNJbkJ5ZGlJNklqSXpZbVExWXpnNU5EbG1OakF3WVdSaU16bGxOekF4WXpRd01EZzNNbVJpTjJFMU9UYzJaamNpTENKcFpGOTFjMlZ5SWpveGZRLm11Z2xXYTM4MzJFM3BZdkc3dUIwWV9yVzVjUktsaHZZS2tTZ3o3V1NhdjQiDQogIH0sDQogICJtZXRob2QiOiAiR0VUIiwNCiAgInRpdGxlIjogIk5ldyBIVFRQIFJlcXVlc3QiLA0KICAidXJsIjogImh0dHBzOi8vYXBpLm1hc3RlcmNvbnRyb2wuZWMvYXBpL2F1dGgvYm9uZXMtdmVudGFzP2NvbXBhbnk9MSZjb25uZWN0PW1hc3RlcmNvbnRyb2wmZnJvbT0yMDI0LTAxLTI1JnRvPTIwMjQtMDEtMjUiDQp9",
+    "file": "c:\\Apache24\\htdocs\\IntegratorMasterControl\\api.ventas.mastercontrol.http-request",
+    "fileSize": 687
   },
   "headers": {
-    "accept": "application/json",
-    "authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9hcGkubWFzdGVyY29udHJvbC5lYzo4MDk5XC9hcGlcL2F1dGhcL2xvZ2luIiwiaWF0IjoxNzAxNzA1MTI4LCJuYmYiOjE3MDE3MDUxMjgsImp0aSI6Im9iN0R3TnZLcVpWbEE4QUQiLCJzdWIiOjEsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjciLCJpZF91c2VyIjoxfQ.muglWa3832E3pYvG7uB0Y_rW5cRKlhvYKkSgz7WSav4"
+    "authorization": "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJodHRwOlwvXC9hcGkubWFzdGVyY29udHJvbC5lYzo4MDk5XC9hcGlcL2F1dGhcL2xvZ2luIiwiaWF0IjoxNzAxNzA1MTI4LCJuYmYiOjE3MDE3MDUxMjgsImp0aSI6Im9iN0R3TnZLcVpWbEE4QUQiLCJzdWIiOjEsInBydiI6IjIzYmQ1Yzg5NDlmNjAwYWRiMzllNzAxYzQwMDg3MmRiN2E1OTc2ZjciLCJpZF91c2VyIjoxfQ.muglWa3832E3pYvG7uB0Y_rW5cRKlhvYKkSgz7WSav4",
+    "content-type": "application/json"
   },
   "method": "GET",
   "title": "New HTTP Request",
-  "url": "https://api.mastercontrol.ec/api/auth/bones-ventas?company=1&connect=mastercontrol&from=2024-01-25&to=2024-01-25"
+  "url": "https://api.mastercontrol.ec/api/auth/bones-ventas?company=1&connect=mastercontrol&from=2024-07-16&to=2024-07-16"
 }
