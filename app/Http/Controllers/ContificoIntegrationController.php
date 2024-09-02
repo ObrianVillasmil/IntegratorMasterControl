@@ -40,7 +40,7 @@ class ContificoIntegrationController extends Controller
             ->where('estado',true)
             ->where('venta_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
-            ->where(DB::raw("fecha::date"),'>=','2024-08-26')
+            ->where(DB::raw("fecha::date"),'>=','2024-08-28')
             ->whereNull(['secuencial_nota_credito','id_externo'])
             ->whereNotNull('secuencial')->get();
             //dd($ventas);
@@ -53,16 +53,20 @@ class ContificoIntegrationController extends Controller
 
                 $cedula = '';
                 $ruc = '';
+                $tipoPersona = 'N';
 
                 if(strlen($v->identificacion_comprador) == 10){
 
                     $cedula = $v->identificacion_comprador;
-                    $ruc = $cedula.'001';
+                    //$ruc = $cedula.'001';
 
                 }else{
 
-                    $cedula = substr($v->identificacion_comprador,0,10);
+                    //$cedula = substr($v->identificacion_comprador,0,10);
                     $ruc = $v->identificacion_comprador;
+
+                   if($ruc[2] == '9')
+                        $tipoPersona = 'J';
 
                 }
 
@@ -108,7 +112,7 @@ class ContificoIntegrationController extends Controller
                         "razon_social"=> $v->nombre_comprador,
                         "telefonos"=> $v->telefono_comprador,
                         "direccion"=> $v->direccion_comprador,
-                        "tipo"=> "N",
+                        "tipo"=> $tipoPersona,
                         "email"=> $v->correo_comprador
                     ],
                     "detalles"=> [
@@ -198,11 +202,11 @@ class ContificoIntegrationController extends Controller
 
                         }
 
-                        $resAsientoFact = self::curlStoreTransaction($dataAsientoFact,$header,env('CREAR_ASIENTO_CONTIFICO'));
+                        //$resAsientoFact = self::curlStoreTransaction($dataAsientoFact,$header,env('CREAR_ASIENTO_CONTIFICO'));
 
-                        if($resAsientoFact['response'] != null){
+                        if(true/*$resAsientoFact['response'] != null*/){
 
-                            if($resAsientoFact['http'] == 201){
+                            if(true/*$resAsientoFact['http'] == 201*/){
 
                                 sleep(2);
 
@@ -285,11 +289,11 @@ class ContificoIntegrationController extends Controller
                                                 sleep(2);
 
                                                 // CREAR LOS ASIENTOS DEL COBRO
-                                                $resAsientoCobro = self::curlStoreTransaction($dataAsientoCobro,$header,env('CREAR_ASIENTO_CONTIFICO'));
+                                                //$resAsientoCobro = self::curlStoreTransaction($dataAsientoCobro,$header,env('CREAR_ASIENTO_CONTIFICO'));
 
-                                                if($resAsientoCobro['response'] != null){
+                                                if(true/*$resAsientoCobro['response'] != null*/){
 
-                                                    if($resAsientoCobro['http'] == 201){
+                                                    if(true/*$resAsientoCobro['http'] == 201*/){
 
                                                         $accionesCompletadas[] = 'Factura '.$v->secuencial.' enviada al contifico';
                                                         sleep(2);
@@ -388,7 +392,7 @@ class ContificoIntegrationController extends Controller
             ->where('cn_confirmada_externo',false)
             ->whereIn('id_sucursal',$idBranchOffice)
             ->whereNotNull(['secuencial_nota_credito','json_cn','id_externo'])
-            ->whereRaw("CAST(json_cn->>'date_doc' AS DATE) >= ?",['2024-06-04'])->get();
+            ->whereRaw("CAST(json_cn->>'date_doc' AS DATE) >= ?",['2024-08-29'])->get();
 
             foreach ($ventasNc as $vnc) {
 
@@ -607,8 +611,8 @@ class ContificoIntegrationController extends Controller
             }
 
         } catch (\Exception $e) {
-            Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($e->getMessage(),false));
-            dd($e->getMessage()."\nEn la línea: ".$e->getLine());
+//            Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($e->getMessage(),false));
+            info($e->getMessage()."\nEn la línea: ".$e->getLine());
 
         }
 
