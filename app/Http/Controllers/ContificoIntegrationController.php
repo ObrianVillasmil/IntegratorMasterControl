@@ -9,12 +9,34 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Brevo\Client\Configuration AS BrevoClient;
+use Brevo\Client\Api\TransactionalEmailsApi;
+use GuzzleHttp\Client;
+use Brevo\Client\Model\SendSmtpEmail;
 
 class ContificoIntegrationController extends Controller
 {
     static function sendInvoices(Request $request)
     {
         try {
+
+            $html = "<html>
+                <head>
+                    <style>
+                        .alert {
+                            padding: 15px;
+                            margin-bottom: 20px;
+                            border: 1px solid transparent;
+                            border-radius: 4px;
+                        }
+                        .alert-danger {
+                            color: #155724;
+                            background-color: #d4edda;
+                            border-color: #c3e6cb;
+                        }
+                    </style>
+                </head>
+            ";
 
             $accionesFallidas = [];
 
@@ -28,6 +50,23 @@ class ContificoIntegrationController extends Controller
             ];
 
             $connection = DB::connection($company->connect);
+
+            $html.= "<body>
+                <div class='alert alert-danger' role='alert'>
+                    <h4 class='alert-heading'>Hubo un error en el envío de ventas de ". strtoupper($company->connect)." a Contifico en fecha ".now()->format('d-m-Y H:i:s')."</h4>
+                    <h4>Envio completado</h4>
+                </div>
+                </body>
+            </html>";
+
+            self::sendMail([
+                'subject' => "Error en el envío de ventas a contifico de {$company->connect}",
+                'sucursal' => strtoupper($company->connect),
+                'ccEmail' => env('MAIL_NOTIFICATION'),
+                'html' => $html
+            ]);
+
+            dd('Enviado');
 
             $idBranchOffice = $connection->table('empresa as e')
             ->join('sucursal as s',function($j) {
@@ -43,7 +82,7 @@ class ContificoIntegrationController extends Controller
             ->where(DB::raw("fecha::date"),'>=','2024-08-28')
             ->whereNull(['secuencial_nota_credito','id_externo'])
             ->whereNotNull('secuencial')->get();
-            //dd($ventas);
+
             foreach ($ventas as $v) {
 
                 $productContifico = env('PRODUCTO_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal);
@@ -238,7 +277,7 @@ class ContificoIntegrationController extends Controller
 
                                         if(!in_array($pago->id_tipo_pago, [4,5])){
 
-                                            if($pago->id_tipo_pago == 3){
+                                            if(in_array($pago->id_tipo_pago,[2,3])){
 
                                                 $formaCobro = 'TC';
 
@@ -595,24 +634,65 @@ class ContificoIntegrationController extends Controller
                 foreach($accionesCompletadas as $ac)
                     $successHtml.= "<div>".$ac."</div>";
 
-                Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($successHtml));
+                $html.= "<body>
+                    <div class='alert alert-danger' role='alert'>
+                        <h4>".$successHtml."</h4>
+                    </div>
+                    </body>
+                </html>";
+
+                self::sendMail([
+                    'subject' => "Envío de ventas a contifico de {$company->connect}",
+                    'sucursal' => strtoupper($company->connect),
+                    'ccEmail' => env('MAIL_NOTIFICATION'),
+                    'html' => $html
+                ]);
+
+                //Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($successHtml));
 
             }
 
             if(count($accionesFallidas)){
 
-                $htmlError = "Han ocurrido los siguiente inconvenientes al enviar las siguiente venta al contifico \n";
+                $htmlError = "Han ocurrido los siguiente inconvenientes al enviar las siguientes ventas de ".strtoupper($company->connect)." al Contifico en fecha ".now()->format('d-m-Y H:i:s')." \n";
 
                 foreach ($accionesFallidas as $af)
                     $htmlError.= "<div>".$af."</div>";
 
-                Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($htmlError,false));
+                $html.= "<body>
+                    <div class='alert alert-danger' role='alert'>
+                        <h4>".$htmlError."</h4>
+                    </div>
+                    </body>
+                </html>";
+
+                self::sendMail([
+                    'subject' => "Error en el envío de ventas a contifico de {$company->connect}",
+                    'sucursal' => strtoupper($company->connect),
+                    'ccEmail' => env('MAIL_NOTIFICATION'),// $company->error_email,
+                    'html' => $html
+                ]);
 
             }
 
         } catch (\Exception $e) {
-//            Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($e->getMessage(),false));
+
+            $html.= "<body>
+                <div class='alert alert-danger' role='alert'>
+                    <h4 class='alert-heading'>Hubo un error en el envío de ventas de ". strtoupper($company->connect)." a Contifico en fecha ".now()->format('d-m-Y H:i:s')."</h4>
+                    <h4>".$e->getMessage()."</h4>
+                </div>
+                </body>
+            </html>";
+
             info($e->getMessage()."\nEn la línea: ".$e->getLine());
+
+            self::sendMail([
+                'subject' => "Error en el envío de ventas a contifico de {$company->connect}",
+                'sucursal' => strtoupper($company->connect),
+                'ccEmail' => env('MAIL_NOTIFICATION'),
+                'html' => $html
+            ]);
 
         }
 
@@ -664,6 +744,25 @@ class ContificoIntegrationController extends Controller
 
         dd($codigoHttp,$response);
         //
+    }
+
+    static function sendMail($data)
+    {
+        $config = BrevoClient::getDefaultConfiguration()->setApiKey('api-key', env('API_KEY_BREVO'));
+        $client = new Client();
+
+        $apiInstance = new TransactionalEmailsApi($client, $config);
+
+        $sendSmtpEmail = new SendSmtpEmail([
+            'subject' => $data['subject'],
+            'sender' => ['name' => $data['sucursal'], 'email' => env('MAIL_FROM_BREVO')],
+            'to' => [['email' => env('MAIL_NOTIFICATION')]],
+            'cc' => [['email' => $data['ccEmail']]],
+            'htmlContent' => $data['html'],
+            'headers' => ['X-Mailin-custom' => 'content-type:application/json|accept:application/json']
+        ]);
+
+        $apiInstance->sendTransacEmail($sendSmtpEmail);
     }
 
 }

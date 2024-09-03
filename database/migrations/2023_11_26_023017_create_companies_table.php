@@ -18,6 +18,7 @@ class CreateCompaniesTable extends Migration
             $table->string('name');
             $table->text('connect');
             $table->text('token');
+            $table->text('error_emails');
             $table->softDeletes();
             $table->timestamps();
         });

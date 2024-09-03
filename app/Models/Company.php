@@ -13,8 +13,7 @@ class Company extends Model
     protected $fillable = [
         'name',
         'connect',
-        'token2',
-        'bank'
+        'error_emails'
     ];
 
 }
