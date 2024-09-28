@@ -15,6 +15,13 @@ use Illuminate\Support\Facades\Route;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+Route::middleware('api')->post('/integracion-uber', function (Request $request) {
+    return $request->all();
+});
+
+
+
 Route::group([
 
     'middleware' => 'api',
