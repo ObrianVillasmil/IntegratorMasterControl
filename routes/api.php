@@ -17,7 +17,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::middleware('api')->post('/integracion-uber', function (Request $request) {
-    return $request->all();
+    info($request->all());
+    return response()->json([]);
 });
 
 
