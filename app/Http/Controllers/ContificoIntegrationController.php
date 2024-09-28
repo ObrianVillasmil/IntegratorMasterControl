@@ -20,29 +20,15 @@ class ContificoIntegrationController extends Controller
     {
         try {
 
-            $html = "<html>
-                <head>
-                    <style>
-                        .alert {
-                            padding: 15px;
-                            margin-bottom: 20px;
-                            border: 1px solid transparent;
-                            border-radius: 4px;
-                        }
-                        .alert-danger {
-                            color: #155724;
-                            background-color: #d4edda;
-                            border-color: #c3e6cb;
-                        }
-                    </style>
-                </head>
-            ";
-
+            $html = '';
             $accionesFallidas = [];
-
             $accionesCompletadas = [];
+            $alertasMailExterno = [];
 
             $company = Company::where('name',$request->company)->first();
+
+            if(!isset($company))
+                new Exception("La empresa {$request->company} no existe");
 
             $header = [
                 'Content-Type' => 'application/json',
@@ -50,23 +36,6 @@ class ContificoIntegrationController extends Controller
             ];
 
             $connection = DB::connection($company->connect);
-
-            $html.= "<body>
-                <div class='alert alert-danger' role='alert'>
-                    <h4 class='alert-heading'>Hubo un error en el envío de ventas de ". strtoupper($company->connect)." a Contifico en fecha ".now()->format('d-m-Y H:i:s')."</h4>
-                    <h4>Envio completado</h4>
-                </div>
-                </body>
-            </html>";
-
-            self::sendMail([
-                'subject' => "Error en el envío de ventas a contifico de {$company->connect}",
-                'sucursal' => strtoupper($company->connect),
-                'ccEmail' => env('MAIL_NOTIFICATION'),
-                'html' => $html
-            ]);
-
-            dd('Enviado');
 
             $idBranchOffice = $connection->table('empresa as e')
             ->join('sucursal as s',function($j) {
@@ -101,11 +70,17 @@ class ContificoIntegrationController extends Controller
 
                 }else{
 
-                    //$cedula = substr($v->identificacion_comprador,0,10);
                     $ruc = $v->identificacion_comprador;
 
-                   if($ruc[2] == '9')
+                    if($ruc[2] == '9'){
+
                         $tipoPersona = 'J';
+
+                   }else{
+
+                        $cedula = substr($v->identificacion_comprador,0,10);
+
+                   }
 
                 }
 
@@ -206,7 +181,7 @@ class ContificoIntegrationController extends Controller
                         sleep(2);
 
                         //SE CREAN LOS ASIENTOS DE LA FACTURA
-                        $dataAsientoFact = [
+                        /* $dataAsientoFact = [
                             "fecha" => Carbon::parse($v->fecha)->format('d/m/Y'),
                             "glosa" => "FACTURA ".$dataFactura['documento'],
                             "gasto_no_deducible"=> 0,
@@ -239,7 +214,7 @@ class ContificoIntegrationController extends Controller
                                 "tipo"=> "H",
                             ];
 
-                        }
+                        } */
 
                         //$resAsientoFact = self::curlStoreTransaction($dataAsientoFact,$header,env('CREAR_ASIENTO_CONTIFICO'));
 
@@ -343,14 +318,12 @@ class ContificoIntegrationController extends Controller
                                                         $html.="<div><b>DATA RECIBIDA:</b> ".json_encode($resAsientoCobro['response'])."</div>";
                                                         $html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataAsientoCobro)."</div>";
                                                         $accionesFallidas[] = $html;
-                                                        //throw new Exception($html);
 
                                                     }
 
                                                 }else{
 
                                                     $accionesFallidas[] = "No se obtuvo respuesta de Contifico al momento de crear el asiento de los cobros de la venta ".$v->secuencial." de la empresa ".$request->company;
-                                                    //throw new Exception("No se obtuvo respuesta de Contifico al momento de crear el asiento de los cobros de la venta ".$v->secuencial." de la empresa ".$request->company);
 
                                                 }
 
@@ -362,14 +335,12 @@ class ContificoIntegrationController extends Controller
                                                 $html.="<div><b>DATA RECIBIDA:</b> ".json_encode($resCobro['response'])."</div>";
                                                 $html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataAsientoCobro)."</div>";
                                                 $accionesFallidas[] = $html;
-                                                //throw new Exception($html);
 
                                             }
 
                                         }else{
 
                                             $accionesFallidas[] = "No se obtuvo respuesta de Contifico al momento de crear los cobros de la venta ".$v->secuencial." de la empresa ".$request->company;
-                                            //throw new Exception("No se obtuvo respuesta de Contifico al momento de crear los cobros de la venta ".$v->secuencial." de la empresa ".$request->company);
 
                                         }
 
@@ -385,18 +356,16 @@ class ContificoIntegrationController extends Controller
 
                             }else{
 
-                                $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
+                                /* $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
                                 $html.="<div><b>DATA RECIBIDA:</b> ".json_encode($resAsientoFact['response'])."</div>";
                                 $html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataAsientoFact)."</div>";
-                                $accionesFallidas[] = $html;
-                                //throw new Exception($html);
+                                $accionesFallidas[] = $html; */
 
                             }
 
                         }else{
 
                             $accionesFallidas[] = "No se obtuvo respuesta de Contifico al momento de crear el asiento la venta ".$v->secuencial." de la empresa ".$request->company;
-                            //throw new Exception("No se obtuvo respuesta de Contifico al momento de crear el asiento la venta ".$v->secuencial." de la empresa ".$request->company);
 
                         }
                         //FIN SE CREAN LOS ASIENTOS DE LA FACTURA
@@ -406,6 +375,9 @@ class ContificoIntegrationController extends Controller
                         $html ="<div>Ha ocurrido un inconveniente al momento de enviar la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
                         $html.="<div><b>DATA RECIBIDA:</b> ".json_encode($resFact['response'])."</div>";
                         $html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataFactura)."</div>";
+
+                        if(in_array($resFact['response']->cod_error,[1508,1502])) //Cedula incorrecta - Ruc incorrecto
+                            $alertasMailExterno[] = "{$resFact['response']->mensaje} en la factura {$dataFactura['documento']} \n";
 
                         $accionesFallidas[] = $html;
                         $resFact['data'] = $dataFactura;
@@ -444,16 +416,26 @@ class ContificoIntegrationController extends Controller
 
                 $cedula = '';
                 $ruc = '';
+                $tipoPersona = 'N';
 
                 if(strlen((string)$cn->buyer_identification) == 10){
 
                     $cedula = (string)$cn->buyer_identification;
-                    $ruc = $cedula.'001';
+                    //$ruc = $cedula.'001';
 
                 }else{
 
-                    $cedula = substr((string)$cn->buyer_identification,0,10);
                     $ruc = (string)$cn->buyer_identification;
+
+                    if($ruc[2] == '9'){
+
+                        $tipoPersona = 'J';
+
+                   }else{
+
+                        $cedula = substr((string)$cn->buyer_identification,0,10);
+
+                   }
 
                 }
 
@@ -507,7 +489,7 @@ class ContificoIntegrationController extends Controller
                         "razon_social"=> (string)$cn->buyer_business_name,
                         "telefonos"=> $vnc->telefono_comprador,
                         "direccion"=> $vnc->direccion_comprador,
-                        "tipo"=> "N",
+                        "tipo"=> $tipoPersona,
                         "email"=> (string)$cn->emails
                     ],
                     "descripcion" => "NOTA DE CRÉDITO ".(int)substr((string)$cn->access_key,30,9),
@@ -579,11 +561,11 @@ class ContificoIntegrationController extends Controller
 
                         }
 
-                        $resAsientoFact = self::curlStoreTransaction($dataAsientoNc,$header,env('CREAR_ASIENTO_CONTIFICO'));
+                        //$resAsientoFact = self::curlStoreTransaction($dataAsientoNc,$header,env('CREAR_ASIENTO_CONTIFICO'));
 
-                        if($response['response'] != null){
+                        if(true/* $resAsientoNc['response'] != null */){
 
-                            if($response['http'] == 201){
+                            if(true/* $resAsientoNc['http'] == 201 */){
 
                                 $accionesCompletadas[] = 'Nota de crédito '.$cn->access_key.' enviada al contifico';
                                 sleep(2);
@@ -591,8 +573,8 @@ class ContificoIntegrationController extends Controller
                             }else{
 
                                 $html = "<div>Ha ocurrido un inconveniente al momento de crear la  la nota de crédito <b>".$cn->access_key."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
-                                $html.= "<div><b>Error:</b> ".$response['response']->mensaje." </div>" ;
-                                $html.= "<div><b>Codigo de error contifico:</b> ".$response['response']->cod_error."</div>";
+                                $html.= "<div><b>Error:</b> ".$resAsientoNc['response']->mensaje." </div>" ;
+                                $html.= "<div><b>Codigo de error contifico:</b> ".$resAsientoNc['response']->cod_error."</div>";
                                 $html.="<div><b>DATA:</b> ".json_encode($dataAsientoNc)."</div>";
                                 $accionesFallidas[] = $html;
                                 //throw new Exception($html);
@@ -602,7 +584,6 @@ class ContificoIntegrationController extends Controller
                         }else{
 
                             $accionesFallidas[] = "No se obtuvo respuesta de Contifico al momento de enviar la nota de crédito <b>".$vnc->access_key." de la empresa ".$request->company;
-                            //throw new Exception("No se obtuvo respuesta de Contifico al momento de enviar la nota de crédito <b>".$vnc->access_key." de la empresa ".$request->company);
 
                         }
 
@@ -615,7 +596,9 @@ class ContificoIntegrationController extends Controller
                         $html.= "<div><b>Codigo de error contifico:</b> ".$response['response']->cod_error."</div>";
                         $html.="<div><b>DATA:</b> ".json_encode($dataNc)."</div>";
                         $accionesFallidas[] = $html;
-                        //throw new Exception($html);
+
+                        if(in_array($response['response']->cod_error,[1508,1502])) //Cedula incorrecta - Ruc incorrecto
+                            $alertasMailExterno[] = "{$response['response']->mensaje} en la nota de crédito {$dataNc['documento']} \n\n";
 
                     }
 
@@ -629,23 +612,37 @@ class ContificoIntegrationController extends Controller
 
             if(count($accionesCompletadas)){
 
-                $successHtml = "Se han enviado ".count($accionesCompletadas)." de ".(count($ventas)+count($ventasNc))." documentos al contifico de la empresa ".$request->company." \n";
+                $successHtml = "\n\n Se han enviado ".count($accionesCompletadas)." de ".(count($ventas)+count($ventasNc))." documentos al contifico de la empresa ".$request->company." \n";
 
                 foreach($accionesCompletadas as $ac)
-                    $successHtml.= "<div>".$ac."</div>";
-
-                $html.= "<body>
-                    <div class='alert alert-danger' role='alert'>
-                        <h4>".$successHtml."</h4>
-                    </div>
-                    </body>
-                </html>";
+                    $successHtml.= "<div>".$ac."</div> \n";
 
                 self::sendMail([
                     'subject' => "Envío de ventas a contifico de {$company->connect}",
                     'sucursal' => strtoupper($company->connect),
                     'ccEmail' => env('MAIL_NOTIFICATION'),
-                    'html' => $html
+                    'html' => "<html>
+                        <head>
+                            <style>
+                                .alert {
+                                    padding: 15px;
+                                    margin-bottom: 20px;
+                                    border: 1px solid transparent;
+                                    border-radius: 4px;
+                                }
+                                .alert-danger {
+                                    color: #155724;
+                                    background-color: #d4edda;
+                                    border-color: #c3e6cb;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='alert alert-danger' role='alert'>
+                                <p>".$successHtml."</p>
+                            </div>
+                        </body>
+                    </html>"
                 ]);
 
                 //Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($successHtml));
@@ -654,36 +651,79 @@ class ContificoIntegrationController extends Controller
 
             if(count($accionesFallidas)){
 
-                $htmlError = "Han ocurrido los siguiente inconvenientes al enviar las siguientes ventas de ".strtoupper($company->connect)." al Contifico en fecha ".now()->format('d-m-Y H:i:s')." \n";
+                $htmlError = "Han ocurrido los siguiente inconvenientes al enviar las siguientes ventas de ".strtoupper($company->connect)." al Contifico en fecha ".now()->format('d-m-Y H:i:s')." \n\n";
 
                 foreach ($accionesFallidas as $af)
-                    $htmlError.= "<div>".$af."</div>";
-
-                $html.= "<body>
-                    <div class='alert alert-danger' role='alert'>
-                        <h4>".$htmlError."</h4>
-                    </div>
-                    </body>
-                </html>";
+                    $htmlError.= "<div>".$af."</div> \n";
 
                 self::sendMail([
                     'subject' => "Error en el envío de ventas a contifico de {$company->connect}",
                     'sucursal' => strtoupper($company->connect),
                     'ccEmail' => env('MAIL_NOTIFICATION'),// $company->error_email,
-                    'html' => $html
+                    'html' => "<html>
+                        <head>
+                            <style>
+                                .alert {
+                                    padding: 15px;
+                                    margin-bottom: 20px;
+                                    border: 1px solid transparent;
+                                    border-radius: 4px;
+                                }
+                                .alert-danger {
+                                    color: #155724;
+                                    background-color: #d4edda;
+                                    border-color: #c3e6cb;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='alert alert-danger' role='alert'>
+                                <p>".$htmlError."</p>
+                            </div>
+                        </body>
+                    </html>"
+                ]);
+
+            }
+
+            if(count($alertasMailExterno)){
+
+                $htmlError = "Han ocurrido los siguiente inconvenientes al enviar las siguientes ventas de ".strtoupper($company->name)." a contifico en fecha ".now()->format('d-m-Y')." \n\n";
+
+                foreach ($alertasMailExterno as $ame)
+                    $htmlError.= "<div>".$ame."</div> \n";
+
+                self::sendMail([
+                    'subject' => "Error en el envío de ventas a contifico de {$company->connect}",
+                    'sucursal' => strtoupper($company->name),
+                    'ccEmail' => $company->error_email,
+                    'html' => "<html>
+                        <head>
+                            <style>
+                                .alert {
+                                    padding: 15px;
+                                    margin-bottom: 20px;
+                                    border: 1px solid transparent;
+                                    border-radius: 4px;
+                                }
+                                .alert-danger {
+                                    color: #155724;
+                                    background-color: #d4edda;
+                                    border-color: #c3e6cb;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='alert alert-danger' role='alert'>
+                                <p>".$htmlError."</p>
+                            </div>
+                        </body>
+                    </html>"
                 ]);
 
             }
 
         } catch (\Exception $e) {
-
-            $html.= "<body>
-                <div class='alert alert-danger' role='alert'>
-                    <h4 class='alert-heading'>Hubo un error en el envío de ventas de ". strtoupper($company->connect)." a Contifico en fecha ".now()->format('d-m-Y H:i:s')."</h4>
-                    <h4>".$e->getMessage()."</h4>
-                </div>
-                </body>
-            </html>";
 
             info($e->getMessage()."\nEn la línea: ".$e->getLine());
 
@@ -691,7 +731,28 @@ class ContificoIntegrationController extends Controller
                 'subject' => "Error en el envío de ventas a contifico de {$company->connect}",
                 'sucursal' => strtoupper($company->connect),
                 'ccEmail' => env('MAIL_NOTIFICATION'),
-                'html' => $html
+                'html' => "<html>
+                    <head>
+                        <style>
+                            .alert {
+                                padding: 15px;
+                                margin-bottom: 20px;
+                                border: 1px solid transparent;
+                                border-radius: 4px;
+                            }
+                            .alert-danger {
+                                color: #155724;
+                                background-color: #d4edda;
+                                border-color: #c3e6cb;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='alert alert-danger' role='alert'>
+                            <p>".$e->getMessage()."</p>
+                        </div>
+                    </body>
+                </html>"
             ]);
 
         }
