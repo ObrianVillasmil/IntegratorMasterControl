@@ -11,62 +11,71 @@ class UberWebhookController extends Controller
 {
     public function getNotification(Request $request) : Response
     {
-        $signature = $request->headers->get('X-Uber-Signature');
 
-        if(isset($signature) && $signature != ''){
+        try {
 
-            $content = $request->getContent();
+            $signature = $request->headers->get('X-Uber-Signature');
 
-            info('webhook body:'.$content);
+            if(isset($signature) && $signature != ''){
 
-            if(isset($request->meta->user_id)){
+                $content = $request->getContent();
 
-                $storeId = $request->meta->user_id;
+                info('webhook body:'.$content);
+                info('$request->meta->user_id '.isset($request->meta->user_id));
+                if(isset($request->meta->user_id)){
 
-            }else{
+                    $storeId = $request->meta->user_id;
 
-                if(!isset($request->data->meta->order_id))
-                    return response('',403);
+                }else{
 
-                $whkNotifcation = json_decode(WebHookUber::where('data->meta->resource_id',$request->data->meta->order_id)->first()->data);
+                    if(!isset($request->data->meta->order_id))
+                        return response('',403);
 
-                $storeId = $whkNotifcation->data->meta->user_id;
+                    $whkNotifcation = json_decode(WebHookUber::where('data->meta->resource_id',$request->data->meta->order_id)->first()->data);
 
-            }
-
-            $company = Company::where('token',$storeId)->first();
-
-            $request->query->add(['connect' => $company->connect]);
-
-            $hmac = hash_hmac('sha256',$content,$company->signing_key_webhook_uber);
-
-            info('X-Uber-Signature: '.$signature);
-            info('hmac sha256: '.$hmac);
-            info('comparation: '.hash_equals($signature,$hmac));
-
-            if(hash_equals($signature,$hmac)){
-
-                WebHookUber::create(['data' => $request->json()]);
-
-                if($request->event_type === 'orders.notification'){
-
-                    UberNotificationController::orderNotification($request);
+                    $storeId = $whkNotifcation->data->meta->user_id;
 
                 }
 
+                $company = Company::where('token',$storeId)->first();
+
+                $request->query->add(['connect' => $company->connect]);
+
+                $hmac = hash_hmac('sha256',$content,$company->signing_key_webhook_uber);
+
+                info('X-Uber-Signature: '.$signature);
+                info('hmac sha256: '.$hmac);
+                info('comparation: '.hash_equals($signature,$hmac));
+
+                if(hash_equals($signature,$hmac)){
+
+                    WebHookUber::create(['data' => $request->json()]);
+
+                    if($request->event_type === 'orders.notification'){
+
+                        UberNotificationController::orderNotification($request);
+
+                    }
+
+                }else{
+
+                    info('El hash no coincide en la peticion a /integracion-uber: '. $request->__toString());
+                    return response('',403);
+
+                }
+
+                return response('',200);
+
             }else{
 
-                info('El hash no coincide en la peticion a /integracion-uber: '. $request->__toString());
+                info('No existe el header en la peticion desconcida a /integracion-uber: '. $request->__toString());
                 return response('',403);
 
             }
 
-            return response('',200);
+        } catch (\Exception $e) {
 
-        }else{
-
-            info('No existe el header en la peticion desconcida a /integracion-uber: '. $request->__toString());
-            return response('',403);
+            info($e->getMessage());
 
         }
 
