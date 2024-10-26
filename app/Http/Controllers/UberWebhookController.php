@@ -5,11 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Company;
 use App\Models\WebHookUber;
 use Illuminate\Http\Request;
-use Illuminate\Routing\ResponseFactory;
+use Illuminate\Http\Response;
 
 class UberWebhookController extends Controller
 {
-    public function getNotification(Request $request) : ResponseFactory
+    public function getNotification(Request $request) : Response
     {
         $signature = $request->headers->get('X-Uber-Signature');
 
