@@ -12,14 +12,13 @@ class UberNotificationController extends Controller
 
         if(isset($signatureUber) && $signatureUber != ''){
 
-
             info($signatureUber);
             info($request->all());
+            $json = json_encode($request->all());
+            info($json);
+            $hmac = hash_hmac('sha256',$json,'B_hWdS2sPQzZeckJHE06v1ryWHnDE3ByF0fN0D4A');
 
-
-           $hmac =  hash_hmac('sha256',json_encode($request->all()),'B_hWdS2sPQzZeckJHE06v1ryWHnDE3ByF0fN0D4A');
-
-           info($hmac);
+            info($hmac);
 
             return response('',200);
 
