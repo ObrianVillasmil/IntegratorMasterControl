@@ -21,8 +21,8 @@ class UberWebhookController extends Controller
                 $content = $request->getContent();
                 $data = json_decode($content);
 
-                info('webhook body:'.$content);
-                info('$data->meta->user_id: '.$data->meta->user_id);
+                //info('webhook body:'.$content);
+                //info('$data->meta->user_id: '.$data->meta->user_id);
 
                 if(isset($data->meta->user_id)){
 
@@ -38,7 +38,6 @@ class UberWebhookController extends Controller
                     $storeId = $whkNotifcation->meta->user_id;
 
                 }
-                info('$storeId: '.$storeId);
 
                 if(!isset($storeId))
                     throw new \Exception('No se ha encontrado el storeId en la bd para la petición '.$request->__toString());
@@ -49,9 +48,9 @@ class UberWebhookController extends Controller
 
                 $hmac = hash_hmac('sha256',$content,$company->signing_key_webhook_uber);
 
-                info('X-Uber-Signature: '.$signature);
-                info('hmac sha256: '.$hmac);
-                info('comparation: '.hash_equals($signature,$hmac));
+                //info('X-Uber-Signature: '.$signature);
+                //info('hmac sha256: '.$hmac);
+                //info('comparation: '.hash_equals($signature,$hmac));
 
                 if(hash_equals($signature,$hmac)){
 
@@ -59,7 +58,7 @@ class UberWebhookController extends Controller
 
                     if($request->event_type === 'orders.notification'){
 
-                        UberNotificationController::orderNotification($request);
+                        UberNotificationController::orderNotification($data);
 
                     }
 
