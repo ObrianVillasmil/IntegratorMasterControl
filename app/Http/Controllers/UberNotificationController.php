@@ -19,9 +19,12 @@ class UberNotificationController extends Controller
             //info($json);
             $hmac = hash_hmac('sha256',$request->getContent(),'B_hWdS2sPQzZeckJHE06v1ryWHnDE3ByF0fN0D4A');
 
-            info($signature);
-            info($hmac);
-            info('comparacion: '.hash_equals($signature,$hmac));
+            info('X-Uber-Signature: '.$signature);
+
+            info('webhook body:'.$request->getContent());
+
+            info('hmac sha256:'.$hmac);
+           // info('comparation: '.hash_equals($signature,$hmac));
 
             return response('',200);
 
