@@ -38,6 +38,10 @@ class UberWebhookController extends Controller
                     $storeId = $whkNotifcation->meta->user_id;
 
                 }
+                info('$storeId: '.$storeId);
+
+                if(!isset($storeId))
+                    throw new \Exception('No se ha encontrado el storeId en la bd para la petición '.$request->__toString());
 
                 $company = Company::where('token',$storeId)->first();
 
@@ -78,6 +82,8 @@ class UberWebhookController extends Controller
         } catch (\Exception $e) {
 
             info($e->getMessage());
+            return response('',200);
+
 
         }
 
