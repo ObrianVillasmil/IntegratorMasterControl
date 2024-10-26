@@ -16,6 +16,7 @@ class CreateWebHookUbersTable extends Migration
         Schema::create('webhook_ubers', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->json('data');
+            $table->json('order')->nullable();
             $table->timestamps();
         });
     }

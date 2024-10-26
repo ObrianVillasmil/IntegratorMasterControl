@@ -20,9 +20,6 @@ class UberWebhookController extends Controller
                 $content = $request->getContent();
                 $data = json_decode($content);
 
-                //info('webhook body:'.$content);
-                //info('$data->meta->user_id: '.$data->meta->user_id);
-
                 if(isset($data->meta->user_id)){
 
                     $storeId = $data->meta->user_id;
@@ -54,6 +51,10 @@ class UberWebhookController extends Controller
                 if(hash_equals($signature,$hmac)){
 
                     WebHookUber::create(['data' => json_encode($data)]);
+
+                    $whu = WebHookUber::orderBy('id','desc')->first();
+
+                    $data->webook_uber_id = $whu->id;
 
                     if($request->event_type === 'orders.notification'){
 

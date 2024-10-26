@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
+use App\Models\WebhookUber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +23,9 @@ class UberNotificationController extends Controller
             'Accept: application/json'
         ];
 
-        curl_setopt($client, CURLOPT_URL, $data->resource_href);
+        $params = http_build_query(['expand' =>'carts,deliveries,payment']);
+
+        curl_setopt($client, CURLOPT_URL, $data->resource_href.'?'.$params);
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($client, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($client, CURLOPT_CUSTOMREQUEST, 'GET');
@@ -34,11 +37,9 @@ class UberNotificationController extends Controller
 
         curl_close($client);
 
-        $response = json_decode($response);
+        WebhookUber::where('id',$data->webook_uber_id)->update(['order' => $response]);
 
-        if('$codigoHttp '.$codigoHttp);
-        info('$response');
-        info((array)$response);
+        $response = json_decode($response);
 
         if($codigoHttp == 200){
 
