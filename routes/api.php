@@ -4,7 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BonesIntegrationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\UberNotificationController;
+use App\Http\Controllers\UberWebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,7 +17,7 @@ use App\Http\Controllers\UberNotificationController;
 |
 */
 
-Route::middleware('api')->post('/integracion-uber', [UberNotificationController::class, 'getNotification']);
+Route::middleware('api')->post('/integracion-uber', [UberWebhookController::class, 'getNotification']);
 
 
 Route::group([
