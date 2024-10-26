@@ -55,7 +55,7 @@ class UberWebhookController extends Controller
 
                 if(hash_equals($signature,$hmac)){
 
-                    WebHookUber::create(['data' => $request->json()]);
+                    WebHookUber::create(['data' => $data]);
 
                     if($request->event_type === 'orders.notification'){
 
