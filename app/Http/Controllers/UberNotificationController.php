@@ -14,7 +14,7 @@ class UberNotificationController extends Controller
 
 
             //info($request->all());
-            info($request->toString());
+            info($request->__toString());
             //$json = json_encode($request->all());
             //info($json);
             $hmac = hash_hmac('sha256',$request->__toString(),'B_hWdS2sPQzZeckJHE06v1ryWHnDE3ByF0fN0D4A');
