@@ -14,10 +14,10 @@ class UberNotificationController extends Controller
 
 
             //info($request->all());
-            info($request->getContent());
+            info($request->toString());
             //$json = json_encode($request->all());
             //info($json);
-            $hmac = hash_hmac('sha256',$request->getContent(),'B_hWdS2sPQzZeckJHE06v1ryWHnDE3ByF0fN0D4A');
+            $hmac = hash_hmac('sha256',$request->__toString(),'B_hWdS2sPQzZeckJHE06v1ryWHnDE3ByF0fN0D4A');
 
             info($signature);
             info($hmac);
