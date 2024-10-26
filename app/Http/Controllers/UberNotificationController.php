@@ -23,7 +23,7 @@ class UberNotificationController extends Controller
             'Accept: application/json'
         ];
 
-        $params = http_build_query(['expand' =>'carts,deliveries,payment']);
+        $params = http_build_query(['expand' => 'carts,deliveries,payment']);
 
         curl_setopt($client, CURLOPT_URL, $data->resource_href.'?'.$params);
         curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
@@ -43,6 +43,19 @@ class UberNotificationController extends Controller
 
         if($codigoHttp == 200){
 
+            if($data->event_type == 'orders.notification'){
+
+                MpFunctionController::createMpAccount(new Request([
+                    'id_branch_office' => $store->id_sucursal,
+                    'order_id' => $response->id,
+                    'name' => 'UBER '.$response->display_id,
+                    'ordering_platform' => $response->ordering_platform,
+                    'customer' => $response->customers[0]->display_name,
+                    'total' => $response->payment_detail->order_total->gross->amount_e5/100,
+                    'items' => []
+                ]));
+
+            }
 
         }else{
 

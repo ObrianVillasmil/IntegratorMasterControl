@@ -9,6 +9,8 @@ use Illuminate\Http\Response;
 
 class UberWebhookController extends Controller
 {
+    const TYPES_ORDER_NOTIFICATION = ['orders.notification','delivery.state_changed','orders.release','orders.failed','orders.fulfillment_issues.resolved'];
+
     public function getNotification(Request $request) : Response
     {
         try {
@@ -44,10 +46,6 @@ class UberWebhookController extends Controller
 
                 $hmac = hash_hmac('sha256',$content,$company->signing_key_webhook_uber);
 
-                //info('X-Uber-Signature: '.$signature);
-                //info('hmac sha256: '.$hmac);
-                //info('comparation: '.hash_equals($signature,$hmac));
-
                 if(hash_equals($signature,$hmac)){
 
                     WebHookUber::create(['data' => json_encode($data)]);
@@ -56,7 +54,7 @@ class UberWebhookController extends Controller
 
                     $data->webook_uber_id = $whu->id;
 
-                    if($request->event_type === 'orders.notification'){
+                    if(in_array($data->event_type,self::TYPES_ORDER_NOTIFICATION)){
 
                         UberNotificationController::orderNotification($data);
 

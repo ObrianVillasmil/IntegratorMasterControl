@@ -6,9 +6,9 @@ use Illuminate\Http\Request;
 
 class MpFunctionController extends Controller
 {
-    public static function createSaleMp(Request $request)
+    public static function createMpAccount(Request $request)
     {
-
+        
     }
 
 }
