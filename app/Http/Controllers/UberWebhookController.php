@@ -22,7 +22,7 @@ class UberWebhookController extends Controller
                 $data = json_decode($content);
 
                 info('webhook body:'.$content);
-                info('$data->meta->user_id '.(string)isset($data->meta->user_id));
+                info('$data->meta->user_id: '.$data->meta->user_id);
 
                 if(isset($data->meta->user_id)){
 
@@ -66,14 +66,14 @@ class UberWebhookController extends Controller
 
                 }
 
-                return response('',200);
-
             }else{
 
                 info('No existe el header en la peticion desconcida a /integracion-uber: '. $request->__toString());
                 return response('',403);
 
             }
+
+            return response('',200);
 
         } catch (\Exception $e) {
 
