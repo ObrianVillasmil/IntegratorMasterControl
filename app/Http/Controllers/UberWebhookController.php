@@ -11,7 +11,6 @@ class UberWebhookController extends Controller
 {
     public function getNotification(Request $request) : Response
     {
-
         try {
 
             $signature = $request->headers->get('X-Uber-Signature');
@@ -44,7 +43,7 @@ class UberWebhookController extends Controller
 
                 $company = Company::where('token',$storeId)->first();
 
-                $request->query->add(['connect' => $company->connect]);
+                $data->connect = $company->connect;
 
                 $hmac = hash_hmac('sha256',$content,$company->signing_key_webhook_uber);
 
