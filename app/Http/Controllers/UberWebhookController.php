@@ -19,21 +19,23 @@ class UberWebhookController extends Controller
             if(isset($signature) && $signature != ''){
 
                 $content = $request->getContent();
+                $data = json_decode($content);
 
                 info('webhook body:'.$content);
-                info('$request->meta->user_id '.isset($request->meta->user_id));
-                if(isset($request->meta->user_id)){
+                info('$data->meta->user_id '.(string)isset($data->meta->user_id));
 
-                    $storeId = $request->meta->user_id;
+                if(isset($data->meta->user_id)){
+
+                    $storeId = $data->meta->user_id;
 
                 }else{
 
-                    if(!isset($request->data->meta->order_id))
+                    if(!isset($data->meta->order_id))
                         return response('',403);
 
-                    $whkNotifcation = json_decode(WebHookUber::where('data->meta->resource_id',$request->data->meta->order_id)->first()->data);
+                    $whkNotifcation = json_decode(WebHookUber::where('data->meta->resource_id',$data->meta->order_id)->first()->data);
 
-                    $storeId = $whkNotifcation->data->meta->user_id;
+                    $storeId = $whkNotifcation->meta->user_id;
 
                 }
 
