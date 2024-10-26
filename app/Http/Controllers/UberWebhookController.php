@@ -53,6 +53,7 @@ class UberWebhookController extends Controller
                     $whu = WebHookUber::orderBy('id','desc')->first();
 
                     $data->webook_uber_id = $whu->id;
+                    $data->store_id = $storeId;
 
                     if(in_array($data->event_type,self::TYPES_ORDER_NOTIFICATION)){
 

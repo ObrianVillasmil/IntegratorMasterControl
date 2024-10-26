@@ -13,7 +13,7 @@ class UberNotificationController extends Controller
     {
         info('connection: '.$data->connect);
 
-        $store = DB::connection($data->connect)->table('sucursal_tienda_uber')->where('store_id',$data->meta->user_id)->first();
+        $store = DB::connection($data->connect)->table('sucursal_tienda_uber')->where('store_id',$data->store_id)->first();
 
         $client = curl_init();
 
