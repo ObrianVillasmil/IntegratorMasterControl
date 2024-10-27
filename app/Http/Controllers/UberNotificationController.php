@@ -43,17 +43,104 @@ class UberNotificationController extends Controller
 
         if($codigoHttp == 200){
 
-            if($data->event_type == 'orders.notification'){
+            //CREA LA PRECUENTA EN EL MASTERPOS CORRESPONDIENTE
+            if($data->event_type == 'orders.notification' && $response->order->status === 'OFFERED'){
+
+                $customerIdentification = null;
+                $customerEmail = null;
+                $customer = null;
+                $customerAddress = null;
+                $customerPhone = null;
+                $items = [];
+
+                if(isset($response->order->customers->tax_profiles)){
+
+                    $customerIdentification = $response->order->customers->tax_profiles[0]->tax_id;
+                    $customerIdentification = $response->order->customers->tax_profiles[0]->email;
+                    $customer = $response->order->customers->tax_profiles[0]->legal_entity_name;
+                    $customerAddress = $response->order->customers->tax_profiles[0]->billing_address;
+
+                }
+
+                if(isset($response->order->contact->phone))
+                    $customerPhone = $response->order->contact->phone->number;
+
+                if(isset($response->order->carts) && isset($response->order->carts[0]->items)){
+
+                    foreach ($response->order->carts[0]->items as $item) {
+
+                        $dataItem = explode('-',$item->external_data);
+                        $commnet = '';
+
+                        if(isset($item->customer_request->special_instructions))
+                            $commnet = $item->customer_request->special_instructions;
+
+                        $items[] = [
+                            'type' => $dataItem[0],
+                            'id' => $dataItem[1],
+                            'name' => $item->title,
+                            'tax' => $dataItem[5],
+                            'quantity' => $item->quantity->amount,
+                            'ingredient' => 0,
+                            'comment' => $commnet,
+                            'sub_total_price' => $dataItem[7],
+                            'id_pcpp' => null,
+
+                        ];
+
+                        if(isset($item->selected_modifier_groups)){
+
+                            foreach ($item->selected_modifier_groups as $question) {
+
+                                if(isset($question->selected_items)){
+
+                                    foreach ($question->selected_items as $response) {
+
+                                        $dataResponse = explode('-',$response->external_data);
+
+                                        $items[] = [
+                                            'type' => $dataResponse[0],
+                                            'id' => $dataResponse[1],
+                                            'name' => $response->title,
+                                            'ingredient' => 1,
+                                            'tax' => $dataResponse[7],
+                                            'quantity' => $response->quantity->amount,
+                                            'id_pcpp' => $dataResponse[3],
+                                            'sub_total_price' => $dataResponse[9],
+                                            'comment' => '',
+                                        ];
+
+                                    }
+
+                                }
+
+                            }
+
+                        }
+
+                    }
+
+                }
 
                 MpFunctionController::createMpAccount(new Request([
                     'id_branch_office' => $store->id_sucursal,
-                    'order_id' => $response->id,
-                    'name' => 'UBER '.$response->display_id,
-                    'ordering_platform' => $response->ordering_platform,
-                    'customer' => $response->customers[0]->display_name,
-                    'total' => $response->payment_detail->order_total->gross->amount_e5/100,
-                    'items' => []
+                    'order_id' => $response->order->id,
+                    'connect' => base64_encode($data->connect),
+                    'name' => $response->order->ordering_platform.' '.$response->order->display_id,
+                    'ordering_platform' => $response->order->ordering_platform,
+                    'customer' => $customer,
+                    'customer_identifcation' => $customerIdentification,
+                    'customer_address' => $customerAddress,
+                    'customer_email' => $customerEmail,
+                    'customer_phone' => $customerPhone,
+                    'total' => $response->order->payment_detail->order_total->gross->amount_e5/100000,
+                    'payment_type_id' => '',
+                    'items' => json_encode($items)
                 ]));
+
+            }else if($data->event_type == 'delivery.state_changed'){
+
+
 
             }
 
