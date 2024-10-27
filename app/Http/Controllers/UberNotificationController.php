@@ -97,17 +97,17 @@ class UberNotificationController extends Controller
 
                                     if(isset($question->selected_items)){
 
-                                        foreach ($question->selected_items as $response) {
+                                        foreach ($question->selected_items as $res) {
 
-                                            $dataResponse = explode('-',$response->external_data);
+                                            $dataResponse = explode('-',$res->external_data);
 
                                             $items[] = [
                                                 'type' => $dataResponse[0],
                                                 'id' => $dataResponse[1],
-                                                'name' => $response->title,
+                                                'name' => $res->title,
                                                 'ingredient' => 1,
                                                 'tax' => $dataResponse[7],
-                                                'quantity' => $response->quantity->amount,
+                                                'quantity' => $res->quantity->amount,
                                                 'id_pcpp' => $dataResponse[3],
                                                 'sub_total_price' => $dataResponse[9],
                                                 'comment' => '',
@@ -158,7 +158,7 @@ class UberNotificationController extends Controller
 
         } catch (\Exception $e) {
 
-            info('Error orderNotification'.$e->getMessage().' '.$e->getLine().' '.$e->getFile());
+            info('Error orderNotification: '.$e->getMessage().' '.$e->getLine().' '.$e->getFile());
 
         }
 
