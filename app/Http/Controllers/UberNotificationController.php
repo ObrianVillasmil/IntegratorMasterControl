@@ -122,7 +122,7 @@ class UberNotificationController extends Controller
 
                 }
 
-                MpFunctionController::createMpAccount(new Request([
+                $resAccount = MpFunctionController::createMpAccount(new Request([
                     'id_branch_office' => $store->id_sucursal,
                     'order_id' => $response->order->id,
                     'connect' => base64_encode($data->connect),
@@ -137,6 +137,9 @@ class UberNotificationController extends Controller
                     'payment_type_id' => '',
                     'items' => json_encode($items)
                 ]));
+
+                info('resAccount:');
+                info((array)$resAccount);
 
             }else if($data->event_type == 'delivery.state_changed'){
 

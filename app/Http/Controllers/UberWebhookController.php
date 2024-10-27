@@ -9,7 +9,7 @@ use Illuminate\Http\Response;
 
 class UberWebhookController extends Controller
 {
-    const TYPES_ORDER_NOTIFICATION = ['orders.notification','delivery.state_changed','orders.release','orders.failed','orders.fulfillment_issues.resolved'];
+    const ORDER_NOTIFICATION_TYPES = ['orders.notification','delivery.state_changed','orders.release','orders.failed','orders.fulfillment_issues.resolved','orders.failure'];
 
     public function getNotification(Request $request) : Response
     {
@@ -55,7 +55,7 @@ class UberWebhookController extends Controller
                     $data->webook_uber_id = $whu->id;
                     $data->store_id = $storeId;
 
-                    if(in_array($data->event_type,self::TYPES_ORDER_NOTIFICATION)){
+                    if(in_array($data->event_type,self::ORDER_NOTIFICATION_TYPES)){
 
                         UberNotificationController::orderNotification($data);
 

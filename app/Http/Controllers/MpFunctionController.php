@@ -234,11 +234,39 @@ class MpFunctionController extends Controller
                     'servicio' => 0,
                 ]);
 
+                $precuentaId = $connection->table('precuenta')->orderBy('id', 'desc')->first()->id_precuenta;
+
+                $items = json_decode($request->items);
+
+                foreach ($items as $item) {
+
+                   $imp = $connection->table('impuesto')->where('valor',$item->tax)->first();
+
+                    $connection->table('detalle_precuenta')->insert([
+                        'id_sucursal' => $request->id_branch_office,
+                        'id_precuenta' => $precuentaId,
+                        'id_producto' => $item->id,
+                        'tipo' => $item->type,
+                        'nombre' => $item->name,
+                        'impuesto' => $item->tax,
+                        'cantidad' => $item->quantity,
+                        'ingrediente' => $item->ingredient == 1,
+                        'id_impuesto' => $imp->id_impuesto,
+                        'comentario' => $item->comment,
+                        'impreso' => false,
+                        'precio' => $item->sub_total_price,
+                        'id_pos_configuracion_producto_pregunta' => $item->id_pcpp,
+                        'id_cajero'=> '1000',
+                        'id_sucursal' => $request->id_branch_office
+                    ]);
+
+                }
+
                 $connection->commit();
 
                 return response()->json([
                     'success' => true,
-                    'msg' => 'Se ha creado la cuenta con éxito'
+                    'msg' => 'Se ha creado el pedido con éxito'
                 ],200);
 
             } catch (\Exception $e) {
