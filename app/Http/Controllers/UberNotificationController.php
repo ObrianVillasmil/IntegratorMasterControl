@@ -11,107 +11,109 @@ class UberNotificationController extends Controller
 {
     public static function orderNotification(Object $data) : Array
     {
-        info('connection: '.$data->connect);
+        try {
 
-        $store = DB::connection($data->connect)->table('sucursal_tienda_uber')->where('store_id',$data->store_id)->first();
-        info('store: '.$store->id_sucursal);
-        $client = curl_init();
+            $store = DB::connection($data->connect)->table('sucursal_tienda_uber')->where('store_id',$data->store_id)->first();
 
-        $headers = [
-            'Content-Type: application/json',
-            'Authorization: Bearer '. $store->token,
-            'Accept: application/json'
-        ];
+            $client = curl_init();
 
-        $params = http_build_query(['expand' => 'carts,deliveries,payment']);
+            $headers = [
+                'Content-Type: application/json',
+                'Authorization: Bearer '. $store->token,
+                'Accept: application/json'
+            ];
 
-        curl_setopt($client, CURLOPT_URL, $data->resource_href.'?'.$params);
-        curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($client, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($client, CURLOPT_CUSTOMREQUEST, 'GET');
-        curl_setopt($client, CURLOPT_CONNECTTIMEOUT, 15);
+            $params = http_build_query(['expand' => 'carts,deliveries,payment']);
 
-        $response = curl_exec($client);
+            curl_setopt($client, CURLOPT_URL, $data->resource_href.'?'.$params);
+            curl_setopt($client, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($client, CURLOPT_HTTPHEADER, $headers);
+            curl_setopt($client, CURLOPT_CUSTOMREQUEST, 'GET');
+            curl_setopt($client, CURLOPT_CONNECTTIMEOUT, 15);
 
-        $codigoHttp = curl_getinfo($client, CURLINFO_HTTP_CODE);
+            $response = curl_exec($client);
 
-        curl_close($client);
+            $codigoHttp = curl_getinfo($client, CURLINFO_HTTP_CODE);
 
-        WebhookUber::where('id',$data->webook_uber_id)->update(['order' => $response]);
+            curl_close($client);
 
-        $response = json_decode($response);
+            WebhookUber::where('id',$data->webook_uber_id)->update(['order' => $response]);
 
-        info('$codigoHttp '.$codigoHttp);
+            $response = json_decode($response);
 
-        if($codigoHttp >= 200 && $codigoHttp <= 299){
-            info('$response->order->state '.$response->order->state);
-            info('$data->event_type: ' .$data->event_type);
-            //CREA LA PRECUENTA EN EL MASTERPOS CORRESPONDIENTE
-            if($data->event_type == 'orders.notification' && $response->order->state === 'OFFERED'){
+            info('$codigoHttp '.$codigoHttp);
 
-                $customerIdentification = null;
-                $customerEmail = null;
-                $customer = null;
-                $customerAddress = null;
-                $customerPhone = null;
-                $items = [];
+            if($codigoHttp >= 200 && $codigoHttp <= 299){
+                info('$response->order->state '.$response->order->state);
+                info('$data->event_type: ' .$data->event_type);
+                //CREA LA PRECUENTA EN EL MASTERPOS CORRESPONDIENTE
+                if($data->event_type == 'orders.notification' && $response->order->state === 'OFFERED'){
 
-                if(isset($response->order->customers->tax_profiles)){
+                    $customerIdentification = null;
+                    $customerEmail = null;
+                    $customer = null;
+                    $customerAddress = null;
+                    $customerPhone = null;
+                    $items = [];
 
-                    $customerIdentification = $response->order->customers->tax_profiles[0]->tax_id;
-                    $customerIdentification = $response->order->customers->tax_profiles[0]->email;
-                    $customer = $response->order->customers->tax_profiles[0]->legal_entity_name;
-                    $customerAddress = $response->order->customers->tax_profiles[0]->billing_address;
+                    if(isset($response->order->customers->tax_profiles)){
 
-                }
+                        $customerIdentification = $response->order->customers->tax_profiles[0]->tax_id;
+                        $customerIdentification = $response->order->customers->tax_profiles[0]->email;
+                        $customer = $response->order->customers->tax_profiles[0]->legal_entity_name;
+                        $customerAddress = $response->order->customers->tax_profiles[0]->billing_address;
 
-                if(isset($response->order->contact->phone))
-                    $customerPhone = $response->order->contact->phone->number;
+                    }
 
-                if(isset($response->order->carts) && isset($response->order->carts[0]->items)){
+                    if(isset($response->order->contact->phone))
+                        $customerPhone = $response->order->contact->phone->number;
 
-                    foreach ($response->order->carts[0]->items as $item) {
+                    if(isset($response->order->carts) && isset($response->order->carts[0]->items)){
 
-                        $dataItem = explode('-',$item->external_data);
-                        $commnet = '';
+                        foreach ($response->order->carts[0]->items as $item) {
 
-                        if(isset($item->customer_request->special_instructions))
-                            $commnet = $item->customer_request->special_instructions;
+                            $dataItem = explode('-',$item->external_data);
+                            $commnet = '';
 
-                        $items[] = [
-                            'type' => $dataItem[0],
-                            'id' => $dataItem[1],
-                            'name' => $item->title,
-                            'tax' => $dataItem[5],
-                            'quantity' => $item->quantity->amount,
-                            'ingredient' => 0,
-                            'comment' => $commnet,
-                            'sub_total_price' => $dataItem[7],
-                            'id_pcpp' => null,
+                            if(isset($item->customer_request->special_instructions))
+                                $commnet = $item->customer_request->special_instructions;
 
-                        ];
+                            $items[] = [
+                                'type' => $dataItem[0],
+                                'id' => $dataItem[1],
+                                'name' => $item->title,
+                                'tax' => $dataItem[5],
+                                'quantity' => $item->quantity->amount,
+                                'ingredient' => 0,
+                                'comment' => $commnet,
+                                'sub_total_price' => $dataItem[7],
+                                'id_pcpp' => null,
 
-                        if(isset($item->selected_modifier_groups)){
+                            ];
 
-                            foreach ($item->selected_modifier_groups as $question) {
+                            if(isset($item->selected_modifier_groups)){
 
-                                if(isset($question->selected_items)){
+                                foreach ($item->selected_modifier_groups as $question) {
 
-                                    foreach ($question->selected_items as $response) {
+                                    if(isset($question->selected_items)){
 
-                                        $dataResponse = explode('-',$response->external_data);
+                                        foreach ($question->selected_items as $response) {
 
-                                        $items[] = [
-                                            'type' => $dataResponse[0],
-                                            'id' => $dataResponse[1],
-                                            'name' => $response->title,
-                                            'ingredient' => 1,
-                                            'tax' => $dataResponse[7],
-                                            'quantity' => $response->quantity->amount,
-                                            'id_pcpp' => $dataResponse[3],
-                                            'sub_total_price' => $dataResponse[9],
-                                            'comment' => '',
-                                        ];
+                                            $dataResponse = explode('-',$response->external_data);
+
+                                            $items[] = [
+                                                'type' => $dataResponse[0],
+                                                'id' => $dataResponse[1],
+                                                'name' => $response->title,
+                                                'ingredient' => 1,
+                                                'tax' => $dataResponse[7],
+                                                'quantity' => $response->quantity->amount,
+                                                'id_pcpp' => $dataResponse[3],
+                                                'sub_total_price' => $dataResponse[9],
+                                                'comment' => '',
+                                            ];
+
+                                        }
 
                                     }
 
@@ -123,36 +125,40 @@ class UberNotificationController extends Controller
 
                     }
 
+                    $resAccount = MpFunctionController::createMpAccount(new Request([
+                        'id_branch_office' => $store->id_sucursal,
+                        'order_id' => $response->order->id,
+                        'connect' => base64_encode($data->connect),
+                        'name' => $response->order->ordering_platform.' '.$response->order->display_id,
+                        'ordering_platform' => $response->order->ordering_platform,
+                        'customer' => $customer,
+                        'customer_identifcation' => $customerIdentification,
+                        'customer_address' => $customerAddress,
+                        'customer_email' => $customerEmail,
+                        'customer_phone' => $customerPhone,
+                        'total' => $response->order->payment_detail->order_total->gross->amount_e5/100000,
+                        'payment_type_id' => '',
+                        'items' => json_encode($items)
+                    ]));
+
+                    info('resAccount:');
+                    info((array)$resAccount);
+
+                }else if($data->event_type == 'delivery.state_changed'){
+
+
+
                 }
 
-                $resAccount = MpFunctionController::createMpAccount(new Request([
-                    'id_branch_office' => $store->id_sucursal,
-                    'order_id' => $response->order->id,
-                    'connect' => base64_encode($data->connect),
-                    'name' => $response->order->ordering_platform.' '.$response->order->display_id,
-                    'ordering_platform' => $response->order->ordering_platform,
-                    'customer' => $customer,
-                    'customer_identifcation' => $customerIdentification,
-                    'customer_address' => $customerAddress,
-                    'customer_email' => $customerEmail,
-                    'customer_phone' => $customerPhone,
-                    'total' => $response->order->payment_detail->order_total->gross->amount_e5/100000,
-                    'payment_type_id' => '',
-                    'items' => json_encode($items)
-                ]));
-
-                info('resAccount:');
-                info((array)$resAccount);
-
-            }else if($data->event_type == 'delivery.state_changed'){
+            }else{
 
 
 
             }
 
-        }else{
+        } catch (\Exception $e) {
 
-
+            info('Error orderNotification'.$e->getMessage().' '.$e->getLine().' '.$e->getFile());
 
         }
 
