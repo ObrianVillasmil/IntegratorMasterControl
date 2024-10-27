@@ -156,7 +156,7 @@ class MpFunctionController extends Controller
 
         if (!$validate->fails()) {
 
-            $connection = DB::connection($request->connect);
+            $connection = DB::connection(base64_decode($request->connect));
 
             try {
 
