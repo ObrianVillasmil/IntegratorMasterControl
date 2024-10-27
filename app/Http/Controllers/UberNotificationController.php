@@ -136,8 +136,8 @@ class UberNotificationController extends Controller
                         'customer_address' => $customerAddress,
                         'customer_email' => $customerEmail,
                         'customer_phone' => $customerPhone,
-                        'total' => $response->order->payment_detail->order_total->gross->amount_e5/100000,
-                        'payment_type_id' => '',
+                        'total' => $response->order->payment->payment_detail->order_total->gross->amount_e5/100000,
+                        'payment_type_id' => 4, //VINCULAR UN TIPO DE PAGO EN LA CONFIGRURACION DE LA TIENDA
                         'items' => json_encode($items)
                     ]));
 
