@@ -124,7 +124,7 @@ class MpFunctionController extends Controller
             }],
             'payment_type_id' => ['required',function($_, $value, $fail) use($request){
 
-                $existsPaymentType =  DB::connection($request->connect)->table('tipos_pago')->where('id_tipo_pago',$value)->exists();
+                $existsPaymentType =  DB::connection(base64_decode($request->connect))->table('tipos_pago')->where('id_tipo_pago',$value)->exists();
 
                 if(!$existsPaymentType)
                     $fail('El tipo de pago ingresado no existe');
