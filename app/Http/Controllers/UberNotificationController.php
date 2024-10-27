@@ -87,7 +87,7 @@ class UberNotificationController extends Controller
                                 'quantity' => $item->quantity->amount,
                                 'ingredient' => 0,
                                 'comment' => $commnet,
-                                'sub_total_price' => $dataItem[7],
+                                'sub_total_price' => $dataItem[7]/100,
                                 'id_pcpp' => null,
 
                             ];
@@ -110,7 +110,7 @@ class UberNotificationController extends Controller
                                                 'tax' => $dataResponse[7],
                                                 'quantity' => $res->quantity->amount,
                                                 'id_pcpp' => $dataResponse[3],
-                                                'sub_total_price' => $dataResponse[9],
+                                                'sub_total_price' => $dataResponse[9]/100,
                                                 'comment' => '',
                                             ];
 
@@ -127,7 +127,7 @@ class UberNotificationController extends Controller
                     }
 
                     info('items');
-                    info(json_encode($items));
+                    info((string)json_encode($items));
 
                     $resAccount = MpFunctionController::createMpAccount(new Request([
                         'id_branch_office' => $store->id_sucursal,
@@ -142,7 +142,7 @@ class UberNotificationController extends Controller
                         'customer_phone' => $customerPhone,
                         'total' => $response->order->payment->payment_detail->order_total->gross->amount_e5/100000,
                         'payment_type_id' => 4, //VINCULAR UN TIPO DE PAGO EN LA CONFIGRURACION DE LA TIENDA
-                        'items' => json_encode($items)
+                        'items' => (string)json_encode($items)
                     ]));
 
                     info('resAccount:');
