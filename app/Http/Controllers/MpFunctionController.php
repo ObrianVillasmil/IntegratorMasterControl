@@ -18,7 +18,7 @@ class MpFunctionController extends Controller
             'total' => 'required|numeric|min:0',
             'customer' => 'required_with:customer_identifcation',
             'customer_address' => 'required_with:customer_identifcation',
-            'customer_email' => 'required_with:customer_identifcation|email',
+            'customer_email' => 'required_with:customer_identifcation',
             'customer_phone' => 'required_with:customer_identifcation',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
@@ -143,6 +143,9 @@ class MpFunctionController extends Controller
             'ordering_platform.string' => 'El nombre de la plataforma que origina la orden debe ser una cadena de carcaracteres',
             'ordering_platform.min' => 'El nombre de la plataforma que origina la orden debe tener al menos 3 caracteres',
             'customer.required' => 'No se obtuvo el nombre de la sucursal',
+            'customer_email.required_with' => 'Debe ingresar el correo electrónico del cliente',
+            'customer_phone.required_with' => 'Debe ingresar el teléfono del cliente',
+            'customer_address.required_with' => 'Debe ingresar la dirección del cliente',
             'total.required' => 'No se obtuvo el monto total de la orden',
             'total.numeric' => 'El monto total de la orden debe ser un numero',
             'total.min' => 'El monto total de la orden debe ser mayor o igual a 0',

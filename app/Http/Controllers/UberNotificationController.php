@@ -46,7 +46,7 @@ class UberNotificationController extends Controller
             info('$response->order->state '.$response->order->state);
 
             if($codigoHttp >= 200 && $codigoHttp <= 299){
-                
+
                 //CREA LA PRECUENTA EN EL MASTERPOS CORRESPONDIENTE
                 if($data->event_type == 'orders.notification' && $response->order->state === 'OFFERED'){
 
@@ -125,6 +125,9 @@ class UberNotificationController extends Controller
                         }
 
                     }
+
+                    info('items');
+                    info(json_encode($items));
 
                     $resAccount = MpFunctionController::createMpAccount(new Request([
                         'id_branch_office' => $store->id_sucursal,
