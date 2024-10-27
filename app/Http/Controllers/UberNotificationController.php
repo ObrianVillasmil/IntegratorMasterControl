@@ -14,7 +14,7 @@ class UberNotificationController extends Controller
         info('connection: '.$data->connect);
 
         $store = DB::connection($data->connect)->table('sucursal_tienda_uber')->where('store_id',$data->store_id)->first();
-
+        info('store: '.$store->id_sucursal);
         $client = curl_init();
 
         $headers = [
@@ -41,8 +41,11 @@ class UberNotificationController extends Controller
 
         $response = json_decode($response);
 
-        if($codigoHttp == 200){
+        info('$codigoHttp '.$codigoHttp);
 
+        if($codigoHttp >= 200 && $codigoHttp <= 299){
+            info('$response->order->status '.$response->order->status);
+            info('$data->event_type: ' .$data->event_type);
             //CREA LA PRECUENTA EN EL MASTERPOS CORRESPONDIENTE
             if($data->event_type == 'orders.notification' && $response->order->status === 'OFFERED'){
 
