@@ -42,10 +42,11 @@ class UberNotificationController extends Controller
             $response = json_decode($response);
 
             info('$codigoHttp '.$codigoHttp);
+            info('$data->event_type: ' .$data->event_type);
+            info('$response->order->state '.$response->order->state);
 
             if($codigoHttp >= 200 && $codigoHttp <= 299){
-                info('$response->order->state '.$response->order->state);
-                info('$data->event_type: ' .$data->event_type);
+                
                 //CREA LA PRECUENTA EN EL MASTERPOS CORRESPONDIENTE
                 if($data->event_type == 'orders.notification' && $response->order->state === 'OFFERED'){
 
