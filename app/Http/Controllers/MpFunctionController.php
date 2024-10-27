@@ -275,7 +275,7 @@ class MpFunctionController extends Controller
 
                 return response()->json([
                     'success' => false,
-                    'msg' => $e->getLine()
+                    'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
                 ],500);
 
             }
