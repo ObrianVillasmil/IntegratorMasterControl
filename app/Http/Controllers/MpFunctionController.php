@@ -74,7 +74,7 @@ class MpFunctionController extends Controller
 
                         }else{
 
-                            $connect = base64_decode($item->connect);
+                            $connect = base64_decode($request->connect);
 
                             if($item->type == 'R'){
 
