@@ -48,14 +48,11 @@ class MpFunctionController extends Controller
 
                 $items = json_decode($value);
 
-                info('$items');
-                info($items);
+                if(!is_array($items)){
 
-                /* if(!is_array($value)){
+                    $fail('El campo items debe ser un array de tipo json válido');
 
-                    $fail('El campo items debe ser un array json');
-
-                }else */ if(!count($value)){
+                }else if(!count($items)){
 
                     $fail('Debe ingresar al menos un item');
 
@@ -158,7 +155,7 @@ class MpFunctionController extends Controller
             'connect.string' => 'El acceso de la conexion debe ser una cadena de carcaracteres',
             'connect.min' => 'El acceso de la conexion debe tener al menos 3 caracteres',
             'items.required' => 'No se obtuvieron los items de la orden',
-            'items.json' => 'El campo items debe ser un array de tipo json'
+            'items.json' => 'El campo items debe ser un array de tipo json válido'
         ]);
 
         if (!$validate->fails()) {
