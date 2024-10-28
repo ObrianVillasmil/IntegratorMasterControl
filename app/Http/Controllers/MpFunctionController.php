@@ -44,18 +44,18 @@ class MpFunctionController extends Controller
                     $fail('El tipo de pago ingresado no existe');
 
             }],
-            'items' => ['required',function($_, $value, $fail){
+            'items' => ['required','json',function($_, $value, $fail) use($request){
 
                 $items = json_decode($value);
 
                 info('$items');
                 info($items);
 
-                if(!is_array($value)){
+                /* if(!is_array($value)){
 
                     $fail('El campo items debe ser un array json');
 
-                }else if(!count($value)){
+                }else */ if(!count($value)){
 
                     $fail('Debe ingresar al menos un item');
 

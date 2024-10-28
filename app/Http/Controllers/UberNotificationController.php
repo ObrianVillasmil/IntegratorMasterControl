@@ -129,9 +129,6 @@ class UberNotificationController extends Controller
 
                         }
 
-                        info('items');
-                        info(json_encode($items,JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION));
-
                         $resAccount = MpFunctionController::createMpAccount(new Request([
                             'id_branch_office' => $store->id_sucursal,
                             'order_id' => $response->order->id,
