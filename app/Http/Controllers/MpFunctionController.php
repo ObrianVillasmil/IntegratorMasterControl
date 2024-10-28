@@ -226,7 +226,13 @@ class MpFunctionController extends Controller
 
                 }
 
+
+                $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
+
+                $precuentaId = !isset($prec) ? 1 : ($prec->id_precuenta+1);
+
                 $connection->table('precuenta')->insert([
+                    'id_precuenta' => $precuentaId,
                     'id_sucursal' => $request->id_branch_office,
                     'nombre' => $request->name,
                     'id_pos' => $pos->id_pos,
@@ -250,7 +256,6 @@ class MpFunctionController extends Controller
                     'servicio' => 0,
                 ]);
 
-                $precuentaId = $connection->table('precuenta')->orderBy('id', 'desc')->first()->id_precuenta;
 
                 $items = json_decode($request->items);
 
