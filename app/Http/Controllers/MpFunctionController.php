@@ -44,6 +44,14 @@ class MpFunctionController extends Controller
                     $fail('El tipo de pago ingresado no existe');
 
             }],
+            'type_sale_id' => ['required',function($_, $value, $fail) use($request){
+
+                $existsSaleType =  DB::connection(base64_decode($request->connect))->table('cliente')->where('id_cliente',$value)->exists();
+
+                if(!$existsSaleType)
+                    $fail('El tipo de venta ingresado no existe');
+
+            }],
             'items' => ['required','json',function($_, $value, $fail) use($request){
 
                 $items = json_decode($value);
@@ -222,7 +230,7 @@ class MpFunctionController extends Controller
                     'id_comprador' => $customerId,
                     'default_name' => $request->order_id,
                     'comenzales' => 1,
-                    'id_cliente_externo' => '',
+                    'id_cliente_externo' => $request->sale_type_id,
                     'venta_web' => true,
                     'total_venta_web' => $request->total,
                     'tipo_pago_venta_web' => $request->payment_type_id,
