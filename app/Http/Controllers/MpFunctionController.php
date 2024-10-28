@@ -48,6 +48,9 @@ class MpFunctionController extends Controller
 
                 $items = json_decode($value);
 
+                info('$items');
+                info($items);
+
                 if(!is_array($value)){
 
                     $fail('El campo items debe ser un array json');
