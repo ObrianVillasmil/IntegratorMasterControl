@@ -130,7 +130,7 @@ class UberNotificationController extends Controller
                         }
 
                         info('items');
-                        info((string)json_encode($items));
+                        info(json_encode($items,JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION));
 
                         $resAccount = MpFunctionController::createMpAccount(new Request([
                             'id_branch_office' => $store->id_sucursal,
@@ -145,7 +145,7 @@ class UberNotificationController extends Controller
                             'customer_phone' => $customerPhone,
                             'total' => $response->order->payment->payment_detail->order_total->gross->amount_e5/100000,
                             'payment_type_id' => 4, //VINCULAR UN TIPO DE PAGO EN LA CONFIGRURACION DE LA TIENDA
-                            'items' => (string)json_encode($items)
+                            'items' => json_encode($items,JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION)
                         ]));
 
                         info('resAccount:');

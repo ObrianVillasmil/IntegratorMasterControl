@@ -36,7 +36,15 @@ class MpFunctionController extends Controller
                 }
 
             }],
-            'items' => ['required','json',function($_, $value, $fail){
+            'payment_type_id' => ['required',function($_, $value, $fail) use($request){
+
+                $existsPaymentType =  DB::connection(base64_decode($request->connect))->table('tipo_pago')->where('id_tipo_pago',$value)->exists();
+
+                if(!$existsPaymentType)
+                    $fail('El tipo de pago ingresado no existe');
+
+            }],
+            'items' => ['required',function($_, $value, $fail){
 
                 $items = json_decode($value);
 
@@ -122,14 +130,7 @@ class MpFunctionController extends Controller
                 }
 
             }],
-            'payment_type_id' => ['required',function($_, $value, $fail) use($request){
 
-                $existsPaymentType =  DB::connection(base64_decode($request->connect))->table('tipo_pago')->where('id_tipo_pago',$value)->exists();
-
-                if(!$existsPaymentType)
-                    $fail('El tipo de pago ingresado no existe');
-
-            }],
         ],[
             'id_branch_office.required' => 'No se obtuvo el identificador de la tienda',
             'id_branch_office.numeric' => 'El identificador de la tienda debe ser un número',
