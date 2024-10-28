@@ -20,6 +20,7 @@ class MpFunctionController extends Controller
             'customer_address' => 'required_with:customer_identifcation',
             'customer_email' => 'required_with:customer_identifcation',
             'customer_phone' => 'required_with:customer_identifcation',
+            'body' => 'required|json',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
                 if(!isset($value)){
@@ -167,7 +168,9 @@ class MpFunctionController extends Controller
             'sale_type_id.required' => 'No se obtuvo el tipo de venta',
             'sale_type_id.numeric' => 'El tipo de venta debe ser un numero',
             'payment_type_id.required' => 'No se obtuvo el tipo de pago',
-            'payment_type_id.numeric' => 'El tipo de pago debe ser un numero'
+            'payment_type_id.numeric' => 'El tipo de pago debe ser un numero',
+            'body.required' => 'El cuerpo de la orden es obligatorio',
+            'body.json' => 'El cuerpo de la orden debe ser un json válido'
         ]);
 
         if (!$validate->fails()) {
@@ -195,7 +198,6 @@ class MpFunctionController extends Controller
                             break;
                         default:
                             $idType = 3;
-                            break;
                     }
 
                     $dataCustomer = [
@@ -256,6 +258,22 @@ class MpFunctionController extends Controller
                     'servicio' => 0,
                 ]);
 
+                switch($request->ordering_platform){
+                    case 'UBER_EATS':
+                        $logo = 'ubereats.webp';
+                        break;
+                    default:
+                        $logo = 'appdelivery.webp';
+                }
+
+                $connection->table('precuenta_app_delivery')->insert([
+                    'id_precuenta' => $precuentaId,
+                    'id_sucursal' => $request->id_branch_office,
+                    'estado_app' => 'OFFERED',
+                    'canal' => $request->ordering_platform,
+                    'cuerpo' => $request->body,
+                    'logo' => $logo
+                ]);
 
                 $items = json_decode($request->items);
 
@@ -316,6 +334,13 @@ class MpFunctionController extends Controller
             ], 422);
 
         }
+
+    }
+
+    public static function updateMpAccount(Request $request)
+    {
+
+
 
     }
 

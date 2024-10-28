@@ -111,7 +111,7 @@ class UberNotificationController extends Controller
                                                     'name' => $res->title,
                                                     'ingredient' => 1,
                                                     'tax' => $dataResponse[7],
-                                                    'quantity' => $res->quantity->amount,
+                                                    'quantity' => $res->quantity->amount*$item->quantity->amount,
                                                     'id_pcpp' => $dataResponse[3],
                                                     'sub_total_price' => $dataResponse[9]/100,
                                                     'comment' => '',
@@ -143,13 +143,25 @@ class UberNotificationController extends Controller
                             'total' => $response->order->payment->payment_detail->order_total->gross->amount_e5/100000,
                             'payment_type_id' => 4, //VINCULAR UN TIPO DE PAGO EN LA CONFIGRURACION DE LA TIENDA
                             'sale_type_id' => 4, //VINCULAR UN TIPO DE VENTA PARA LA APLICACIÓN EN LA CONFIGRURACION DE LA TIENDA
-                            'items' => json_encode($items,JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION)
+                            'items' => json_encode($items,JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION),
+                            'body' => $response
                         ]));
 
-                        info('resAccount:');
-                        info((array)$resAccount);
+                        $resAccount = $resAccount->getData();
+
+                        if(!$resAccount->success){
+
+                            info('Error orderNotification: '.$resAccount->msg);
+
+                        }
 
                     }else if($data->event_type == 'delivery.state_changed'){
+
+                        if($response->order->state === 'ACEPTED'){
+
+                            MpFunctionController::updateMpAccount(new Request([]));
+
+                        }
 
 
 
