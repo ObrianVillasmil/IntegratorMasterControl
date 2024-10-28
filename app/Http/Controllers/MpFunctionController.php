@@ -36,7 +36,7 @@ class MpFunctionController extends Controller
                 }
 
             }],
-            'payment_type_id' => ['required',function($_, $value, $fail) use($request){
+            'payment_type_id' => ['required','numeric',function($_, $value, $fail) use($request){
 
                 $existsPaymentType =  DB::connection(base64_decode($request->connect))->table('tipo_pago')->where('id_tipo_pago',$value)->exists();
 
@@ -44,7 +44,7 @@ class MpFunctionController extends Controller
                     $fail('El tipo de pago ingresado no existe');
 
             }],
-            'type_sale_id' => ['required',function($_, $value, $fail) use($request){
+            'sale_type_id' => ['required','numeric',function($_, $value, $fail) use($request){
 
                 $existsSaleType =  DB::connection(base64_decode($request->connect))->table('cliente')->where('id_cliente',$value)->exists();
 
@@ -163,7 +163,11 @@ class MpFunctionController extends Controller
             'connect.string' => 'El acceso de la conexion debe ser una cadena de carcaracteres',
             'connect.min' => 'El acceso de la conexion debe tener al menos 3 caracteres',
             'items.required' => 'No se obtuvieron los items de la orden',
-            'items.json' => 'El campo items debe ser un array de tipo json válido'
+            'items.json' => 'El campo items debe ser un array de tipo json válido',
+            'sale_type_id.required' => 'No se obtuvo el tipo de venta',
+            'sale_type_id.numeric' => 'El tipo de venta debe ser un numero',
+            'payment_type_id.required' => 'No se obtuvo el tipo de pago',
+            'payment_type_id.numeric' => 'El tipo de pago debe ser un numero'
         ]);
 
         if (!$validate->fails()) {
