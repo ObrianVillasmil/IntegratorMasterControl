@@ -263,7 +263,12 @@ class MpFunctionController extends Controller
 
                    $imp = $connection->table('impuesto')->where('valor',$item->tax)->first();
 
+                   $detPrec = $connection->table('detalle_precuenta')->orderBy('id_detalle_precuenta', 'desc')->first();
+
+                   $detPrecuentaId = !isset($detPrec) ? 1 : ($detPrec->id_detalle_precuenta+1);
+
                     $connection->table('detalle_precuenta')->insert([
+                        'id_detalle_precuenta' => $detPrecuentaId,
                         'id_sucursal' => $request->id_branch_office,
                         'id_precuenta' => $precuentaId,
                         'id_producto' => $item->id,
