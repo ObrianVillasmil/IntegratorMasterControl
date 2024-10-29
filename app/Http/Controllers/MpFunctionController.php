@@ -20,7 +20,7 @@ class MpFunctionController extends Controller
             'customer_address' => 'required_with:customer_identifcation',
             'customer_email' => 'required_with:customer_identifcation',
             'customer_phone' => 'required_with:customer_identifcation',
-            'body' => 'null|json',
+            'body' => 'nullable|json',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
                 if(!isset($value)){
@@ -339,7 +339,7 @@ class MpFunctionController extends Controller
     {
         $validate = Validator::make($request->all(), [
             'ordering_platform' => 'required|string|min:3',
-            'body' => 'null|json',
+            'body' => 'nullable|json',
             'status' => 'required|string|min:3',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
