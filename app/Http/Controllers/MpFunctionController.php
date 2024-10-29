@@ -404,7 +404,7 @@ class MpFunctionController extends Controller
 
                 $connection->beginTransaction();
 
-                $order = DB::connection($connection)->table('precuenta as p')
+                $order = $connection->table('precuenta as p')
                 ->join('precuenta_app_delivery as app','p.id_precuenta','app.id_precuenta')
                 ->where('p.default_name',$request->order_id)->first();
 
@@ -434,7 +434,7 @@ class MpFunctionController extends Controller
 
             } catch (\Exception $e) {
 
-                info('Error updateMpOrder: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+                info('Error updateMpOrder: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile().' '.$e->getTraceAsString());
 
                 $connection->rollBack();
 
