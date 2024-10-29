@@ -147,11 +147,11 @@ class UberNotificationController extends Controller
                             'body' => $response
                         ]));
 
-                        $resAccount = $resAccount->getData();
+                        $resAccount = $resAccount->getData(true);
 
-                        if(!$resAccount->success){
+                        if(!$resAccount['success']){
 
-                            info('Error orderNotification: '.$resAccount->msg);
+                            info('Error orderNotification: '.$resAccount['msg']);
 
                         }
 
