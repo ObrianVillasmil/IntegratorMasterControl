@@ -368,7 +368,7 @@ class MpFunctionController extends Controller
                     $connection = base64_decode($request->connect);
 
                     $existsOrder = DB::connection($connection)->table('precuenta as p')
-                    ->join('precuenta_app_delivery as app','precuenta.id_precuenta','app.id_precuenta')
+                    ->join('precuenta_app_delivery as app','p.id_precuenta','app.id_precuenta')
                     ->where('p.default_name',$value)->exists();
 
                     if(!$existsOrder)
@@ -405,7 +405,7 @@ class MpFunctionController extends Controller
                 $connection->beginTransaction();
 
                 $order = DB::connection($connection)->table('precuenta as p')
-                ->join('precuenta_app_delivery as app','precuenta.id_precuenta','app.id_precuenta')
+                ->join('precuenta_app_delivery as app','p.id_precuenta','app.id_precuenta')
                 ->where('p.default_name',$request->order_id)->first();
 
                 switch($request->ordering_platform){
