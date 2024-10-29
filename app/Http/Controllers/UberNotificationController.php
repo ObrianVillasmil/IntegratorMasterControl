@@ -162,7 +162,7 @@ class UberNotificationController extends Controller
                             'order_id' => $response->order->id,
                             'status' => $response->order->state,
                             'ordering_platform' => $response->order->ordering_platform,
-                            'body' => $response,
+                            'body' => json_encode($response),
                             'connect' => base64_encode($data->connect),
                         ]));
 
