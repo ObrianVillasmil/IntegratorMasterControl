@@ -223,11 +223,9 @@ class MpFunctionController extends Controller
 
                         $customerId = $connection->table('comprador')->orderBy('id_comprador','desc')->first()->id_comprador;
 
-
                     }
 
                 }
-
 
                 $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
 

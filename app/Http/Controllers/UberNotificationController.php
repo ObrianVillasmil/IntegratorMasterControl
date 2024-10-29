@@ -151,7 +151,8 @@ class UberNotificationController extends Controller
 
                         if(!$resAccount['success']){
 
-                            info('Error orderNotification: '.$resAccount['msg']);
+                            info('Error orderNotification: ');
+                            info($resAccount['msg']);
 
                         }
 
