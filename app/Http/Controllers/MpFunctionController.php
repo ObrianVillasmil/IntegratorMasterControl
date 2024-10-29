@@ -434,7 +434,7 @@ class MpFunctionController extends Controller
 
             } catch (\Exception $e) {
 
-                info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+                info('Error updateMpOrder: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
 
                 $connection->rollBack();
 
