@@ -60,12 +60,12 @@ class UberNotificationController extends Controller
                         $customerPhone = null;
                         $items = [];
 
-                        if(isset($response->order->customers->tax_profiles)){
+                        if(isset($response->order->customers[0]) && isset($response->order->customers[0]->tax_profiles)){
 
-                            $customerIdentification = $response->order->customers->tax_profiles[0]->tax_id;
-                            $customerIdentification = $response->order->customers->tax_profiles[0]->email;
-                            $customer = $response->order->customers->tax_profiles[0]->legal_entity_name;
-                            $customerAddress = $response->order->customers->tax_profiles[0]->billing_address;
+                            $customerIdentification = $response->order->customers[0]->tax_profiles[0]->tax_id;
+                            $customerEmail = $response->order->customers[0]->tax_profiles[0]->email;
+                            $customer = $response->order->customers[0]->tax_profiles[0]->legal_entity_name;
+                            $customerAddress = $response->order->customers[0]->tax_profiles[0]->billing_address;
 
                         }
 
@@ -158,13 +158,13 @@ class UberNotificationController extends Controller
 
                     }else if($data->event_type == 'delivery.state_changed'){
 
-                        if($response->order->state === 'ACEPTED'){
-
-                            MpFunctionController::updateMpAccount(new Request([]));
-
-                        }
-
-
+                        MpFunctionController::updateMpAccount(new Request([
+                            'order_id' => $response->order->id,
+                            'status' => $response->order->state,
+                            'ordering_platform' => $response->order->ordering_platform,
+                            'body' => $response,
+                            'connect' => base64_encode($data->connect),
+                        ]));
 
                     }
 

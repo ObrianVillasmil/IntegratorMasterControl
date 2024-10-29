@@ -20,7 +20,7 @@ class MpFunctionController extends Controller
             'customer_address' => 'required_with:customer_identifcation',
             'customer_email' => 'required_with:customer_identifcation',
             'customer_phone' => 'required_with:customer_identifcation',
-            'body' => 'required|json',
+            'body' => 'null|json',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
                 if(!isset($value)){
@@ -169,7 +169,7 @@ class MpFunctionController extends Controller
             'sale_type_id.numeric' => 'El tipo de venta debe ser un numero',
             'payment_type_id.required' => 'No se obtuvo el tipo de pago',
             'payment_type_id.numeric' => 'El tipo de pago debe ser un numero',
-            'body.required' => 'El cuerpo de la orden es obligatorio',
+            //'body.required' => 'El cuerpo de la orden es obligatorio',
             'body.json' => 'El cuerpo de la orden debe ser un json válido'
         ]);
 
@@ -337,7 +337,122 @@ class MpFunctionController extends Controller
 
     public static function updateMpAccount(Request $request)
     {
+        $validate = Validator::make($request->all(), [
+            'ordering_platform' => 'required|string|min:3',
+            'body' => 'null|json',
+            'status' => 'required|string|min:3',
+            'connect' => ['required','string','min:3',function($_, $value, $fail){
 
+                if(!isset($value)){
+
+                    $fail('La variable connect es obligatoria');
+
+                }else{
+
+                    $connection = base64_decode($value);
+
+                    if(!DB::table('companies')->where('connect',$connection)->exists())
+                        $fail('La tienda no existe');
+
+                }
+
+            }],
+            'order_id' => ['required','string','min:3',function($_, $value, $fail) use($request){
+
+                if(!isset($value)){
+
+                    $fail('El parámetro order_id es obligatorio');
+
+                }else{
+
+                    $connection = base64_decode($request->connect);
+
+                    $existsOrder = DB::connection($connection)->table('precuenta as p')
+                    ->join('precuenta_app_delivery as app','precuenta.id_precuenta','app.id_precuenta')
+                    ->where('p.default_name',$value)->exists();
+
+                    if(!$existsOrder)
+                        $fail('No existe una oredn con el identificador '.$value);
+
+                }
+
+            }],
+        ],[
+            'id_branch_office.required' => 'No se obtuvo el identificador de la tienda',
+            'id_branch_office.numeric' => 'El identificador de la tienda debe ser un número',
+            'order_id.required' => 'No se obtuvo el identificador de la orden',
+            'order_id.string' => 'El identificador de la orden debe ser una cadena de carcaracteres',
+            'order_id.min' => 'El identificador de la orden debe tener al menos 3 caracteres',
+            'ordering_platform.required' => 'No se obtuvo el nombre de la plataforma que origina la orden',
+            'ordering_platform.string' => 'El nombre de la plataforma que origina la orden debe ser una cadena de carcaracteres',
+            'ordering_platform.min' => 'El nombre de la plataforma que origina la orden debe tener al menos 3 caracteres',
+            'connect.required' => 'No se obtuvo el nombre de la sucursal',
+            'connect.required' => 'El acceso de la conexion es obligatorio',
+            'connect.string' => 'El acceso de la conexion debe ser una cadena de carcaracteres',
+            'connect.min' => 'El acceso de la conexion debe tener al menos 3 caracteres',
+            'status.required' => 'No se obtuvo el estado de la orden',
+            'status.string' => 'El estado de la orden debe ser una cadena de carcaracteres',
+            'status.min' => 'El estado de la orden debe tener al menos 3 caracteres',
+            'body.json' => 'El cuerpo de la orden debe ser un json válido'
+        ]);
+
+        if (!$validate->fails()) {
+
+            $connection = DB::connection(base64_decode($request->connect));
+
+            try {
+
+                $connection->beginTransaction();
+
+                $order = DB::connection($connection)->table('precuenta as p')
+                ->join('precuenta_app_delivery as app','precuenta.id_precuenta','app.id_precuenta')
+                ->where('p.default_name',$request->order_id)->first();
+
+                switch($request->ordering_platform){
+                    case 'UBER_EATS':
+                        $logo = 'ubereats.webp';
+                        break;
+                    default:
+                        $logo = 'appdelivery.webp';
+                }
+
+                $connection->table('precuenta_app_delivery')->insert([
+                    'id_precuenta' => $order->id_precuenta,
+                    'id_sucursal' => $order->id_sucursal,
+                    'estado_app' => $request->status,
+                    'canal' => $request->ordering_platform,
+                    'cuerpo' => $request->body,
+                    'logo' => $logo
+                ]);
+
+                $connection->commit();
+
+                return response()->json([
+                    'success' => true,
+                    'msg' => 'Se ha creado el pedido con éxito'
+                ],200);
+
+            } catch (\Exception $e) {
+
+                info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+
+                $connection->rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
+                ],500);
+
+            }
+
+        } else {
+
+            return response()->json([
+                'success' => false,
+                "msg" => $validate->errors()->all(),
+            ], 422);
+
+        }
 
 
     }
