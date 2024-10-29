@@ -69,8 +69,8 @@ class UberNotificationController extends Controller
 
                         }
 
-                        if(isset($response->order->contact->phone))
-                            $customerPhone = $response->order->contact->phone->number;
+                        if(isset($response->order->customers[0]->contact->phone))
+                            $customerPhone = $response->order->customers[0]->contact->phone->number;
 
                         if(isset($response->order->carts) && isset($response->order->carts[0]->items)){
 
