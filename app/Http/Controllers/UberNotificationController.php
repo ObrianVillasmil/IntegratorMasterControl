@@ -51,7 +51,7 @@ class UberNotificationController extends Controller
                 if($codigoHttp >= 200 && $codigoHttp <= 299){
 
                     //CREA LA PRECUENTA EN EL MASTERPOS CORRESPONDIENTE
-                    if($data->event_type == 'orders.notification' && $response->order->state === 'OFFERED'){
+                    if($data->event_type == 'orders.notification'){
 
                         $customerIdentification = null;
                         $customerEmail = null;
@@ -129,7 +129,7 @@ class UberNotificationController extends Controller
 
                         }
 
-                        $resAccount = MpFunctionController::createMpAccount(new Request([
+                        $createOrder = MpFunctionController::createMpOrder(new Request([
                             'id_branch_office' => $store->id_sucursal,
                             'order_id' => $response->order->id,
                             'connect' => base64_encode($data->connect),
@@ -147,24 +147,33 @@ class UberNotificationController extends Controller
                             'body' => json_encode($response)
                         ]));
 
-                        $resAccount = $resAccount->getData(true);
+                        $createOrder = $createOrder->getData(true);
 
-                        if(!$resAccount['success']){
+                        if(!$createOrder['success']){
 
                             info('Error orderNotification: ');
-                            info($resAccount['msg']);
+                            info($createOrder['msg']);
 
                         }
 
                     }else if($data->event_type == 'delivery.state_changed'){
 
-                        MpFunctionController::updateMpAccount(new Request([
+                        $updateOrder = MpFunctionController::updateMpOrder(new Request([
                             'order_id' => $response->order->id,
                             'status' => $response->order->state,
                             'ordering_platform' => $response->order->ordering_platform,
                             'body' => $response,
                             'connect' => base64_encode($data->connect),
                         ]));
+
+                        $updateOrder = $updateOrder->getData(true);
+
+                        if(!$updateOrder['success']){
+
+                            info('Error orderNotification: ');
+                            info($updateOrder['msg']);
+
+                        }
 
                     }
 

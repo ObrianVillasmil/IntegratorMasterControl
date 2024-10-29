@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Validator;
 
 class MpFunctionController extends Controller
 {
-    public static function createMpAccount(Request $request)
+    public static function createMpOrder(Request $request)
     {
         $validate = Validator::make($request->all(), [
             'id_branch_office' => 'required|numeric',
@@ -335,7 +335,7 @@ class MpFunctionController extends Controller
 
     }
 
-    public static function updateMpAccount(Request $request)
+    public static function updateMpOrder(Request $request)
     {
         $validate = Validator::make($request->all(), [
             'ordering_platform' => 'required|string|min:3',
