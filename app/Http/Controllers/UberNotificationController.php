@@ -144,7 +144,7 @@ class UberNotificationController extends Controller
                             'payment_type_id' => 4, //VINCULAR UN TIPO DE PAGO EN LA CONFIGRURACION DE LA TIENDA
                             'sale_type_id' => 4, //VINCULAR UN TIPO DE VENTA PARA LA APLICACIÓN EN LA CONFIGRURACION DE LA TIENDA
                             'items' => json_encode($items,JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION),
-                            'body' => $response
+                            'body' => json_encode($response)
                         ]));
 
                         $resAccount = $resAccount->getData(true);
