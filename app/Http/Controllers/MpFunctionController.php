@@ -19,7 +19,7 @@ class MpFunctionController extends Controller
             'customer' => 'required_with:customer_identifcation',
             'customer_address' => 'required_with:customer_identifcation',
             'customer_email' => 'required_with:customer_identifcation',
-            'customer_phone' => 'required_with:customer_identifcation',
+            //'customer_phone' => 'required_with:customer_identifcation',
             'body' => 'nullable|json',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
