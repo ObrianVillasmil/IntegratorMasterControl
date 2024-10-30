@@ -128,7 +128,7 @@ class MpFunctionController extends Controller
                                 $existImp = DB::connection($connect)->table('pos_configuracion_producto_pregunta')->where('id_pos_configuracion_producto_pregunta',$item->id_pcpp)->exists();
 
                                 if(!$existImp)
-                                    $fail("El valor del campo id_pcpp del item {$item->name} no existe");
+                                    $fail("El valor {$item->id_pcpp} del campo id_pcpp del item {$item->name} no existe");
 
                             }
 
