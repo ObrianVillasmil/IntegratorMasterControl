@@ -688,13 +688,13 @@ class ContificoIntegrationController extends Controller
 
             if(count($alertasMailExterno)){
 
-                $htmlError = "Han ocurrido los siguiente inconvenientes al enviar las siguientes ventas de ".strtoupper($company->name)." a contifico en fecha ".now()->format('d-m-Y H:i:s')." \n\n";
+                $htmlError = "Han ocurrido los siguiente inconvenientes al enviar las siguientes ventas de ".strtoupper($company->name)." a contifico en fecha ".now()->format('d-m-Y')." \n\n";
 
                 foreach ($alertasMailExterno as $ame)
                     $htmlError.= "<div>".$ame."</div> \n";
 
                 self::sendMail([
-                    'subject' => "Error en el envío de ventas a contifico de {$company->name}",
+                    'subject' => "Error en el envío de ventas a contifico de {$company->connect}",
                     'sucursal' => strtoupper($company->name),
                     'ccEmail' => $company->error_email,
                     'html' => "<html>

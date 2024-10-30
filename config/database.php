@@ -87,6 +87,20 @@ return [
             'sslmode' => 'prefer',
         ],
 
+        'mipclocal' => [
+            'driver' => 'pgsql',
+            'host' => env('DB_HOST_MIPCLOCAL', '127.0.0.1'),
+            'port' => env('DB_PORT_MIPCLOCAL', '5432'),
+            'database' => env('DB_DATABASE_MIPCLOCAL', 'forge'),
+            'username' => env('DB_USERNAME_MIPCLOCAL', 'forge'),
+            'password' => env('DB_PASSWORD_MIPCLOCAL', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'schema' => 'public',
+            'sslmode' => 'prefer',
+        ],
+
     ],
 
     /*
