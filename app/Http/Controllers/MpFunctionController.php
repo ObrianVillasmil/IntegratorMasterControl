@@ -341,6 +341,7 @@ class MpFunctionController extends Controller
             'ordering_platform' => 'required|string|min:3',
             'body' => 'nullable|json',
             'status' => 'required|string|min:3',
+            'tiempo_preparacion' => 'required|numeric|min:1',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
                 if(!isset($value)){
@@ -393,7 +394,10 @@ class MpFunctionController extends Controller
             'status.required' => 'No se obtuvo el estado de la orden',
             'status.string' => 'El estado de la orden debe ser una cadena de carcaracteres',
             'status.min' => 'El estado de la orden debe tener al menos 3 caracteres',
-            'body.json' => 'El cuerpo de la orden debe ser un json válido'
+            'body.json' => 'El cuerpo de la orden debe ser un json válido',
+            'tiempo_preparacion.required' => 'No se obtuvo el tiempo de preparación de la orden',
+            'tiempo_preparacion.numeric' => 'El tiempo de preparación de la orden debe ser un número',
+            'tiempo_preparacion.min' => 'El tiempo (en segundos) de preparación de la orden debe ser mayor o igual a 1'
         ]);
 
         if (!$validate->fails()) {
@@ -422,7 +426,8 @@ class MpFunctionController extends Controller
                     'estado_app' => $request->status,
                     'canal' => $request->ordering_platform,
                     'cuerpo' => $request->body,
-                    'logo' => $logo
+                    'logo' => $logo,
+                    'tiempo_preparacion' => $request->tiempo_preparacion
                 ]);
 
                 $connection->commit();
