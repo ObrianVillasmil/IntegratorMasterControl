@@ -264,6 +264,10 @@ class MpFunctionController extends Controller
                         $logo = 'appdelivery.webp';
                 }
 
+                $connection->table('precuenta_app_delivery')
+                ->where( 'id_sucursal', $request->id_branch_office)
+                ->where('id_precuenta', $precuentaId)->update(['estado' => false]);
+
                 $connection->table('precuenta_app_delivery')->insert([
                     'id_precuenta' => $precuentaId,
                     'id_sucursal' => $request->id_branch_office,
@@ -419,6 +423,10 @@ class MpFunctionController extends Controller
                     default:
                         $logo = 'appdelivery.webp';
                 }
+
+                $connection->table('precuenta_app_delivery')
+                ->where( 'id_sucursal', $order->id_sucursal)
+                ->where('id_precuenta', $order->id_precuenta)->update(['estado' => false]);
 
                 $connection->table('precuenta_app_delivery')->insert([
                     'id_precuenta' => $order->id_precuenta,
