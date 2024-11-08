@@ -43,6 +43,8 @@ class UberNotificationController extends Controller
 
             info('$codigoHttp '.$codigoHttp);
             info('$data->event_type: ' .$data->event_type);
+            info('response');
+            info($response);
 
             if(isset($response->order)){
 
