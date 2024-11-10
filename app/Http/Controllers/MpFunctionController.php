@@ -139,7 +139,6 @@ class MpFunctionController extends Controller
                 }
 
             }],
-
         ],[
             'id_branch_office.required' => 'No se obtuvo el identificador de la tienda',
             'id_branch_office.numeric' => 'El identificador de la tienda debe ser un número',
@@ -256,26 +255,31 @@ class MpFunctionController extends Controller
                     'servicio' => 0,
                 ]);
 
-                switch($request->ordering_platform){
-                    case 'UBER_EATS':
-                        $logo = 'ubereats.webp';
-                        break;
-                    default:
-                        $logo = 'appdelivery.webp';
+                //SOLO PARA APPS DE DELIVERY, LOS ECCOMERCE EXTERNOS ENTRAN COMO UNA PRECUENTA NORMAL
+                if(isset($request->app_deliverys) && $request->app_deliverys){
+
+                    switch($request->ordering_platform){
+                        case 'UBER_EATS':
+                            $logo = 'ubereats.webp';
+                            break;
+                        default:
+                            $logo = 'appdelivery.webp';
+                    }
+
+                    $connection->table('precuenta_app_delivery')
+                    ->where( 'id_sucursal', $request->id_branch_office)
+                    ->where('id_precuenta', $precuentaId)->update(['estado' => false]);
+
+                    $connection->table('precuenta_app_delivery')->insert([
+                        'id_precuenta' => $precuentaId,
+                        'id_sucursal' => $request->id_branch_office,
+                        'estado_app' => 'OFFERED',
+                        'canal' => $request->ordering_platform,
+                        'cuerpo' => $request->body,
+                        'logo' => $logo
+                    ]);
+
                 }
-
-                $connection->table('precuenta_app_delivery')
-                ->where( 'id_sucursal', $request->id_branch_office)
-                ->where('id_precuenta', $precuentaId)->update(['estado' => false]);
-
-                $connection->table('precuenta_app_delivery')->insert([
-                    'id_precuenta' => $precuentaId,
-                    'id_sucursal' => $request->id_branch_office,
-                    'estado_app' => 'OFFERED',
-                    'canal' => $request->ordering_platform,
-                    'cuerpo' => $request->body,
-                    'logo' => $logo
-                ]);
 
                 $items = json_decode($request->items);
 
@@ -339,7 +343,7 @@ class MpFunctionController extends Controller
 
     }
 
-    public static function updateMpOrder(Request $request)
+    public static function updateMpOrderAppDelivery(Request $request)
     {
         $validate = Validator::make($request->all(), [
             'ordering_platform' => 'required|string|min:3',

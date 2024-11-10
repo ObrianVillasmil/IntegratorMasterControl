@@ -140,6 +140,7 @@ class UberNotificationController extends Controller
                             'customer_address' => $customerAddress,
                             'customer_email' => $customerEmail,
                             'customer_phone' => $customerPhone,
+                            'app_deliverys' => true,
                             'total' => $response->order->payment->payment_detail->order_total->gross->amount_e5/100000,
                             'payment_type_id' => 4, //VINCULAR UN TIPO DE PAGO EN LA CONFIGRURACION DE LA TIENDA
                             'sale_type_id' => 4, //VINCULAR UN TIPO DE VENTA PARA LA APLICACIÓN EN LA CONFIGRURACION DE LA TIENDA
@@ -156,9 +157,10 @@ class UberNotificationController extends Controller
 
                         }
 
+                    //ACTUALZA LA INFORMACION DE LA PRECUENTA
                     }else if($data->event_type == 'delivery.state_changed'){
 
-                        $updateOrder = MpFunctionController::updateMpOrder(new Request([
+                        $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
                             'order_id' => $response->order->id,
                             'status' => $response->order->state,
                             'ordering_platform' => $response->order->ordering_platform,
@@ -171,7 +173,7 @@ class UberNotificationController extends Controller
 
                         if(!$updateOrder['success']){
 
-                            info('Error updateMpOrder: ');
+                            info('Error updateMpOrderAppDelivery: ');
                             info($updateOrder['msg']);
 
                         }
