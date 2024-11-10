@@ -293,7 +293,7 @@ class MpFunctionController extends Controller
                         'id_precuenta' => $precuentaId,
                         'id_producto' => $item->id,
                         'tipo' => $item->type,
-                        'nombre' => $item->name,
+                        'nombre' => $item->name.(isset($item->comment) && $item->comment != '' ? (' | '.$item->comment) : ''),
                         'impuesto' => $item->tax,
                         'cantidad' => $item->quantity,
                         'ingrediente' => $item->ingredient == 1,
