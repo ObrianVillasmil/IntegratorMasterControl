@@ -55,10 +55,19 @@ class UberNotificationController extends Controller
 
                         if($data->event_type === 'orders.fulfillment_issues.resolved'){
 
-                            MpFunctionController::deleteMpOrderAppDelivery(new Request([
+                            $deleteOrder = MpFunctionController::deleteMpOrderAppDelivery(new Request([
                                 'order_id' => $response->order->id,
                                 'connect' => base64_encode($data->connect),
                             ]));
+
+                            $deleteOrder = $deleteOrder->getData(true);
+
+                            if(!$deleteOrder['success']){
+
+                                info('Error orderNotification: ');
+                                info($deleteOrder['msg']);
+
+                            }
 
                         }
 
