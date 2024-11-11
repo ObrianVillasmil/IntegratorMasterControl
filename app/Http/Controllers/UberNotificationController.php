@@ -51,7 +51,16 @@ class UberNotificationController extends Controller
                 if($codigoHttp >= 200 && $codigoHttp <= 299){
 
                     //CREA LA PRECUENTA EN EL MASTERPOS CORRESPONDIENTE
-                    if($data->event_type == 'orders.notification'){
+                    if(in_array($data->event_type,['orders.notification','orders.fulfillment_issues.resolved'])){
+
+                        if($data->event_type === 'orders.fulfillment_issues.resolved'){
+
+                            MpFunctionController::deleteMpOrderAppDelivery(new Request([
+                                'order_id' => $response->order->id,
+                                'connect' => base64_encode($data->connect),
+                            ]));
+
+                        }
 
                         $customerIdentification = null;
                         $customerEmail = null;
