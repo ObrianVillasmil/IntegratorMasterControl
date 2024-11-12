@@ -51,7 +51,25 @@ class UberNotificationController extends Controller
                 if($codigoHttp >= 200 && $codigoHttp <= 299){
 
                     //CREA LA PRECUENTA EN EL MASTERPOS CORRESPONDIENTE
-                    if($data->event_type == 'orders.notification'){
+                    if(in_array($data->event_type,['orders.notification','orders.fulfillment_issues.resolved'])){
+
+                        if($data->event_type === 'orders.fulfillment_issues.resolved'){
+
+                            $deleteOrder = MpFunctionController::deleteMpOrderAppDelivery(new Request([
+                                'order_id' => $response->order->id,
+                                'connect' => base64_encode($data->connect),
+                            ]));
+
+                            $deleteOrder = $deleteOrder->getData(true);
+
+                            if(!$deleteOrder['success']){
+
+                                info('Error orderNotification: ');
+                                info($deleteOrder['msg']);
+
+                            }
+
+                        }
 
                         $customerIdentification = null;
                         $customerEmail = null;
@@ -140,6 +158,7 @@ class UberNotificationController extends Controller
                             'customer_address' => $customerAddress,
                             'customer_email' => $customerEmail,
                             'customer_phone' => $customerPhone,
+                            'app_deliverys' => true,
                             'total' => $response->order->payment->payment_detail->order_total->gross->amount_e5/100000,
                             'payment_type_id' => 4, //VINCULAR UN TIPO DE PAGO EN LA CONFIGRURACION DE LA TIENDA
                             'sale_type_id' => 4, //VINCULAR UN TIPO DE VENTA PARA LA APLICACIÓN EN LA CONFIGRURACION DE LA TIENDA
@@ -156,9 +175,10 @@ class UberNotificationController extends Controller
 
                         }
 
+                    //ACTUALZA LA INFORMACION DE LA PRECUENTA
                     }else if($data->event_type == 'delivery.state_changed'){
 
-                        $updateOrder = MpFunctionController::updateMpOrder(new Request([
+                        $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
                             'order_id' => $response->order->id,
                             'status' => $response->order->state,
                             'ordering_platform' => $response->order->ordering_platform,
@@ -171,7 +191,7 @@ class UberNotificationController extends Controller
 
                         if(!$updateOrder['success']){
 
-                            info('Error updateMpOrder: ');
+                            info('Error updateMpOrderAppDelivery: ');
                             info($updateOrder['msg']);
 
                         }
