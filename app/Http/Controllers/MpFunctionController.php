@@ -550,7 +550,7 @@ class MpFunctionController extends Controller
 
     }
 
-    public function cancelMpOrderAppDelivery(Request $request)
+    public static function cancelMpOrderAppDelivery(Request $request)
     {
         $validate = Validator::make($request->all(), [
             'order_id' => 'required|string|min:3',
@@ -616,7 +616,6 @@ class MpFunctionController extends Controller
                     'estado' => true,
                     'fecha_registro' => now()->toDateTimeString()
                 ]);
-
 
                 $connection->commit();
 
