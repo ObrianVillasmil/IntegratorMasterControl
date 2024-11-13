@@ -248,7 +248,7 @@ class UberNotificationController extends Controller
         try {
 
             $cancelOrder = MpFunctionController::cancelMpOrderAppDelivery(new Request([
-                'order_id' => $data->meta->order_id,
+                'order_id' => $data->meta->resource_id,
                 'connect' => $data->connect,
             ]));
 
