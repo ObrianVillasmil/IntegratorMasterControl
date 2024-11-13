@@ -13,7 +13,9 @@ class UberNotificationController extends Controller
     {
         try {
 
-            $store = DB::connection($data->connect)->table('sucursal_tienda_uber')->where('store_id',$data->store_id)->first();
+            $store = DB::connection($data->connect)->table('sucursal_tienda_uber as stu')
+            ->join('sucursal as s','s.id_sucursal','stu.id_sucursal')
+            ->where('stu.store_id',$data->store_id)->first();
 
             $client = curl_init();
 
@@ -160,8 +162,8 @@ class UberNotificationController extends Controller
                             'customer_phone' => $customerPhone,
                             'app_deliverys' => true,
                             'total' => $response->order->payment->payment_detail->order_total->gross->amount_e5/100000,
-                            'payment_type_id' => 4, //VINCULAR UN TIPO DE PAGO EN LA CONFIGRURACION DE LA TIENDA
-                            'sale_type_id' => 4, //VINCULAR UN TIPO DE VENTA PARA LA APLICACIÓN EN LA CONFIGRURACION DE LA TIENDA
+                            'payment_type_id' => $store->id_tipo_pago_uber, //VINCULAR UN TIPO DE PAGO EN LA CONFIGRURACION DE LA TIENDA
+                            'sale_type_id' => $store->id_tipo_venta_uber, //VINCULAR UN TIPO DE VENTA PARA LA APLICACIÓN EN LA CONFIGRURACION DE LA TIENDA
                             'items' => json_encode($items,JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION),
                             'body' => json_encode($response)
                         ]));
@@ -176,11 +178,31 @@ class UberNotificationController extends Controller
                         }
 
                     //ACTUALZA LA INFORMACION DE LA PRECUENTA
-                    }else if($data->event_type == 'delivery.state_changed'){
+                    }else if(in_array($data->event_type,['delivery.state_changed','orders.release','orders.failed']) ){
+
+                        $status = $response->order->state;
+
+                        if($data->event_type === 'orders.release'){
+
+                            $status = $response->order->preparation_status;
+
+                        }else if($data->event_type === 'delivery.state_changed'){
+
+                            if(isset($data->meta->current_state) && $data->meta->current_state !== 'SCHEDULED'){
+
+                                $status = $data->meta->current_state;
+
+                            }else{
+
+                                $status = $data->meta->status;
+
+                            }
+
+                        }
 
                         $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
                             'order_id' => $response->order->id,
-                            'status' => $response->order->state,
+                            'status' => $status,
                             'ordering_platform' => $response->order->ordering_platform,
                             'body' => json_encode($response),
                             'connect' => base64_encode($data->connect),
@@ -205,6 +227,12 @@ class UberNotificationController extends Controller
 
                 }
 
+            }else{
+
+                info('El webhook no tiene la propiedad order:');
+                info(json_encode($data));
+                info('$response:');
+                info(json_encode($response));
             }
 
         } catch (\Exception $e) {
