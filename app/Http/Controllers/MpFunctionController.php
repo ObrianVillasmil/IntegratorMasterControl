@@ -349,7 +349,7 @@ class MpFunctionController extends Controller
             'ordering_platform' => 'required|string|min:3',
             'body' => 'nullable|json',
             'status' => 'required|string|min:3',
-            'tiempo_preparacion' => 'required|numeric|min:1',
+            'tiempo_preparacion' => 'required|numeric|min:0',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
                 if(!isset($value)){
