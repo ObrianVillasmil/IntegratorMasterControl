@@ -610,7 +610,7 @@ class MpFunctionController extends Controller
                     'cuerpo' => json_encode($cuerpo),
                     'logo' => $precuentaAppDelivery->logo,
                     'canal' => $precuentaAppDelivery->canal,
-                    'tiempo_preparacion' => $precuenta->tiempo_preparacion,
+                    'tiempo_preparacion' => $precuentaAppDelivery->tiempo_preparacion,
                     'estado' => true,
                     'fecha_registro' => now()->toDateTimeString()
                 ]);
