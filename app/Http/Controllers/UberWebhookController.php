@@ -12,7 +12,8 @@ class UberWebhookController extends Controller
     const ORDER_NOTIFICATION_TYPES = [
         'orders.notification',
         'delivery.state_changed',
-        'orders.release','orders.failed',
+        'orders.release',
+        'orders.failed',
         'orders.fulfillment_issues.resolved',
         'order.fulfillment_issues.resolved'
         /* ,'orders.failure' */
@@ -55,11 +56,9 @@ class UberWebhookController extends Controller
 
                 if(hash_equals($signature,$hmac)){
 
-                    WebHookUber::create(['data' => json_encode($data)]);
+                    $whu= WebHookUber::create(['data' => json_encode($data)]);
 
                     if(in_array($data->event_type,self::ORDER_NOTIFICATION_TYPES)){
-
-                        $whu = WebHookUber::orderBy('id','desc')->first();
 
                         $data->webook_uber_id = $whu->id;
                         $data->store_id = $storeId;
