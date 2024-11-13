@@ -243,4 +243,14 @@ class UberNotificationController extends Controller
 
         return [];
     }
+
+    public static function orderNotificationFailure(array $data) : array
+    {
+
+
+        return [];
+    }
+
+
+
 }
