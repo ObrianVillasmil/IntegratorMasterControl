@@ -192,7 +192,7 @@ class UberNotificationController extends Controller
 
                                 $status = $data->meta->current_state;
 
-                            }else{
+                            }else if($data->meta->status !== 'SCHEDULED'){
 
                                 $status = $data->meta->status;
 
