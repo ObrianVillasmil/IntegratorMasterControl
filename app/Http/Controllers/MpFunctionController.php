@@ -349,7 +349,7 @@ class MpFunctionController extends Controller
             'ordering_platform' => 'required|string|min:3',
             'body' => 'nullable|json',
             'status' => 'required|string|min:3',
-            'tiempo_preparacion' => 'required|numeric|min:1',
+            'tiempo_preparacion' => 'required|numeric|min:0',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
                 if(!isset($value)){
@@ -518,6 +518,102 @@ class MpFunctionController extends Controller
                 $connection->table('precuenta_base_impuesto')->where('id_precuenta',$precuenta->id_precuenta)->delete();
                 $connection->table('precuenta_app_delivery')->where('cuerpo->order->id',$request->order_id)->delete();
                 $connection->table('precuenta')->where('default_name',$request->order_id)->delete();
+
+                $connection->commit();
+
+                return response()->json([
+                    'success' => true,
+                    'msg' => 'Se eliminado el pedido con éxito'
+                ],200);
+
+            } catch (\Exception $e) {
+
+                info('Error deleteMpOrderAppDelivery: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile().' '.$e->getTraceAsString());
+
+                $connection->rollBack();
+
+                return response()->json([
+                    'success' => false,
+                    'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
+                ],500);
+
+            }
+
+        } else {
+
+            return response()->json([
+                'success' => false,
+                "msg" => $validate->errors()->all(),
+            ], 422);
+
+        }
+
+    }
+
+    public static function cancelMpOrderAppDelivery(Request $request)
+    {
+        $validate = Validator::make($request->all(), [
+            'order_id' => 'required|string|min:3',
+            'connect' => ['required','string','min:3',function($_, $value, $fail){
+
+                if(!isset($value)){
+
+                    $fail('La variable connect es obligatoria');
+
+                }else{
+
+                    if(!DB::table('companies')->where('connect',$value)->exists())
+                        $fail('La tienda no existe');
+
+                }
+
+            }],
+        ],[
+            'order_id.required' => 'No se obtuvo el identificador de la orden',
+            'order_id.string' => 'El identificador de la orden debe ser una cadena de carcaracteres',
+            'order_id.min' => 'El identificador de la orden debe tener al menos 3 caracteres',
+            'connect.required' => 'No se obtuvo el nombre de la sucursal',
+            'connect.required' => 'El acceso de la conexion es obligatorio',
+            'connect.string' => 'El acceso de la conexion debe ser una cadena de carcaracteres',
+            'connect.min' => 'El acceso de la conexion debe tener al menos 3 caracteres',
+        ]);
+
+        if (!$validate->fails()) {
+
+            $connection = DB::connection($request->connect);
+
+            try {
+
+                $connection->beginTransaction();
+
+                $precuenta =  $connection->table('precuenta')->where('default_name',$request->order_id)->first();
+
+                $precuentaAppDelivery = $connection->table('precuenta_app_delivery')
+                ->where('cuerpo->order->id',$request->order_id)
+                ->where('estado',true)->first();
+
+                $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
+
+                $connection->table('precuenta')->where('default_name',$request->order_id)->update(['procesado' => true]);
+
+                $connection->table('precuenta_app_delivery')
+                ->where('cuerpo->order->id',$request->order_id)
+                ->where('estado',true)
+                ->update(['estado' => false]);
+
+                $cuerpo->order->state = 'CANCELLED';
+
+                $connection->table('precuenta_app_delivery')->insert([
+                    'id_precuenta' => $precuenta->id_precuenta,
+                    'id_sucursal' => $precuenta->id_sucursal,
+                    'estado_app' => 'CANCELLED',
+                    'cuerpo' => json_encode($cuerpo),
+                    'logo' => $precuentaAppDelivery->logo,
+                    'canal' => $precuentaAppDelivery->canal,
+                    'tiempo_preparacion' => $precuentaAppDelivery->tiempo_preparacion,
+                    'estado' => true,
+                    'fecha_registro' => now()->toDateTimeString()
+                ]);
 
                 $connection->commit();
 

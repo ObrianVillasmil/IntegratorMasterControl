@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class UberNotificationController extends Controller
 {
-    public static function orderNotification(Object $data) : Array
+    public static function orderNotification(Object $data)
     {
         try {
 
@@ -241,6 +241,32 @@ class UberNotificationController extends Controller
 
         }
 
-        return [];
     }
+
+    public static function orderNotificationFailure(Object $data)
+    {
+        try {
+
+            $cancelOrder = MpFunctionController::cancelMpOrderAppDelivery(new Request([
+                'order_id' => $data->meta->resource_id,
+                'connect' => $data->connect,
+            ]));
+
+            if(!$cancelOrder['success']){
+
+                info('Error orderNotificationFailure: ');
+                info($cancelOrder['msg']);
+
+            }
+
+        } catch (\Exception $e) {
+
+            info('Error orderNotificationFailure: '.$e->getMessage().' '.$e->getLine().' '.$e->getFile());
+
+        }
+
+    }
+
+
+
 }
