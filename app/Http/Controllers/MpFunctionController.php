@@ -592,28 +592,32 @@ class MpFunctionController extends Controller
                 ->where('cuerpo->order->id',$request->order_id)
                 ->where('estado',true)->first();
 
-                $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
+                if(isset($precuentaAppDelivery)){
 
-                $connection->table('precuenta')->where('default_name',$request->order_id)->update(['procesado' => true]);
+                    $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
 
-                $connection->table('precuenta_app_delivery')
-                ->where('cuerpo->order->id',$request->order_id)
-                ->where('estado',true)
-                ->update(['estado' => false]);
+                    $connection->table('precuenta')->where('default_name',$request->order_id)->update(['procesado' => true]);
 
-                $cuerpo->order->state = 'CANCELLED';
+                    $connection->table('precuenta_app_delivery')
+                    ->where('cuerpo->order->id',$request->order_id)
+                    ->where('estado',true)
+                    ->update(['estado' => false]);
 
-                $connection->table('precuenta_app_delivery')->insert([
-                    'id_precuenta' => $precuenta->id_precuenta,
-                    'id_sucursal' => $precuenta->id_sucursal,
-                    'estado_app' => 'CANCELLED',
-                    'cuerpo' => json_encode($cuerpo),
-                    'logo' => $precuentaAppDelivery->logo,
-                    'canal' => $precuentaAppDelivery->canal,
-                    'tiempo_preparacion' => $precuentaAppDelivery->tiempo_preparacion,
-                    'estado' => true,
-                    'fecha_registro' => now()->toDateTimeString()
-                ]);
+                    $cuerpo->order->state = 'CANCELLED';
+
+                    $connection->table('precuenta_app_delivery')->insert([
+                        'id_precuenta' => $precuenta->id_precuenta,
+                        'id_sucursal' => $precuenta->id_sucursal,
+                        'estado_app' => 'CANCELLED',
+                        'cuerpo' => json_encode($cuerpo),
+                        'logo' => $precuentaAppDelivery->logo,
+                        'canal' => $precuentaAppDelivery->canal,
+                        'tiempo_preparacion' => $precuentaAppDelivery->tiempo_preparacion,
+                        'estado' => true,
+                        'fecha_registro' => now()->toDateTimeString()
+                    ]);
+
+                }
 
                 $connection->commit();
 
