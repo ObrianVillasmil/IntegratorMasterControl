@@ -252,6 +252,8 @@ class UberNotificationController extends Controller
                 'connect' => $data->connect,
             ]));
 
+            $cancelOrder = $cancelOrder->getData(true);
+
             if(!$cancelOrder['success']){
 
                 info('Error orderNotificationFailure: ');
