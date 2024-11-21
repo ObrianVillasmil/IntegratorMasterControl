@@ -131,6 +131,10 @@ class UberNotificationController extends Controller
                                     }
 
                                 }
+                                info('$jsonDiscount:');
+                                info($jsonDiscount);
+                                info('$discount:');
+                                info($discount);
 
                                 $items[] = [
                                     'type' => $dataItem[0],
@@ -179,10 +183,10 @@ class UberNotificationController extends Controller
                                                             'porcentaje' => null,
                                                         ]);
 
-                                                        if($discount > $subTotal)
-                                                            $discount = $subTotal;
-
                                                     }
+
+                                                    if($discount > $subTotal)
+                                                        $discount = $subTotal;
 
                                                 }
 

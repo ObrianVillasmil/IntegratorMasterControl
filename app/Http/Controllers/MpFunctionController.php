@@ -312,6 +312,7 @@ class MpFunctionController extends Controller
                         'id_pos_configuracion_producto_pregunta' => $item->id_pcpp,
                         'id_cajero'=> '1000',
                         'id_sucursal' => $request->id_branch_office,
+                        'monto_descuento' => $item->discount,
                         'json_descuento' => isset($item->json_discount) ? $item->json_discount : null
                     ]);
 
