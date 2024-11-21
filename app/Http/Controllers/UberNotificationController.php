@@ -100,6 +100,7 @@ class UberNotificationController extends Controller
                                 $commnet = '';
                                 $discount = 0;
                                 $subTotal = $dataItem[7]/100;
+                                $jsonDiscount= null;
 
                                 if(isset($item->customer_request->special_instructions))
                                     $commnet = $item->customer_request->special_instructions;
