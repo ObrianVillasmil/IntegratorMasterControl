@@ -121,6 +121,10 @@ class MpFunctionController extends Controller
 
                                 $fail("El campo sub_total_price del item {$item->name} debe ser un número positivo");
 
+                            }else if(!isset($item->discount) || !is_numeric($item->discount) || $item->discount < 0){
+
+                                $fail("El campo discount del item {$item->name} debe ser un número positivo, de no tener descuento debe ser 0");
+
                             }
 
                             if(isset($item->id_pcpp) && $item->id_pcpp!= ''){
@@ -307,7 +311,8 @@ class MpFunctionController extends Controller
                         'precio' => $item->sub_total_price,
                         'id_pos_configuracion_producto_pregunta' => $item->id_pcpp,
                         'id_cajero'=> '1000',
-                        'id_sucursal' => $request->id_branch_office
+                        'id_sucursal' => $request->id_branch_office,
+                        'json_discount' => isset($item->json_discount) ? $item->json_discount : null
                     ]);
 
                 }
