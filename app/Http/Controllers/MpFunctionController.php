@@ -156,9 +156,9 @@ class MpFunctionController extends Controller
             'ordering_platform.string' => 'El nombre de la plataforma que origina la orden debe ser una cadena de carcaracteres',
             'ordering_platform.min' => 'El nombre de la plataforma que origina la orden debe tener al menos 3 caracteres',
             'customer.required' => 'No se obtuvo el nombre de la sucursal',
-            'customer_email.required_with' => 'Debe ingresar el correo electrónico del cliente',
-            'customer_phone.required_with' => 'Debe ingresar el teléfono del cliente',
-            'customer_address.required_with' => 'Debe ingresar la dirección del cliente',
+            //'customer_email.required_with' => 'Debe ingresar el correo electrónico del cliente',
+            //'customer_phone.required_with' => 'Debe ingresar el teléfono del cliente',
+            //'customer_address.required_with' => 'Debe ingresar la dirección del cliente',
             'total.required' => 'No se obtuvo el monto total de la orden',
             'total.numeric' => 'El monto total de la orden debe ser un numero',
             'total.min' => 'El monto total de la orden debe ser mayor o igual a 0',
@@ -206,9 +206,9 @@ class MpFunctionController extends Controller
                     $dataCustomer = [
                         'nombre' => $request->customer,
                         'identificacion' => $request->customer_identifcation,
-                        'correo' => $request->customer_email,
-                        'telefono' => $request->customer_phone,
-                        'direccion' => $request->customer_address,
+                        'correo' => isset($request->customer_email) ? $request->customer_email : null,
+                        'telefono' => isset($request->customer_phone) ? $request->customer_phone : null,
+                        'direccion' => isset($request->customer_address) ? $request->customer_address : null,
                         'id_tipo_identificacion' => $idType,
                         'id_sucursal' => $request->id_branch_office,
                         'autorizacion_datos' => 'S'
@@ -476,7 +476,7 @@ class MpFunctionController extends Controller
             ], 422);
 
         }
-        
+
     }
 
     public static function deleteMpOrderAppDelivery(Request $request)
