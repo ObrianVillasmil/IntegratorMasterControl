@@ -133,7 +133,7 @@ class UberNotificationController extends Controller
                                     }
 
                                 }
-                                
+
                                 $items[] = [
                                     'type' => $dataItem[0],
                                     'id' => $dataItem[1],
@@ -259,7 +259,7 @@ class UberNotificationController extends Controller
 
                                 $status = $data->meta->current_state;
 
-                            }else if($data->meta->status !== 'SCHEDULED'){
+                            }else if(isset($data->meta->status) && $data->meta->status !== 'SCHEDULED'){
 
                                 $status = $data->meta->status;
 
@@ -273,7 +273,7 @@ class UberNotificationController extends Controller
                             'ordering_platform' => $response->order->ordering_platform,
                             'body' => json_encode($response),
                             'connect' => base64_encode($data->connect),
-                            'tiempo_preparacion' => $response->order->preparation_time->ready_for_pickup_time_secs/60
+                            'tiempo_preparacion' => isset($response->order->preparation_time) ? $response->order->preparation_time->ready_for_pickup_time_secs/60 : 10
                         ]));
 
                         $updateOrder = $updateOrder->getData(true);

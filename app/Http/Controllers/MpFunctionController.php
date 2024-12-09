@@ -476,8 +476,7 @@ class MpFunctionController extends Controller
             ], 422);
 
         }
-
-
+        
     }
 
     public static function deleteMpOrderAppDelivery(Request $request)
