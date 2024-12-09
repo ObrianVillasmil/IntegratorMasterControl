@@ -273,7 +273,7 @@ class UberNotificationController extends Controller
                             'ordering_platform' => $response->order->ordering_platform,
                             'body' => json_encode($response),
                             'connect' => base64_encode($data->connect),
-                            'tiempo_preparacion' => isset($response->order->preparation_time) ? $response->order->preparation_time->ready_for_pickup_time_secs/60 : 10
+                            'tiempo_preparacion' => 10// isset($response->order->preparation_time) ? $response->order->preparation_time->ready_for_pickup_time_secs/60 : 10
                         ]));
 
                         $updateOrder = $updateOrder->getData(true);
