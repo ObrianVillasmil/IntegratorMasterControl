@@ -152,6 +152,8 @@ class UberNotificationController extends Controller
 
                                     foreach ($item->selected_modifier_groups as $question) {
 
+                                        $idPcpp = explode('-',$question->external_data)[3];
+
                                         if(isset($question->selected_items)){
 
                                             foreach ($question->selected_items as $res) {
@@ -197,7 +199,7 @@ class UberNotificationController extends Controller
                                                     'ingredient' => 1,
                                                     'tax' => $dataResponse[7],
                                                     'quantity' => $res->quantity->amount*$item->quantity->amount,
-                                                    'id_pcpp' => $dataResponse[3],
+                                                    'id_pcpp' => $idPcpp,
                                                     'sub_total_price' => $subTotal,
                                                     'discount' => $discount,
                                                     'comment' => '',
