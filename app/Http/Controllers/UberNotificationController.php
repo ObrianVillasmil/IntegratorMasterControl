@@ -162,6 +162,7 @@ class UberNotificationController extends Controller
                                                 $discount = 0;
                                                 $subTotal = $dataResponse[9]/100;
                                                 $jsonDiscount = null;
+                                                $pcpRes = DB::connection($data->connect)->table('pos_configuracion_producto')->where('id_pos_configuracion_producto',$dataResponse[3])->first();
 
                                                 //EXISTEN PROMOCIONES EN LA RESPUESTA
                                                 if(isset($response->order->payment->tax_reporting->breakdown->promotions)){
@@ -194,7 +195,7 @@ class UberNotificationController extends Controller
 
                                                 $items[] = [
                                                     'type' => $dataResponse[0],
-                                                    'id' => $dataResponse[1],
+                                                    'id' => $pcpRes->id_producto,
                                                     'name' => $res->title,
                                                     'ingredient' => 1,
                                                     'tax' => $dataResponse[7],
