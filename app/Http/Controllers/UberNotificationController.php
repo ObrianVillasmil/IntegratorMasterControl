@@ -232,8 +232,8 @@ class UberNotificationController extends Controller
                             'customer_phone' => $customerPhone,
                             'app_deliverys' => true,
                             'total' => $response->order->payment->payment_detail->order_total->gross->amount_e5/100000,
-                            'payment_type_id' => $store->id_tipo_pago_uber, //VINCULAR UN TIPO DE PAGO EN LA CONFIGRURACION DE LA TIENDA
-                            'sale_type_id' => $store->id_tipo_venta_uber, //VINCULAR UN TIPO DE VENTA PARA LA APLICACIÓN EN LA CONFIGRURACION DE LA TIENDA
+                            'payment_type_id' => $store->id_tipo_pago_uber,
+                            'sale_type_id' => $store->id_tipo_venta_uber,
                             'items' => json_encode($items,JSON_NUMERIC_CHECK | JSON_PRESERVE_ZERO_FRACTION),
                             'body' => json_encode($response)
                         ]));
