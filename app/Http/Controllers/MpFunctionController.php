@@ -280,7 +280,8 @@ class MpFunctionController extends Controller
                         'estado_app' => 'OFFERED',
                         'canal' => $request->ordering_platform,
                         'cuerpo' => $request->body,
-                        'logo' => $logo
+                        'logo' => $logo,
+                        'tiempo_preparacion' => 10
                     ]);
 
                 }
