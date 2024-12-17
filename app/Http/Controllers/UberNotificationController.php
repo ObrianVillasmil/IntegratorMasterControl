@@ -226,7 +226,7 @@ class UberNotificationController extends Controller
                             'name' => $response->order->ordering_platform.' '.$response->order->display_id,
                             'ordering_platform' => $response->order->ordering_platform,
                             'customer' => $customer,
-                            'customer_identifcation' => $customerIdentification,
+                            'customer_identification' => $customerIdentification,
                             'customer_address' => $customerAddress,
                             'customer_email' => $customerEmail,
                             'customer_phone' => $customerPhone,

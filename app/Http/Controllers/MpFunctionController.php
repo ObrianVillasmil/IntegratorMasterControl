@@ -16,10 +16,10 @@ class MpFunctionController extends Controller
             'name' => 'required|string|min:3',
             'ordering_platform' => 'required|string|min:3',
             'total' => 'required|numeric|min:0',
-            //'customer' => 'required_with:customer_identifcation',
-            //'customer_address' => 'required_with:customer_identifcation',
-            //'customer_email' => 'required_with:customer_identifcation',
-            //'customer_phone' => 'required_with:customer_identifcation',
+            //'customer' => 'required_with:customer_identification',
+            //'customer_address' => 'required_with:customer_identification',
+            //'customer_email' => 'required_with:customer_identification',
+            //'customer_phone' => 'required_with:customer_identification',
             'body' => 'nullable|json',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
@@ -188,11 +188,11 @@ class MpFunctionController extends Controller
 
                 $customerId = null;
 
-                if(isset($request->customer_identifcation) && $request->customer_identifcation != ''){
+                if(isset($request->customer_identification) && $request->customer_identification != ''){
 
-                    $customer = $connection->table('comprador')->where('identificacion',$request->customer_identifcation)->first();
+                    $customer = $connection->table('comprador')->where('identificacion',$request->customer_identification)->first();
 
-                    switch (strlen($request->customer_identifcation)) {
+                    switch (strlen($request->customer_identification)) {
                         case 10:
                             $idType = 2;
                             break;
@@ -205,7 +205,7 @@ class MpFunctionController extends Controller
 
                     $dataCustomer = [
                         'nombre' => $request->customer,
-                        'identificacion' => $request->customer_identifcation,
+                        'identificacion' => $request->customer_identification,
                         'correo' => isset($request->customer_email) ? $request->customer_email : null,
                         'telefono' => isset($request->customer_phone) ? $request->customer_phone : null,
                         'direccion' => isset($request->customer_address) ? $request->customer_address : null,
@@ -218,13 +218,15 @@ class MpFunctionController extends Controller
 
                         $customerId = $customer->id_comprador;
 
-                        $connection->table('comprador')->where('identificacion',$request->customer_identifcation)->update($dataCustomer);
+                        $connection->table('comprador')->where('identificacion',$request->customer_identification)->update($dataCustomer);
 
                     }else{
 
-                        $connection->table('comprador')->insert($dataCustomer);
+                        $customerId = $connection->table('comprador')->orderBy('id_comprador','desc')->first()->id_comprador+1;
 
-                        $customerId = $connection->table('comprador')->orderBy('id_comprador','desc')->first()->id_comprador;
+                        $dataCustomer['id_comprador'] = $customerId;
+
+                        $connection->table('comprador')->insert($dataCustomer);
 
                     }
 
