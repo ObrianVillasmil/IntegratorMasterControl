@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RetryCancelOrderMp;
+use App\Jobs\RetrySendOrderMp;
+use App\Jobs\RetryUpdateOrderMp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -178,7 +181,37 @@ class MpFunctionController extends Controller
 
         if (!$validate->fails()) {
 
-            $connection = DB::connection(base64_decode($request->connect));
+            try{
+
+                $conexion = base64_decode($request->connect);
+
+                if(self::pingMp($conexion)){
+
+                    RetrySendOrderMp::dispatchNow($request->all());
+
+                }else{
+
+                    RetrySendOrderMp::dispatch($request->all())->onQueue('retry-send-order-mp');
+
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'msg' => 'Se ha creado el pedido con éxito'
+                ],200);
+
+            }catch(\Exception $e){
+
+                info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+
+                return response()->json([
+                    'success' => false,
+                    'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
+                ],500);
+
+            }
+
+            /* $connection = DB::connection(base64_decode($request->connect));
 
             try {
 
@@ -339,7 +372,7 @@ class MpFunctionController extends Controller
                     'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
                 ],500);
 
-            }
+            } */
 
         } else {
 
@@ -419,7 +452,19 @@ class MpFunctionController extends Controller
 
         if (!$validate->fails()) {
 
-            $connection = DB::connection(base64_decode($request->connect));
+            $conexion = base64_decode($request->connect);
+
+            if(self::pingMp($conexion)){
+
+                RetryUpdateOrderMp::dispatchNow($request->all());
+
+            }else{
+
+                RetryUpdateOrderMp::dispatch($request->all())->onQueue('retry-update-order-mp');
+
+            }
+
+            /* $connection = DB::connection(base64_decode($request->connect));
 
             try {
 
@@ -469,7 +514,12 @@ class MpFunctionController extends Controller
                     'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
                 ],500);
 
-            }
+            } */
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Se ha creado el pedido con éxito'
+            ],200);
 
         } else {
 
@@ -588,7 +638,24 @@ class MpFunctionController extends Controller
 
         if (!$validate->fails()) {
 
-            $connection = DB::connection($request->connect);
+            $conexion = base64_decode($request->connect);
+
+            if(self::pingMp($conexion)){
+
+                RetryCancelOrderMp::dispatchNow($request->all());
+
+            }else{
+
+                RetryCancelOrderMp::dispatch($request->all())->onQueue('retry-cancel-order-mp');
+
+            }
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Se eliminado el pedido con éxito'
+            ],200);
+
+            /* $connection = DB::connection($request->connect);
 
             try {
 
@@ -645,7 +712,7 @@ class MpFunctionController extends Controller
                     'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
                 ],500);
 
-            }
+            } */
 
         } else {
 

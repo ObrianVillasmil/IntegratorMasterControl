@@ -10,4 +10,12 @@ use Illuminate\Routing\Controller as BaseController;
 class Controller extends BaseController
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+
+    public function pingMp($conexion)
+    {
+        $comando = "ping -c 1 ".config("database.connections.$conexion.host");
+        $output = shell_exec($comando);
+        return strpos($output,'1 received');
+
+    }
 }

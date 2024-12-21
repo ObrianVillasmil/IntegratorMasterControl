@@ -1,0 +1,189 @@
+<?php
+
+namespace App\Jobs;
+
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Queue\InteractsWithQueue;
+use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\DB;
+
+class RetrySendOrderMp implements ShouldQueue
+{
+    use Dispatchable, InteractsWithQueue, Queueable;//, SerializesModels;
+
+    /**
+     * Create a new job instance.
+     *
+     * @return void
+     */
+    private $data;
+
+    public function __construct($data)
+    {
+        $this->data = $data;
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle()
+    {
+        $connection = DB::connection(base64_decode($this->data['connect']));
+
+        try {
+
+            $connection->beginTransaction();
+
+            $pos = $connection->table('pos')->where('estado',true)->first();
+
+            $customerId = null;
+
+            if(isset($this->data['customer_identification']) && $this->data['customer_identification'] != ''){
+
+                $customer = $connection->table('comprador')->where('identificacion',$this->data['customer_identification'])->first();
+
+                switch (strlen($this->data['customer_identification'])) {
+                    case 10:
+                        $idType = 2;
+                        break;
+                    case 13:
+                        $idType = 1;
+                        break;
+                    default:
+                        $idType = 3;
+                }
+
+                $dataCustomer = [
+                    'nombre' => $this->data['customer'],
+                    'identificacion' => $this->data['customer_identification'],
+                    'correo' => isset($this->data['customer_email']) ? $this->data['customer_email'] : null,
+                    'telefono' => isset($this->data['customer_phone']) ? $this->data['customer_phone'] : null,
+                    'direccion' => isset($this->data['customer_address']) ? $this->data['customer_address'] : null,
+                    'id_tipo_identificacion' => $idType,
+                    'id_sucursal' => $this->data['id_branch_office'],
+                    'autorizacion_datos' => 'S'
+                ];
+
+                if(isset($customer)){
+
+                    $customerId = $customer->id_comprador;
+
+                    $connection->table('comprador')->where('identificacion',$this->data['customer_identification'])->update($dataCustomer);
+
+                }else{
+
+                    $customerId = $connection->table('comprador')->orderBy('id_comprador','desc')->first()->id_comprador+1;
+
+                    $dataCustomer['id_comprador'] = $customerId;
+
+                    $connection->table('comprador')->insert($dataCustomer);
+
+                }
+
+            }
+
+            $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
+
+            $precuentaId = !isset($prec) ? 1 : ($prec->id_precuenta+1);
+
+            $connection->table('precuenta')->insert([
+                'id_precuenta' => $precuentaId,
+                'id_sucursal' => $this->data['id_branch_office'],
+                'nombre' => $this->data['name'],
+                'id_pos' => $pos->id_pos,
+                'id_usuario' => '1000',
+                'id_comprador' => $customerId,
+                'default_name' => $this->data['order_id'],
+                'comenzales' => 1,
+                'id_cliente_externo' => $this->data['sale_type_id'],
+                'venta_web' => true,
+                'total_venta_web' => $this->data['total'],
+                'tipo_pago_venta_web' => $this->data['payment_type_id'],
+                'tipo' => $this->data['ordering_platform'],
+                'base0' => 0,
+                'base12' => 0,
+                'propina' => 0,
+                'descuento1' => 0,
+                'descuento2' => 0,
+                'subtotal12' => 0,
+                'subtotal0' => 0,
+                'impuesto' => 0,
+                'servicio' => 0,
+            ]);
+
+            //SOLO PARA APPS DE DELIVERY, LOS ECCOMERCE EXTERNOS ENTRAN COMO UNA PRECUENTA NORMAL
+            if(isset($request->app_deliverys) && $request->app_deliverys){
+
+                switch($request->ordering_platform){
+                    case 'UBER_EATS':
+                        $logo = 'ubereats.webp';
+                        break;
+                    default:
+                        $logo = 'appdelivery.webp';
+                }
+
+                $connection->table('precuenta_app_delivery')
+                ->where( 'id_sucursal', $this->data['id_branch_office'])
+                ->where('id_precuenta', $precuentaId)->update(['estado' => false]);
+
+                $connection->table('precuenta_app_delivery')->insert([
+                    'id_precuenta' => $precuentaId,
+                    'id_sucursal' => $this->data['id_branch_office'],
+                    'estado_app' => 'OFFERED',
+                    'canal' => $request->ordering_platform,
+                    'cuerpo' => $request->body,
+                    'logo' => $logo,
+                    'tiempo_preparacion' => 10
+                ]);
+
+            }
+
+            $items = json_decode($this->data['items']);
+
+            foreach ($items as $item) {
+
+                $imp = $connection->table('impuesto')->where('valor',$item->tax)->first();
+
+                $detPrec = $connection->table('detalle_precuenta')->orderBy('id_detalle_precuenta', 'desc')->first();
+
+                $detPrecuentaId = !isset($detPrec) ? 1 : ($detPrec->id_detalle_precuenta+1);
+
+                $connection->table('detalle_precuenta')->insert([
+                    'id_detalle_precuenta' => $detPrecuentaId,
+                    'id_sucursal' => $this->data['id_branch_office'],
+                    'id_precuenta' => $precuentaId,
+                    'id_producto' => $item->id,
+                    'tipo' => $item->type,
+                    'nombre' => $item->name.(isset($item->comment) && $item->comment != '' ? (' | '.$item->comment) : ''),
+                    'impuesto' => $item->tax,
+                    'cantidad' => $item->quantity,
+                    'ingrediente' => $item->ingredient == 1,
+                    'id_impuesto' => $imp->id_impuesto,
+                    'comentario' => $item->comment,
+                    'impreso' => false,
+                    'precio' => $item->sub_total_price,
+                    'id_pos_configuracion_producto_pregunta' => $item->id_pcpp,
+                    'id_cajero'=> '1000',
+                    'id_sucursal' => $this->data['id_branch_office'],
+                    'monto_descuento' => $item->discount,
+                    'json_descuento' => isset($item->json_discount) ? $item->json_discount : null
+                ]);
+
+            }
+
+            $connection->commit();
+
+        } catch (\Exception $e) {
+
+            info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+
+            $connection->rollBack();
+
+        }
+    }
+}
