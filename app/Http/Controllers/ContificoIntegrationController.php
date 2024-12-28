@@ -628,7 +628,7 @@ class ContificoIntegrationController extends Controller
                 foreach($accionesCompletadas as $ac)
                     $successHtml.= "<div>".$ac."</div> \n";
 
-                /* self::sendMail([
+                self::sendMail([
                     'subject' => "Envío de ventas a contifico de {$company->connect}",
                     'sucursal' => strtoupper($company->connect),
                     'ccEmail' => env('MAIL_NOTIFICATION'),
@@ -654,7 +654,7 @@ class ContificoIntegrationController extends Controller
                             </div>
                         </body>
                     </html>"
-                ]); */
+                ]);
 
                 //Mail::to(env('MAIL_MONITOREO'))->send(new SendInvoicesContifico($successHtml));
 
@@ -667,7 +667,7 @@ class ContificoIntegrationController extends Controller
                 foreach ($accionesFallidas as $af)
                     $htmlError.= "<div>".$af."</div> \n";
 
-                /* self::sendMail([
+                self::sendMail([
                     'subject' => "Error en el envío de ventas a contifico de {$company->connect}",
                     'sucursal' => strtoupper($company->connect),
                     'ccEmail' => env('MAIL_NOTIFICATION'),// $company->error_email,
@@ -693,7 +693,7 @@ class ContificoIntegrationController extends Controller
                             </div>
                         </body>
                     </html>"
-                ]); */
+                ]);
 
             }
 
@@ -738,7 +738,7 @@ class ContificoIntegrationController extends Controller
 
             info($e->getMessage()."\nEn la línea: ".$e->getLine());
 
-            /* self::sendMail([
+            self::sendMail([
                 'subject' => "Error en el envío de ventas a contifico de {$company->connect}",
                 'sucursal' => strtoupper($company->connect),
                 'ccEmail' => env('MAIL_NOTIFICATION'),
@@ -764,7 +764,7 @@ class ContificoIntegrationController extends Controller
                         </div>
                     </body>
                 </html>"
-            ]); */
+            ]);
 
         }
 
