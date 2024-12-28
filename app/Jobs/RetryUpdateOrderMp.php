@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -33,39 +34,49 @@ class RetryUpdateOrderMp implements ShouldQueue
      */
     public function handle()
     {
-        $connection = DB::connection(base64_decode($this->data['connect']));
+        $conexion = base64_decode($this->data['connect']);
 
         try {
 
-            $connection->beginTransaction();
+            $ping = Controller::pingMp($conexion);
 
-            $order = $connection->table('precuenta as p')
-            ->join('precuenta_app_delivery as app','p.id_precuenta','app.id_precuenta')
-            ->where('p.default_name',$this->data['order_id'])->first();
+            if($ping){
 
-            switch($this->data['ordering_platform']){
-                case 'UBER_EATS':
-                    $logo = 'ubereats.webp';
-                    break;
-                default:
-                    $logo = 'appdelivery.webp';
+                $connection = DB::connection($conexion);
+
+                $order = $connection->table('precuenta as p')
+                ->join('precuenta_app_delivery as app','p.id_precuenta','app.id_precuenta')
+                ->where('p.default_name',$this->data['order_id'])->first();
+
+                switch($this->data['ordering_platform']){
+                    case 'UBER_EATS':
+                        $logo = 'ubereats.webp';
+                        break;
+                    default:
+                        $logo = 'appdelivery.webp';
+                }
+
+                $connection->table('precuenta_app_delivery')
+                ->where( 'id_sucursal', $order->id_sucursal)
+                ->where('id_precuenta', $order->id_precuenta)->update(['estado' => false]);
+
+                $connection->table('precuenta_app_delivery')->insert([
+                    'id_precuenta' => $order->id_precuenta,
+                    'id_sucursal' => $order->id_sucursal,
+                    'estado_app' => $this->data['status'],
+                    'canal' => $this->data['ordering_platform'],
+                    'cuerpo' => $this->data['body'],
+                    'logo' => $logo,
+                    'tiempo_preparacion' => $this->data['tiempo_preparacion']
+                ]);
+
+                $connection->commit();
+
+            }else{
+
+                $this->fail('No se le pudo hacer ping a la conexión '.$conexion.' al actualizar el estado el pedido '.$this->data['order_id']);
+
             }
-
-            $connection->table('precuenta_app_delivery')
-            ->where( 'id_sucursal', $order->id_sucursal)
-            ->where('id_precuenta', $order->id_precuenta)->update(['estado' => false]);
-
-            $connection->table('precuenta_app_delivery')->insert([
-                'id_precuenta' => $order->id_precuenta,
-                'id_sucursal' => $order->id_sucursal,
-                'estado_app' => $this->data['status'],
-                'canal' => $this->data['ordering_platform'],
-                'cuerpo' => $this->data['body'],
-                'logo' => $logo,
-                'tiempo_preparacion' => $this->data['tiempo_preparacion']
-            ]);
-
-            $connection->commit();
 
         } catch (\Exception $e) {
 

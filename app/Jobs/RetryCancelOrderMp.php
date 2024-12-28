@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -33,46 +34,58 @@ class RetryCancelOrderMp implements ShouldQueue
      */
     public function handle()
     {
+        $conexion = base64_decode($this->data['connect']);
+
         try {
 
-            $connection = DB::connection($this->data['connect']);
+            $ping = Controller::pingMp($conexion);
 
-            $connection->beginTransaction();
+            if($ping){
 
-            $precuenta =  $connection->table('precuenta')->where('default_name',$this->data['order_id'])->first();
+                $connection = DB::connection($conexion);
 
-            $precuentaAppDelivery = $connection->table('precuenta_app_delivery')
-            ->where('cuerpo->order->id',$this->data['order_id'])
-            ->where('estado',true)->first();
+                $connection->beginTransaction();
 
-            if(isset($precuentaAppDelivery)){
+                $precuenta =  $connection->table('precuenta')->where('default_name',$this->data['order_id'])->first();
 
-                $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
-
-                $connection->table('precuenta')->where('default_name',$this->data['order_id'])->update(['procesado' => true]);
-
-                $connection->table('precuenta_app_delivery')
+                $precuentaAppDelivery = $connection->table('precuenta_app_delivery')
                 ->where('cuerpo->order->id',$this->data['order_id'])
-                ->where('estado',true)
-                ->update(['estado' => false]);
+                ->where('estado',true)->first();
 
-                $cuerpo->order->state = 'CANCELLED';
+                if(isset($precuentaAppDelivery)){
 
-                $connection->table('precuenta_app_delivery')->insert([
-                    'id_precuenta' => $precuenta->id_precuenta,
-                    'id_sucursal' => $precuenta->id_sucursal,
-                    'estado_app' => 'CANCELLED',
-                    'cuerpo' => json_encode($cuerpo),
-                    'logo' => $precuentaAppDelivery->logo,
-                    'canal' => $precuentaAppDelivery->canal,
-                    'tiempo_preparacion' => $precuentaAppDelivery->tiempo_preparacion,
-                    'estado' => true,
-                    'fecha_registro' => now()->toDateTimeString()
-                ]);
+                    $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
+
+                    $connection->table('precuenta')->where('default_name',$this->data['order_id'])->update(['procesado' => true]);
+
+                    $connection->table('precuenta_app_delivery')
+                    ->where('cuerpo->order->id',$this->data['order_id'])
+                    ->where('estado',true)
+                    ->update(['estado' => false]);
+
+                    $cuerpo->order->state = 'CANCELLED';
+
+                    $connection->table('precuenta_app_delivery')->insert([
+                        'id_precuenta' => $precuenta->id_precuenta,
+                        'id_sucursal' => $precuenta->id_sucursal,
+                        'estado_app' => 'CANCELLED',
+                        'cuerpo' => json_encode($cuerpo),
+                        'logo' => $precuentaAppDelivery->logo,
+                        'canal' => $precuentaAppDelivery->canal,
+                        'tiempo_preparacion' => $precuentaAppDelivery->tiempo_preparacion,
+                        'estado' => true,
+                        'fecha_registro' => now()->toDateTimeString()
+                    ]);
+
+                }
+
+                $connection->commit();
+
+            }else{
+
+                $this->fail('No se le pudo hacer ping a la conexión '.$conexion.' al cancelar el pedido '.$this->data['order_id']);
 
             }
-
-            $connection->commit();
 
         } catch (\Exception $e) {
 
