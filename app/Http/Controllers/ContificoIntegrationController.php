@@ -107,7 +107,7 @@ class ContificoIntegrationController extends Controller
                 $baseMayor0 = number_format($baseMayor0,2,'.','');
 
                 $iva = $baseMayor0 * ($prod->impuesto/100);
-                $arrIva  = explode('.',$iva);
+                $arrIva = explode('.',$iva);
                 $iva = $arrIva[0].'.'.(isset($arrIva[1]) ? substr($arrIva[1],0,2) : '00');
 
                 $total = $baseMayor0 + $base0 + $iva + $v->servicio;

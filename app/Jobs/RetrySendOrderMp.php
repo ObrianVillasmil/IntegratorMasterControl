@@ -117,9 +117,9 @@ class RetrySendOrderMp implements ShouldQueue
             ]);
 
             //SOLO PARA APPS DE DELIVERY, LOS ECCOMERCE EXTERNOS ENTRAN COMO UNA PRECUENTA NORMAL
-            if(isset($request->app_deliverys) && $request->app_deliverys){
+            if(isset($this->data['app_deliverys']) && $this->data['app_deliverys']){
 
-                switch($request->ordering_platform){
+                switch($this->data['ordering_platform']){
                     case 'UBER_EATS':
                         $logo = 'ubereats.webp';
                         break;
@@ -135,8 +135,8 @@ class RetrySendOrderMp implements ShouldQueue
                     'id_precuenta' => $precuentaId,
                     'id_sucursal' => $this->data['id_branch_office'],
                     'estado_app' => 'OFFERED',
-                    'canal' => $request->ordering_platform,
-                    'cuerpo' => $request->body,
+                    'canal' => $this->data['ordering_platform'],
+                    'cuerpo' => $this->data['body'],
                     'logo' => $logo,
                     'tiempo_preparacion' => 10
                 ]);
