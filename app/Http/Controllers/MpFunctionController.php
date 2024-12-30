@@ -181,9 +181,9 @@ class MpFunctionController extends Controller
 
         if (!$validate->fails()) {
 
-            try{
+            $conexion = base64_decode($request->connect);
 
-                $conexion = base64_decode($request->connect);
+            try{
 
                 if(self::pingMp($conexion)){
 
@@ -192,6 +192,36 @@ class MpFunctionController extends Controller
                 }else{
 
                     RetrySendOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-send-order-mp');
+
+                    $ip = config("database.connections.$conexion.host");
+
+                    ContificoIntegrationController::sendMail([
+                        'subject' => "Error en envío de pedido {$request->name} a la conexión {$conexion}",
+                        'sucursal' => strtoupper($conexion),
+                        'ccEmail' => env('MAIL_NOTIFICATION'),
+                        'html' => "<html>
+                            <head>
+                                <style>
+                                    .alert {
+                                        padding: 15px;
+                                        margin-bottom: 20px;
+                                        border: 1px solid transparent;
+                                        border-radius: 4px;
+                                    }
+                                    .alert-danger {
+                                        color: #155724;
+                                        background-color: #d4edda;
+                                        border-color: #c3e6cb;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <div class='alert alert-danger' role='alert'>
+                                    <p> No se pudo enviar el pedido {$request->name} a la conexion {$conexion}, no se pudo hacer ping a la ip {$ip} desde el sistema Integrador, el proceso se reintentará en 2 minutos con un job</p>
+                                </div>
+                            </body>
+                        </html>"
+                    ]);
 
                 }
 
@@ -204,175 +234,40 @@ class MpFunctionController extends Controller
 
                 info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
 
+                ContificoIntegrationController::sendMail([
+                    'subject' => "Error en envío de pedido {$request->name} a la conexión {$conexion}",
+                    'sucursal' => strtoupper($conexion),
+                    'ccEmail' => env('MAIL_NOTIFICATION'),
+                    'html' => "<html>
+                        <head>
+                            <style>
+                                .alert {
+                                    padding: 15px;
+                                    margin-bottom: 20px;
+                                    border: 1px solid transparent;
+                                    border-radius: 4px;
+                                }
+                                .alert-danger {
+                                    color: #155724;
+                                    background-color: #d4edda;
+                                    border-color: #c3e6cb;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='alert alert-danger' role='alert'>
+                                <p> Error createMpAccount: {$e->getMessage()} {$e->getLine()} {$e->getFile()}</p>
+                            </div>
+                        </body>
+                    </html>"
+                ]);
+
                 return response()->json([
                     'success' => false,
                     'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
                 ],500);
 
             }
-
-            /* $connection = DB::connection(base64_decode($request->connect));
-
-            try {
-
-                $connection->beginTransaction();
-
-                $pos = $connection->table('pos')->where('estado',true)->first();
-
-                $customerId = null;
-
-                if(isset($request->customer_identification) && $request->customer_identification != ''){
-
-                    $customer = $connection->table('comprador')->where('identificacion',$request->customer_identification)->first();
-
-                    switch (strlen($request->customer_identification)) {
-                        case 10:
-                            $idType = 2;
-                            break;
-                        case 13:
-                            $idType = 1;
-                            break;
-                        default:
-                            $idType = 3;
-                    }
-
-                    $dataCustomer = [
-                        'nombre' => $request->customer,
-                        'identificacion' => $request->customer_identification,
-                        'correo' => isset($request->customer_email) ? $request->customer_email : null,
-                        'telefono' => isset($request->customer_phone) ? $request->customer_phone : null,
-                        'direccion' => isset($request->customer_address) ? $request->customer_address : null,
-                        'id_tipo_identificacion' => $idType,
-                        'id_sucursal' => $request->id_branch_office,
-                        'autorizacion_datos' => 'S'
-                    ];
-
-                    if(isset($customer)){
-
-                        $customerId = $customer->id_comprador;
-
-                        $connection->table('comprador')->where('identificacion',$request->customer_identification)->update($dataCustomer);
-
-                    }else{
-
-                        $customerId = $connection->table('comprador')->orderBy('id_comprador','desc')->first()->id_comprador+1;
-
-                        $dataCustomer['id_comprador'] = $customerId;
-
-                        $connection->table('comprador')->insert($dataCustomer);
-
-                    }
-
-                }
-
-                $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
-
-                $precuentaId = !isset($prec) ? 1 : ($prec->id_precuenta+1);
-
-                $connection->table('precuenta')->insert([
-                    'id_precuenta' => $precuentaId,
-                    'id_sucursal' => $request->id_branch_office,
-                    'nombre' => $request->name,
-                    'id_pos' => $pos->id_pos,
-                    'id_usuario' => '1000',
-                    'id_comprador' => $customerId,
-                    'default_name' => $request->order_id,
-                    'comenzales' => 1,
-                    'id_cliente_externo' => $request->sale_type_id,
-                    'venta_web' => true,
-                    'total_venta_web' => $request->total,
-                    'tipo_pago_venta_web' => $request->payment_type_id,
-                    'tipo' => $request->ordering_platform,
-                    'base0' => 0,
-                    'base12' => 0,
-                    'propina' => 0,
-                    'descuento1' => 0,
-                    'descuento2' => 0,
-                    'subtotal12' => 0,
-                    'subtotal0' => 0,
-                    'impuesto' => 0,
-                    'servicio' => 0,
-                ]);
-
-                //SOLO PARA APPS DE DELIVERY, LOS ECCOMERCE EXTERNOS ENTRAN COMO UNA PRECUENTA NORMAL
-                if(isset($request->app_deliverys) && $request->app_deliverys){
-
-                    switch($request->ordering_platform){
-                        case 'UBER_EATS':
-                            $logo = 'ubereats.webp';
-                            break;
-                        default:
-                            $logo = 'appdelivery.webp';
-                    }
-
-                    $connection->table('precuenta_app_delivery')
-                    ->where( 'id_sucursal', $request->id_branch_office)
-                    ->where('id_precuenta', $precuentaId)->update(['estado' => false]);
-
-                    $connection->table('precuenta_app_delivery')->insert([
-                        'id_precuenta' => $precuentaId,
-                        'id_sucursal' => $request->id_branch_office,
-                        'estado_app' => 'OFFERED',
-                        'canal' => $request->ordering_platform,
-                        'cuerpo' => $request->body,
-                        'logo' => $logo,
-                        'tiempo_preparacion' => 10
-                    ]);
-
-                }
-
-                $items = json_decode($request->items);
-
-                foreach ($items as $item) {
-
-                   $imp = $connection->table('impuesto')->where('valor',$item->tax)->first();
-
-                   $detPrec = $connection->table('detalle_precuenta')->orderBy('id_detalle_precuenta', 'desc')->first();
-
-                   $detPrecuentaId = !isset($detPrec) ? 1 : ($detPrec->id_detalle_precuenta+1);
-
-                    $connection->table('detalle_precuenta')->insert([
-                        'id_detalle_precuenta' => $detPrecuentaId,
-                        'id_sucursal' => $request->id_branch_office,
-                        'id_precuenta' => $precuentaId,
-                        'id_producto' => $item->id,
-                        'tipo' => $item->type,
-                        'nombre' => $item->name.(isset($item->comment) && $item->comment != '' ? (' | '.$item->comment) : ''),
-                        'impuesto' => $item->tax,
-                        'cantidad' => $item->quantity,
-                        'ingrediente' => $item->ingredient == 1,
-                        'id_impuesto' => $imp->id_impuesto,
-                        'comentario' => $item->comment,
-                        'impreso' => false,
-                        'precio' => $item->sub_total_price,
-                        'id_pos_configuracion_producto_pregunta' => $item->id_pcpp,
-                        'id_cajero'=> '1000',
-                        'id_sucursal' => $request->id_branch_office,
-                        'monto_descuento' => $item->discount,
-                        'json_descuento' => isset($item->json_discount) ? $item->json_discount : null
-                    ]);
-
-                }
-
-                $connection->commit();
-
-                return response()->json([
-                    'success' => true,
-                    'msg' => 'Se ha creado el pedido con éxito'
-                ],200);
-
-            } catch (\Exception $e) {
-
-                info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
-
-                $connection->rollBack();
-
-                return response()->json([
-                    'success' => false,
-                    'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
-                ],500);
-
-            } */
 
         } else {
 
@@ -454,71 +349,90 @@ class MpFunctionController extends Controller
 
             $conexion = base64_decode($request->connect);
 
-            if(self::pingMp($conexion)){
+            try{
 
-                RetryUpdateOrderMp::dispatchNow($request->all(),$conexion);
+                if(self::pingMp($conexion)){
 
-            }else{
+                    RetryUpdateOrderMp::dispatchNow($request->all(),$conexion);
 
-                RetryUpdateOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-update-order-mp');
+                }else{
 
-            }
+                    RetryUpdateOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-update-order-mp');
 
-            /* $connection = DB::connection(base64_decode($request->connect));
+                    $ip = config("database.connections.$conexion.host");
 
-            try {
+                    ContificoIntegrationController::sendMail([
+                        'subject' => "Error al actualizar la orden {$request->order_id} en la conexión {$conexion}",
+                        'sucursal' => strtoupper($conexion),
+                        'ccEmail' => env('MAIL_NOTIFICATION'),
+                        'html' => "<html>
+                            <head>
+                                <style>
+                                    .alert {
+                                        padding: 15px;
+                                        margin-bottom: 20px;
+                                        border: 1px solid transparent;
+                                        border-radius: 4px;
+                                    }
+                                    .alert-danger {
+                                        color: #155724;
+                                        background-color: #d4edda;
+                                        border-color: #c3e6cb;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <div class='alert alert-danger' role='alert'>
+                                    <p> No se pudo actualizar la orden {$request->order_id} en la conexion {$conexion}, no se pudo hacer ping a la ip {$ip} desde el sistema Integrador, el proceso se reintentará en 2 minutos con un job</p>
+                                </div>
+                            </body>
+                        </html>"
+                    ]);
 
-                $connection->beginTransaction();
-
-                $order = $connection->table('precuenta as p')
-                ->join('precuenta_app_delivery as app','p.id_precuenta','app.id_precuenta')
-                ->where('p.default_name',$request->order_id)->first();
-
-                switch($request->ordering_platform){
-                    case 'UBER_EATS':
-                        $logo = 'ubereats.webp';
-                        break;
-                    default:
-                        $logo = 'appdelivery.webp';
                 }
 
-                $connection->table('precuenta_app_delivery')
-                ->where( 'id_sucursal', $order->id_sucursal)
-                ->where('id_precuenta', $order->id_precuenta)->update(['estado' => false]);
+            }catch(\Exception $e){
 
-                $connection->table('precuenta_app_delivery')->insert([
-                    'id_precuenta' => $order->id_precuenta,
-                    'id_sucursal' => $order->id_sucursal,
-                    'estado_app' => $request->status,
-                    'canal' => $request->ordering_platform,
-                    'cuerpo' => $request->body,
-                    'logo' => $logo,
-                    'tiempo_preparacion' => $request->tiempo_preparacion
+                info('Error updateMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+
+                ContificoIntegrationController::sendMail([
+                    'subject' => "Error al actualizar la orden {$request->order_id} en la conexión {$conexion}",
+                    'sucursal' => strtoupper($conexion),
+                    'ccEmail' => env('MAIL_NOTIFICATION'),
+                    'html' => "<html>
+                        <head>
+                            <style>
+                                .alert {
+                                    padding: 15px;
+                                    margin-bottom: 20px;
+                                    border: 1px solid transparent;
+                                    border-radius: 4px;
+                                }
+                                .alert-danger {
+                                    color: #155724;
+                                    background-color: #d4edda;
+                                    border-color: #c3e6cb;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='alert alert-danger' role='alert'>
+                                <p> Error updateMpAccount: {$e->getMessage()} {$e->getLine()} {$e->getFile()}</p>
+                            </div>
+                        </body>
+                    </html>"
                 ]);
-
-                $connection->commit();
-
-                return response()->json([
-                    'success' => true,
-                    'msg' => 'Se ha creado el pedido con éxito'
-                ],200);
-
-            } catch (\Exception $e) {
-
-                info('Error updateMpOrder: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile().' '.$e->getTraceAsString());
-
-                $connection->rollBack();
 
                 return response()->json([
                     'success' => false,
-                    'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
+                    'msg' => $e->getMessage().' '.$e->getLine().' '.$e->getFile()
                 ],500);
 
-            } */
+            }
 
             return response()->json([
                 'success' => true,
-                'msg' => 'Se ha creado el pedido con éxito'
+                'msg' => 'Se ha actualizado el pedido con éxito'
             ],200);
 
         } else {
@@ -642,13 +556,84 @@ class MpFunctionController extends Controller
 
             $conexion = base64_decode($request->connect);
 
-            if(self::pingMp($conexion)){
+            try{
 
-                RetryCancelOrderMp::dispatchNow($request->all(),$conexion);
+                if(self::pingMp($conexion)){
 
-            }else{
+                    RetryCancelOrderMp::dispatchNow($request->all(),$conexion);
 
-                RetryCancelOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-cancel-order-mp');
+                }else{
+
+                    RetryCancelOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-cancel-order-mp');
+
+                    $ip = config("database.connections.$conexion.host");
+
+                    ContificoIntegrationController::sendMail([
+                        'subject' => "Error al cancelar de pedido {$request->order_id} en la conexión {$conexion}",
+                        'sucursal' => strtoupper($conexion),
+                        'ccEmail' => env('MAIL_NOTIFICATION'),
+                        'html' => "<html>
+                            <head>
+                                <style>
+                                    .alert {
+                                        padding: 15px;
+                                        margin-bottom: 20px;
+                                        border: 1px solid transparent;
+                                        border-radius: 4px;
+                                    }
+                                    .alert-danger {
+                                        color: #155724;
+                                        background-color: #d4edda;
+                                        border-color: #c3e6cb;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <div class='alert alert-danger' role='alert'>
+                                    <p> No se pudo cancelar el pedido {$request->order_id} en la conexion {$conexion}, no se pudo hacer ping a la ip {$ip} desde el sistema Integrador, el proceso se reintentará en 2 minutos con un job</p>
+                                </div>
+                            </body>
+                        </html>"
+                    ]);
+
+                }
+
+            }catch(\Exception $e){
+
+                info('Error cancelMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+
+                ContificoIntegrationController::sendMail([
+                    'subject' => "Error al cancelar la orden {$request->order_id} en la conexión {$conexion}",
+                    'sucursal' => strtoupper($conexion),
+                    'ccEmail' => env('MAIL_NOTIFICATION'),
+                    'html' => "<html>
+                        <head>
+                            <style>
+                                .alert {
+                                    padding: 15px;
+                                    margin-bottom: 20px;
+                                    border: 1px solid transparent;
+                                    border-radius: 4px;
+                                }
+                                .alert-danger {
+                                    color: #155724;
+                                    background-color: #d4edda;
+                                    border-color: #c3e6cb;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='alert alert-danger' role='alert'>
+                                <p> Error cancelMpAccount: {$e->getMessage()} {$e->getLine()} {$e->getFile()}</p>
+                            </div>
+                        </body>
+                    </html>"
+                ]);
+
+                return response()->json([
+                    'success' => false,
+                    'msg' => $e->getMessage().' '.$e->getLine().' '.$e->getFile()
+                ],500);
 
             }
 
@@ -656,65 +641,6 @@ class MpFunctionController extends Controller
                 'success' => true,
                 'msg' => 'Se eliminado el pedido con éxito'
             ],200);
-
-            /* $connection = DB::connection($request->connect);
-
-            try {
-
-                $connection->beginTransaction();
-
-                $precuenta =  $connection->table('precuenta')->where('default_name',$request->order_id)->first();
-
-                $precuentaAppDelivery = $connection->table('precuenta_app_delivery')
-                ->where('cuerpo->order->id',$request->order_id)
-                ->where('estado',true)->first();
-
-                if(isset($precuentaAppDelivery)){
-
-                    $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
-
-                    $connection->table('precuenta')->where('default_name',$request->order_id)->update(['procesado' => true]);
-
-                    $connection->table('precuenta_app_delivery')
-                    ->where('cuerpo->order->id',$request->order_id)
-                    ->where('estado',true)
-                    ->update(['estado' => false]);
-
-                    $cuerpo->order->state = 'CANCELLED';
-
-                    $connection->table('precuenta_app_delivery')->insert([
-                        'id_precuenta' => $precuenta->id_precuenta,
-                        'id_sucursal' => $precuenta->id_sucursal,
-                        'estado_app' => 'CANCELLED',
-                        'cuerpo' => json_encode($cuerpo),
-                        'logo' => $precuentaAppDelivery->logo,
-                        'canal' => $precuentaAppDelivery->canal,
-                        'tiempo_preparacion' => $precuentaAppDelivery->tiempo_preparacion,
-                        'estado' => true,
-                        'fecha_registro' => now()->toDateTimeString()
-                    ]);
-
-                }
-
-                $connection->commit();
-
-                return response()->json([
-                    'success' => true,
-                    'msg' => 'Se eliminado el pedido con éxito'
-                ],200);
-
-            } catch (\Exception $e) {
-
-                info('Error deleteMpOrderAppDelivery: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile().' '.$e->getTraceAsString());
-
-                $connection->rollBack();
-
-                return response()->json([
-                    'success' => false,
-                    'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
-                ],500);
-
-            } */
 
         } else {
 
