@@ -187,11 +187,11 @@ class MpFunctionController extends Controller
 
                 if(self::pingMp($conexion)){
 
-                    RetrySendOrderMp::dispatchNow($request->all());
+                    RetrySendOrderMp::dispatchNow($request->all(),$conexion);
 
                 }else{
 
-                    RetrySendOrderMp::dispatch($request->all())->onQueue('retry-send-order-mp');
+                    RetrySendOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-send-order-mp');
 
                 }
 
@@ -456,11 +456,11 @@ class MpFunctionController extends Controller
 
             if(self::pingMp($conexion)){
 
-                RetryUpdateOrderMp::dispatchNow($request->all());
+                RetryUpdateOrderMp::dispatchNow($request->all(),$conexion);
 
             }else{
 
-                RetryUpdateOrderMp::dispatch($request->all())->onQueue('retry-update-order-mp');
+                RetryUpdateOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-update-order-mp');
 
             }
 
@@ -642,11 +642,11 @@ class MpFunctionController extends Controller
 
             if(self::pingMp($conexion)){
 
-                RetryCancelOrderMp::dispatchNow($request->all());
+                RetryCancelOrderMp::dispatchNow($request->all(),$conexion);
 
             }else{
 
-                RetryCancelOrderMp::dispatch($request->all())->onQueue('retry-cancel-order-mp');
+                RetryCancelOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-cancel-order-mp');
 
             }
 

@@ -21,10 +21,12 @@ class RetrySendOrderMp implements ShouldQueue
      * @return void
      */
     private $data;
+    private $conexion;
 
-    public function __construct($data)
+    public function __construct($data, $conexion)
     {
         $this->data = $data;
+        $this->conexion = $conexion;
     }
 
     /**
@@ -34,13 +36,14 @@ class RetrySendOrderMp implements ShouldQueue
      */
     public function handle()
     {
-        $conexion = base64_decode($this->data['connect']);
-
-        $ping = Controller::pingMp($conexion);
+        info('send $conexion: '.$this->conexion);
+        info('send $this->data:');
+        info($this->data);
+        $ping = Controller::pingMp($this->conexion);
 
         if($ping){
 
-            $connection = DB::connection($conexion);
+            $connection = DB::connection($this->conexion);
 
             try {
 
@@ -195,7 +198,7 @@ class RetrySendOrderMp implements ShouldQueue
 
         }else{
 
-            $this->fail('No se le pudo hacer ping a la conexión '.$conexion.' al crear el pedido '.$this->data['name']);
+            $this->fail('No se le pudo hacer ping a la conexión '.$this->conexion.' al crear el pedido '.$this->data['name']);
 
         }
     }
