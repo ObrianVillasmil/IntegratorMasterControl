@@ -35,7 +35,8 @@ class RetryCancelOrderMp implements ShouldQueue
     public function handle()
     {
         $conexion = base64_decode($this->data['connect']);
-
+        info('cancel $conexion: '.$conexion);
+        info('cancel $this->data["connect"]: '.$this->data['connect']);
         $ping = Controller::pingMp($conexion);
 
         if($ping){
