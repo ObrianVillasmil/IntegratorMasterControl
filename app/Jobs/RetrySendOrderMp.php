@@ -36,13 +36,13 @@ class RetrySendOrderMp implements ShouldQueue
     {
         $conexion = base64_decode($this->data['connect']);
 
-        try {
+        $ping = Controller::pingMp($conexion);
 
-            $ping = Controller::pingMp($conexion);
+        if($ping){
 
-            if($ping){
+            $connection = DB::connection($conexion);
 
-                $connection = DB::connection($conexion);
+            try {
 
                 $connection->beginTransaction();
 
@@ -185,17 +185,17 @@ class RetrySendOrderMp implements ShouldQueue
 
                 $connection->commit();
 
-            }else{
+            } catch (\Exception $e) {
 
-                $this->fail('No se le pudo hacer ping a la conexión '.$conexion.' al crear el pedido '.$this->data['name']);
+                info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+
+                $connection->rollBack();
 
             }
 
-        } catch (\Exception $e) {
+        }else{
 
-            info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
-
-            $connection->rollBack();
+            $this->fail('No se le pudo hacer ping a la conexión '.$conexion.' al crear el pedido '.$this->data['name']);
 
         }
     }

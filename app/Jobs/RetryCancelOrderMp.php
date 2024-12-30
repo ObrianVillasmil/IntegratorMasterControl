@@ -36,11 +36,11 @@ class RetryCancelOrderMp implements ShouldQueue
     {
         $conexion = base64_decode($this->data['connect']);
 
-        try {
+        $ping = Controller::pingMp($conexion);
 
-            $ping = Controller::pingMp($conexion);
+        if($ping){
 
-            if($ping){
+            try {
 
                 $connection = DB::connection($conexion);
 
@@ -81,17 +81,17 @@ class RetryCancelOrderMp implements ShouldQueue
 
                 $connection->commit();
 
-            }else{
+            } catch (\Exception $e) {
 
-                $this->fail('No se le pudo hacer ping a la conexión '.$conexion.' al cancelar el pedido '.$this->data['order_id']);
+                info('Error deleteMpOrderAppDelivery: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile().' '.$e->getTraceAsString());
+
+                $connection->rollBack();
 
             }
 
-        } catch (\Exception $e) {
+        }else{
 
-            info('Error deleteMpOrderAppDelivery: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile().' '.$e->getTraceAsString());
-
-            $connection->rollBack();
+            $this->fail('No se le pudo hacer ping a la conexión '.$conexion.' al cancelar el pedido '.$this->data['order_id']);
 
         }
 
