@@ -36,9 +36,6 @@ class RetrySendOrderMp implements ShouldQueue
      */
     public function handle()
     {
-        info('send $conexion: '.$this->conexion);
-        info('send $this->data:');
-        info($this->data);
         $ping = Controller::pingMp($this->conexion);
 
         if($ping){

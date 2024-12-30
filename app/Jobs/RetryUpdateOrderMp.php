@@ -42,38 +42,35 @@ class RetryUpdateOrderMp implements ShouldQueue
 
             try {
 
+                $connection = DB::connection($this->conexion);
 
-                    $connection = DB::connection($this->conexion);
+                $order = $connection->table('precuenta as p')
+                ->join('precuenta_app_delivery as app','p.id_precuenta','app.id_precuenta')
+                ->where('p.default_name',$this->data['order_id'])->first();
 
-                    $order = $connection->table('precuenta as p')
-                    ->join('precuenta_app_delivery as app','p.id_precuenta','app.id_precuenta')
-                    ->where('p.default_name',$this->data['order_id'])->first();
+                switch($this->data['ordering_platform']){
+                    case 'UBER_EATS':
+                        $logo = 'ubereats.webp';
+                        break;
+                    default:
+                        $logo = 'appdelivery.webp';
+                }
 
-                    switch($this->data['ordering_platform']){
-                        case 'UBER_EATS':
-                            $logo = 'ubereats.webp';
-                            break;
-                        default:
-                            $logo = 'appdelivery.webp';
-                    }
+                $connection->table('precuenta_app_delivery')
+                ->where( 'id_sucursal', $order->id_sucursal)
+                ->where('id_precuenta', $order->id_precuenta)->update(['estado' => false]);
 
-                    $connection->table('precuenta_app_delivery')
-                    ->where( 'id_sucursal', $order->id_sucursal)
-                    ->where('id_precuenta', $order->id_precuenta)->update(['estado' => false]);
+                $connection->table('precuenta_app_delivery')->insert([
+                    'id_precuenta' => $order->id_precuenta,
+                    'id_sucursal' => $order->id_sucursal,
+                    'estado_app' => $this->data['status'],
+                    'canal' => $this->data['ordering_platform'],
+                    'cuerpo' => $this->data['body'],
+                    'logo' => $logo,
+                    'tiempo_preparacion' => $this->data['tiempo_preparacion']
+                ]);
 
-                    $connection->table('precuenta_app_delivery')->insert([
-                        'id_precuenta' => $order->id_precuenta,
-                        'id_sucursal' => $order->id_sucursal,
-                        'estado_app' => $this->data['status'],
-                        'canal' => $this->data['ordering_platform'],
-                        'cuerpo' => $this->data['body'],
-                        'logo' => $logo,
-                        'tiempo_preparacion' => $this->data['tiempo_preparacion']
-                    ]);
-
-                    $connection->commit();
-
-
+                $connection->commit();
 
             } catch (\Exception $e) {
 
