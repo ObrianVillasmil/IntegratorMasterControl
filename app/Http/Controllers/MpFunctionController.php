@@ -620,7 +620,9 @@ class MpFunctionController extends Controller
 
                 }else{
 
-                    if(!DB::table('companies')->where('connect',$value)->exists())
+                    $connection = base64_decode($value);
+
+                    if(!DB::table('companies')->where('connect',$connection)->exists())
                         $fail('La tienda no existe');
 
                 }
