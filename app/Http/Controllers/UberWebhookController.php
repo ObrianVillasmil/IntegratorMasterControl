@@ -28,6 +28,8 @@ class UberWebhookController extends Controller
 
             if(isset($signature) && $signature != ''){
 
+                info('integracion-uber: '. $request->__toString());
+
                 $content = $request->getContent();
                 $data = json_decode($content);
 

@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RetryCancelOrderMp;
+use App\Jobs\RetrySendOrderMp;
+use App\Jobs\RetryUpdateOrderMp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -16,10 +19,10 @@ class MpFunctionController extends Controller
             'name' => 'required|string|min:3',
             'ordering_platform' => 'required|string|min:3',
             'total' => 'required|numeric|min:0',
-            'customer' => 'required_with:customer_identifcation',
-            'customer_address' => 'required_with:customer_identifcation',
-            'customer_email' => 'required_with:customer_identifcation',
-            //'customer_phone' => 'required_with:customer_identifcation',
+            //'customer' => 'required_with:customer_identification',
+            //'customer_address' => 'required_with:customer_identification',
+            //'customer_email' => 'required_with:customer_identification',
+            //'customer_phone' => 'required_with:customer_identification',
             'body' => 'nullable|json',
             'connect' => ['required','string','min:3',function($_, $value, $fail){
 
@@ -121,6 +124,10 @@ class MpFunctionController extends Controller
 
                                 $fail("El campo sub_total_price del item {$item->name} debe ser un número positivo");
 
+                            }else if(!isset($item->discount) || !is_numeric($item->discount) || $item->discount < 0){
+
+                                $fail("El campo discount del item {$item->name} debe ser un número positivo, de no tener descuento debe ser 0");
+
                             }
 
                             if(isset($item->id_pcpp) && $item->id_pcpp!= ''){
@@ -152,9 +159,9 @@ class MpFunctionController extends Controller
             'ordering_platform.string' => 'El nombre de la plataforma que origina la orden debe ser una cadena de carcaracteres',
             'ordering_platform.min' => 'El nombre de la plataforma que origina la orden debe tener al menos 3 caracteres',
             'customer.required' => 'No se obtuvo el nombre de la sucursal',
-            'customer_email.required_with' => 'Debe ingresar el correo electrónico del cliente',
-            'customer_phone.required_with' => 'Debe ingresar el teléfono del cliente',
-            'customer_address.required_with' => 'Debe ingresar la dirección del cliente',
+            //'customer_email.required_with' => 'Debe ingresar el correo electrónico del cliente',
+            //'customer_phone.required_with' => 'Debe ingresar el teléfono del cliente',
+            //'customer_address.required_with' => 'Debe ingresar la dirección del cliente',
             'total.required' => 'No se obtuvo el monto total de la orden',
             'total.numeric' => 'El monto total de la orden debe ser un numero',
             'total.min' => 'El monto total de la orden debe ser mayor o igual a 0',
@@ -174,7 +181,37 @@ class MpFunctionController extends Controller
 
         if (!$validate->fails()) {
 
-            $connection = DB::connection(base64_decode($request->connect));
+            try{
+
+                $conexion = base64_decode($request->connect);
+
+                if(self::pingMp($conexion)){
+
+                    RetrySendOrderMp::dispatchNow($request->all());
+
+                }else{
+
+                    RetrySendOrderMp::dispatch($request->all())->onQueue('retry-send-order-mp');
+
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'msg' => 'Se ha creado el pedido con éxito'
+                ],200);
+
+            }catch(\Exception $e){
+
+                info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+
+                return response()->json([
+                    'success' => false,
+                    'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
+                ],500);
+
+            }
+
+            /* $connection = DB::connection(base64_decode($request->connect));
 
             try {
 
@@ -184,11 +221,11 @@ class MpFunctionController extends Controller
 
                 $customerId = null;
 
-                if(isset($request->customer_identifcation) && $request->customer_identifcation != ''){
+                if(isset($request->customer_identification) && $request->customer_identification != ''){
 
-                    $customer = $connection->table('comprador')->where('identificacion',$request->customer_identifcation)->first();
+                    $customer = $connection->table('comprador')->where('identificacion',$request->customer_identification)->first();
 
-                    switch (strlen($request->customer_identifcation)) {
+                    switch (strlen($request->customer_identification)) {
                         case 10:
                             $idType = 2;
                             break;
@@ -201,10 +238,10 @@ class MpFunctionController extends Controller
 
                     $dataCustomer = [
                         'nombre' => $request->customer,
-                        'identificacion' => $request->customer_identifcation,
-                        'correo' => $request->customer_email,
-                        'telefono' => $request->customer_phone,
-                        'direccion' => $request->customer_address,
+                        'identificacion' => $request->customer_identification,
+                        'correo' => isset($request->customer_email) ? $request->customer_email : null,
+                        'telefono' => isset($request->customer_phone) ? $request->customer_phone : null,
+                        'direccion' => isset($request->customer_address) ? $request->customer_address : null,
                         'id_tipo_identificacion' => $idType,
                         'id_sucursal' => $request->id_branch_office,
                         'autorizacion_datos' => 'S'
@@ -214,13 +251,15 @@ class MpFunctionController extends Controller
 
                         $customerId = $customer->id_comprador;
 
-                        $connection->table('comprador')->where('identificacion',$request->customer_identifcation)->update($dataCustomer);
+                        $connection->table('comprador')->where('identificacion',$request->customer_identification)->update($dataCustomer);
 
                     }else{
 
-                        $connection->table('comprador')->insert($dataCustomer);
+                        $customerId = $connection->table('comprador')->orderBy('id_comprador','desc')->first()->id_comprador+1;
 
-                        $customerId = $connection->table('comprador')->orderBy('id_comprador','desc')->first()->id_comprador;
+                        $dataCustomer['id_comprador'] = $customerId;
+
+                        $connection->table('comprador')->insert($dataCustomer);
 
                     }
 
@@ -276,7 +315,8 @@ class MpFunctionController extends Controller
                         'estado_app' => 'OFFERED',
                         'canal' => $request->ordering_platform,
                         'cuerpo' => $request->body,
-                        'logo' => $logo
+                        'logo' => $logo,
+                        'tiempo_preparacion' => 10
                     ]);
 
                 }
@@ -307,7 +347,9 @@ class MpFunctionController extends Controller
                         'precio' => $item->sub_total_price,
                         'id_pos_configuracion_producto_pregunta' => $item->id_pcpp,
                         'id_cajero'=> '1000',
-                        'id_sucursal' => $request->id_branch_office
+                        'id_sucursal' => $request->id_branch_office,
+                        'monto_descuento' => $item->discount,
+                        'json_descuento' => isset($item->json_discount) ? $item->json_discount : null
                     ]);
 
                 }
@@ -330,7 +372,7 @@ class MpFunctionController extends Controller
                     'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
                 ],500);
 
-            }
+            } */
 
         } else {
 
@@ -410,7 +452,19 @@ class MpFunctionController extends Controller
 
         if (!$validate->fails()) {
 
-            $connection = DB::connection(base64_decode($request->connect));
+            $conexion = base64_decode($request->connect);
+
+            if(self::pingMp($conexion)){
+
+                RetryUpdateOrderMp::dispatchNow($request->all());
+
+            }else{
+
+                RetryUpdateOrderMp::dispatch($request->all())->onQueue('retry-update-order-mp');
+
+            }
+
+            /* $connection = DB::connection(base64_decode($request->connect));
 
             try {
 
@@ -460,7 +514,12 @@ class MpFunctionController extends Controller
                     'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
                 ],500);
 
-            }
+            } */
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Se ha creado el pedido con éxito'
+            ],200);
 
         } else {
 
@@ -470,7 +529,6 @@ class MpFunctionController extends Controller
             ], 422);
 
         }
-
 
     }
 
@@ -580,7 +638,24 @@ class MpFunctionController extends Controller
 
         if (!$validate->fails()) {
 
-            $connection = DB::connection($request->connect);
+            $conexion = base64_decode($request->connect);
+
+            if(self::pingMp($conexion)){
+
+                RetryCancelOrderMp::dispatchNow($request->all());
+
+            }else{
+
+                RetryCancelOrderMp::dispatch($request->all())->onQueue('retry-cancel-order-mp');
+
+            }
+
+            return response()->json([
+                'success' => true,
+                'msg' => 'Se eliminado el pedido con éxito'
+            ],200);
+
+            /* $connection = DB::connection($request->connect);
 
             try {
 
@@ -637,7 +712,7 @@ class MpFunctionController extends Controller
                     'msg' => $e->getLine().' '.$e->getMessage().' '.$e->getLine()
                 ],500);
 
-            }
+            } */
 
         } else {
 

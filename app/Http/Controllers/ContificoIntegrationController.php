@@ -104,6 +104,16 @@ class ContificoIntegrationController extends Controller
                 ->where('id_sucursal',$v->id_sucursal)
                 ->select('impuesto')->first();
 
+                $baseMayor0 = number_format($baseMayor0,2,'.','');
+
+                $iva = $baseMayor0 * ($prod->impuesto/100);
+                $arrIva = explode('.',$iva);
+                $iva = $arrIva[0].'.'.(isset($arrIva[1]) ? substr($arrIva[1],0,2) : '00');
+
+                $total = $baseMayor0 + $base0 + $iva + $v->servicio;
+                $arrTotal  = explode('.',$total);
+                $total = $arrTotal[0].'.'.(isset($arrTotal[1]) ? substr($arrTotal[1],0,2) : '00');
+
                 $dataFactura = [
                     "pos" => env('API_POS_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                     "fecha_emision" =>  Carbon::parse($v->fecha)->format('d/m/Y'),
@@ -116,10 +126,11 @@ class ContificoIntegrationController extends Controller
                     "descripcion" => "FACTURA ".(substr($v->secuencial,24,3)."-".substr($v->secuencial,27,3)."-".substr($v->secuencial,30,9)),
                     "subtotal_0" => number_format($base0,2,'.',''),
                     "subtotal_12" => number_format($baseMayor0,2,'.',''),
-                    "iva" => number_format($iva,2,'.',''),
-                    "ice" =>0.00,
+                    "iva" => $iva,
+                    "ice" => 0.00,
                     "servicio" => number_format($v->servicio,2,'.',''),
-                    "total" => number_format($v->total_a_pagar-$v->propina,2,'.',''),
+                    //"total" => number_format($v->total_a_pagar-$v->propina,2,'.',''),
+                    "total" => $total,
                     "cliente" => [
                         "ruc"=>  $ruc,
                         "cedula"=>  $cedula,
@@ -234,7 +245,7 @@ class ContificoIntegrationController extends Controller
                                     ->where('id_sucursal', $v->id_sucursal)->get();
 
                                     //DATOS PARA EL ASIENTO CONTABLE DE LOS COBROS
-                                    $dataAsientoCobro = [
+                                    /* $dataAsientoCobro = [
                                         "fecha" => Carbon::parse($v->fecha)->format('d/m/Y'),
                                         "glosa" => "COBRO FACTURA VENTA ".$dataFactura['documento'],
                                         "gasto_no_deducible"=> 0,
@@ -246,7 +257,7 @@ class ContificoIntegrationController extends Controller
                                                 "tipo"=> "H",
                                             ],
                                         ]
-                                    ];
+                                    ]; */
 
                                     foreach ($pagosVenta as $pago) {
 
@@ -256,21 +267,21 @@ class ContificoIntegrationController extends Controller
 
                                                 $formaCobro = 'TC';
 
-                                                $dataAsientoCobro['detalles'][] =[
+                                                /* $dataAsientoCobro['detalles'][] =[
                                                     "cuenta_id" => env('CUENTA_COBRO_TARJETA_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                                                     "valor" => $pago->monto,
                                                     "tipo"=> "D"
-                                                ];
+                                                ]; */
 
                                             }else{
 
                                                 $formaCobro = 'EF';
 
-                                                $dataAsientoCobro['detalles'][] =[
+                                                /* $dataAsientoCobro['detalles'][] =[
                                                     "cuenta_id" => env('CUENTA_COBRO_EFECTIVO_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
                                                     "valor" => $pago->monto,
                                                     "tipo"=> "D"
-                                                ];
+                                                ]; */
 
                                             }
 
@@ -316,7 +327,7 @@ class ContificoIntegrationController extends Controller
 
                                                         $html ="<div>Ha ocurrido un inconveniente al momento de crear el asiento de los pagos de la factura <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> en contifico </div>";
                                                         $html.="<div><b>DATA RECIBIDA:</b> ".json_encode($resAsientoCobro['response'])."</div>";
-                                                        $html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataAsientoCobro)."</div>";
+                                                        //$html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataAsientoCobro)."</div>";
                                                         $accionesFallidas[] = $html;
 
                                                     }
@@ -333,7 +344,7 @@ class ContificoIntegrationController extends Controller
 
                                                 $html ="<div>Ha ocurrido un inconveniente al momento de crear el pago de la venta <b>".$v->secuencial."</b> de la empresa <b>".$request->company."</b> a contifico </div>";
                                                 $html.="<div><b>DATA RECIBIDA:</b> ".json_encode($resCobro['response'])."</div>";
-                                                $html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataAsientoCobro)."</div>";
+                                                //$html.="<div><b>DATA ENVIADA:</b> ".json_encode($dataAsientoCobro)."</div>";
                                                 $accionesFallidas[] = $html;
 
                                             }
