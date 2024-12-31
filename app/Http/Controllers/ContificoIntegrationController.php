@@ -106,13 +106,13 @@ class ContificoIntegrationController extends Controller
 
                 $baseMayor0 = number_format($baseMayor0,2,'.','');
 
-                $iva = $baseMayor0 * ($prod->impuesto/100);
+                /* $iva = $baseMayor0 * ($prod->impuesto/100);
                 $arrIva = explode('.',$iva);
                 $iva = $arrIva[0].'.'.(isset($arrIva[1]) ? substr($arrIva[1],0,2) : '00');
 
                 $total = $baseMayor0 + $base0 + $iva + $v->servicio;
                 $arrTotal  = explode('.',$total);
-                $total = $arrTotal[0].'.'.(isset($arrTotal[1]) ? substr($arrTotal[1],0,2) : '00');
+                $total = $arrTotal[0].'.'.(isset($arrTotal[1]) ? substr($arrTotal[1],0,2) : '00'); */
 
                 $dataFactura = [
                     "pos" => env('API_POS_CONTIFICO_'.strtoupper($company->name).'_'.$v->id_sucursal),
