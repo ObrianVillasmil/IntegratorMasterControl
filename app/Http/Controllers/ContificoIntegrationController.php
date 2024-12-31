@@ -129,8 +129,8 @@ class ContificoIntegrationController extends Controller
                     "iva" => $iva,
                     "ice" => 0.00,
                     "servicio" => number_format($v->servicio,2,'.',''),
-                    //"total" => number_format($v->total_a_pagar-$v->propina,2,'.',''),
-                    "total" => $total,
+                    "total" => number_format($v->total_a_pagar-$v->propina,2,'.',''),
+                    //"total" => $total,
                     "cliente" => [
                         "ruc"=>  $ruc,
                         "cedula"=>  $cedula,
