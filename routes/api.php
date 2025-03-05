@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BonesIntegrationController;
+use App\Http\Controllers\DeunaWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UberWebhookController;
@@ -18,7 +19,7 @@ use App\Http\Controllers\UberWebhookController;
 */
 
 Route::middleware('api')->post('/integracion-uber', [UberWebhookController::class, 'getNotification']);
-
+Route::middleware('api')->post('/integracion-deuna', [DeunaWebhookController::class, 'getNotification']);
 
 Route::group([
 

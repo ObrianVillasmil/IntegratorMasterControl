@@ -33,7 +33,7 @@ class UberWebhookController extends Controller
                 $content = $request->getContent();
                 $data = json_decode($content);
 
-                if(isset($data->meta->user_id)){    
+                if(isset($data->meta->user_id)){
 
                     $storeId = $data->meta->user_id;
 
