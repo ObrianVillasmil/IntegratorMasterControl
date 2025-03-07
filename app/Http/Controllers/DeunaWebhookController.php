@@ -36,7 +36,7 @@ class DeunaWebhookController extends Controller
                 throw new \Exception("No se ha encontrado la tienda en la base de datos por branchId: {$data->branchId}");
 
             WebhookDeuna::create([
-                'connection' => $data->connect,
+                'connection' => $company->connect,
                 'data' => $data
             ]);
 
