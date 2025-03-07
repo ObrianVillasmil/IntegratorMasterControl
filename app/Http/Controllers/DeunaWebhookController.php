@@ -48,7 +48,7 @@ class DeunaWebhookController extends Controller
 
             }else{
 
-                RetrySendDeUnaNotificationMp::dispatch($data);
+                RetrySendDeUnaNotificationMp::dispatch($data)->onQueue('deuna-notification');
 
             }
 
