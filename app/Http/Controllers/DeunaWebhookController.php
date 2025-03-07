@@ -21,14 +21,26 @@ class DeunaWebhookController extends Controller
             if(!isset($data->branchId) || $data->branchId == '' || !isset($data->posId) || $data->posId == '')
                 throw new \Exception('BranchId o PosId no encontrados');
 
+            if(!isset($data->status) || $data->status !== 'SUCCESS')
+                throw new \Exception("El status en la petición es {$data->status}");
+
             if(!isset($data->idTransaction) || $data->idTransaction == '')
                 throw new \Exception('No se ha encontrado el idTransaction en la petición');
+
+            if(!isset($data->internalTransactionReference) || $data->internalTransactionReference == '')
+                throw new \Exception('No se ha encontrado el internalTransactionReference en la petición');
 
             if(!isset($data->status) || $data->status == '')
                 throw new \Exception('No se ha encontrado el status en la petición');
 
-            if($data->status !== 'SUCCESS')
-                throw new \Exception("El status en la petición es {$data->status}");
+            if(!isset($data->customerFullName) || $data->customerFullName == '')
+                throw new \Exception("No se ha encontrado el customerFullName en la petición");
+
+            if(!isset($data->amount) || $data->amount == '')
+                throw new \Exception("No se ha encontrado el amount en la petición");
+
+            if(!isset($data->transferNumber) || $data->transferNumber == '')
+                throw new \Exception("No se ha encontrado el transferNumber en la petición");
 
             $company = DB::table('companies')->where('token', $data->branchId)->first();
 

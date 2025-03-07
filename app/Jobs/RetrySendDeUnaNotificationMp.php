@@ -55,7 +55,7 @@ class RetrySendDeUnaNotificationMp implements ShouldQueue
                     throw new \Exception("No se ha encontrado la transacción de deuna con id: {$this->data->idTransaction} en la conexión: {$this->data->connect}");
 
                 $connection->table('pago_deuna')->update([
-                    'estado' => 'APPROVED',
+                    'status' => 'APPROVED',
                     'id_sucursal' => $branchOffice->id_sucursal,
                     'nombre_comprador' => $this->data->customerFullName,
                     'numero_transferencia' => $this->data->transferNumber,
