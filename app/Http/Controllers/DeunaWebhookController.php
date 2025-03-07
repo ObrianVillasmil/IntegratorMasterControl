@@ -30,10 +30,10 @@ class DeunaWebhookController extends Controller
             if($data->status !== 'SUCCESS')
                 throw new \Exception("El status en la petición es {$data->status}");
 
-            $company = DB::table('companies')->where('connect', $data->branchId)->first();
+            $company = DB::table('companies')->where('token', $data->branchId)->first();
 
             if(!isset($company))
-                throw new \Exception("No se ha encontrado la tienda en la base de datos por branchId: {$data->branchId} o posId: {$data->posId}");
+                throw new \Exception("No se ha encontrado la tienda en la base de datos por branchId: {$data->branchId}");
 
             WebhookDeuna::create([
                 'connection' => $data->connect,
