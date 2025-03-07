@@ -37,7 +37,7 @@ class DeunaWebhookController extends Controller
 
             WebhookDeuna::create([
                 'connection' => $company->connect,
-                'data' => $data
+                'data' => json_encode($data)
             ]);
 
             if(self::pingMp($company->connect)){
