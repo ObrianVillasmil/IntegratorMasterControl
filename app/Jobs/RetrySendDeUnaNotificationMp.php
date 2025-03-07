@@ -60,7 +60,7 @@ class RetrySendDeUnaNotificationMp implements ShouldQueue
                     'nombre_comprador' => $this->data->customerFullName,
                     'numero_transferencia' => $this->data->transferNumber,
                     'pos' => $this->data->posId,
-                    'amount' => $this->data->amount,
+                    'monto' => $this->data->amount,
                     'data' => json_encode($this->data)
                 ]);
 
