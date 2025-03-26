@@ -20,6 +20,11 @@ use App\Http\Controllers\UberWebhookController;
 
 Route::middleware('api')->post('/integracion-uber', [UberWebhookController::class, 'getNotification']);
 Route::middleware('api')->post('/integracion-deuna', [DeunaWebhookController::class, 'getNotification']);
+Route::middleware('api')->post('/integracion-peya', function($data){
+
+    return "Info recibida: \n\n ".print_r($data,true);
+
+});
 
 Route::group([
 
