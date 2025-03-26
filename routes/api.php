@@ -22,7 +22,7 @@ Route::middleware('api')->post('/integracion-uber', [UberWebhookController::clas
 Route::middleware('api')->post('/integracion-deuna', [DeunaWebhookController::class, 'getNotification']);
 Route::middleware('api')->post('/integracion-peya', function($data){
 
-    return "Info recibida: \n\n ".print_r($data,true);
+    return response("Info recibida: \n\n ".print_r($data,true),200);
 
 });
 
