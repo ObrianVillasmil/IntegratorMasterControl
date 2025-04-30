@@ -28,9 +28,9 @@ Route::middleware('api')->post('/integracion-peya', function(Request $request){
     return response("",200);
 
 });
-Route::middleware('api')->post('/integracion-peya/order/EC-LAI-LAI-PRUEBA-0001', function(Request $request){
+Route::middleware('api')->post('/integracion-peya/order/{vendorId}', function(Request $request){
 
-    info('WEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n\n');
+    info("WEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n\n");
     info("Info recibida: \n\n ".$request->__toString());
 
     return response("",200);
