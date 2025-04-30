@@ -30,7 +30,16 @@ Route::middleware('api')->post('/integracion-peya', function(Request $request){
 });
 Route::middleware('api')->post('/integracion-peya/order/{vendorId}', function(Request $request){
 
-    info("WEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n\n");
+    info("WEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n");
+    info("Info recibida: \n\n ".$request->__toString());
+
+    return response("",200);
+
+});
+
+Route::middleware('api')->post('/integracion-peya/{catalogImportCallback}', function(Request $request){
+
+    info("WEBHOOK IMPORTACION DE MENU PEDIDOS YA:\n");
     info("Info recibida: \n\n ".$request->__toString());
 
     return response("",200);
