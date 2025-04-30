@@ -28,6 +28,14 @@ Route::middleware('api')->post('/integracion-peya', function(Request $request){
     return response("",200);
 
 });
+Route::middleware('api')->post('/integracion-peya/order/remoteId', function(Request $request){
+
+    info('WEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n\n');
+    info("Info recibida: \n\n ".$request->__toString());
+
+    return response("",200);
+
+});
 
 Route::group([
 
