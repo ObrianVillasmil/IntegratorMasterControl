@@ -20,9 +20,12 @@ use App\Http\Controllers\UberWebhookController;
 
 Route::middleware('api')->post('/integracion-uber', [UberWebhookController::class, 'getNotification']);
 Route::middleware('api')->post('/integracion-deuna', [DeunaWebhookController::class, 'getNotification']);
-Route::middleware('api')->post('/integracion-peya', function($data){
+Route::middleware('api')->post('/integracion-peya', function(Request $request){
 
-    return response("Info recibida: \n\n ".print_r($data,true),200);
+    info('WEBHOOK PEDIDOS YA');
+    info("Info recibida: \n\n ".$request->__toString());
+
+    return response("",200);
 
 });
 
