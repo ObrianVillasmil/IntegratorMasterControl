@@ -47,7 +47,12 @@ class PedidosYaWebhookController extends Controller
 
             $hJwt = new \stdClass();
 
+            info('$company->secret_key_pedidosya '.$company->secret_key_pedidosya);
+            info('$p1->alg:'.$p1->alg);
+
             JWT::decode($jwt, new Key($company->secret_key_pedidosya, $p1->alg), $hJwt);
+            info('$hJwt: ');
+            info((array)$hJwt);
 
             if((!isset($p2->iss) || !isset($p2->iat) || !isset($hJwt->iss) || !isset($hJwt->iat)) || ($hJwt->iss != $p2->iss) || ($hJwt->iat != $p2->iat))
                 throw new \Exception("El token de autorización de PedidosYa no es válido: \n {$stringReq}");
@@ -62,7 +67,7 @@ class PedidosYaWebhookController extends Controller
 
         } catch (\Exception $e) {
 
-            info("Error en la peticion a /integracion-peya/order: \n {$e->getMessage()}");
+            info("Error en la peticion a /integracion-peya/order: \n {$e->getMessage()} {$e->getTraceAsString()}");
             return response("Unauthorized",403);
         }
 
