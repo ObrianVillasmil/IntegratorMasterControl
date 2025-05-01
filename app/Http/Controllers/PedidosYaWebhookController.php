@@ -45,19 +45,11 @@ class PedidosYaWebhookController extends Controller
 
             $p2 = json_decode(base64_decode(explode('.',$token)[1]));
 
-            //$hJwt = new \stdClass();
-
             $hJwt = JWT::decode($token, new Key($company->secret_key_pedidosya, $p1->alg));
-
-            info('$p2:');
-            info((array)$p2);
-            info('$hJwt:');
-            info((array)$hJwt);
 
             if((!isset($p2->iss) || !isset($p2->iat) || !isset($hJwt->iss) || !isset($hJwt->iat)) || ($hJwt->iss != $p2->iss) || ($hJwt->iat != $p2->iat))
                 throw new \Exception("El token de autorización de PedidosYa no no coincide con la decodificación: \n {$stringReq}");
 
-                
 
             info($request->all());
 
