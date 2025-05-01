@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use Firebase\JWT\{JWT, KEY};
+use Firebase\JWT\{JWT, Key};
 use Illuminate\Http\Request;
 
 class PedidosYaWebhookController extends Controller
