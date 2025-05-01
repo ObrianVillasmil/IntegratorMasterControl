@@ -35,8 +35,8 @@ class PedidosYaWebhookController extends Controller
 
             if(!isset($jwt))
                 throw new \Exception("No se ha encontrado el token de autorización en la petición de PedidosYa: \n {$stringReq}");
-info('$jwt: '.$jwt);
-            if(strpos($jwt,'Bearer ') !== false)
+
+            if(strpos($jwt,'Bearer') === false)
                 throw new \Exception("El token de autorización de PedidosYa no es Bearer: \n {$stringReq}");
 
             $token = trim(explode('Bearer ',$jwt)[1]);
@@ -48,12 +48,7 @@ info('$jwt: '.$jwt);
             $hJwt = new \stdClass();
 
             JWT::decode($token, new Key($company->secret_key_pedidosya, $p1->alg), $hJwt);
-
-            info('$p2:');
-            info($p2);
-            info('$hJwt:');
-            info($hJwt);
-
+            
             if((!isset($p2->iss) || !isset($p2->iat) || !isset($hJwt->iss) || !isset($hJwt->iat)) || ($hJwt->iss != $p2->iss) || ($hJwt->iat != $p2->iat))
                 throw new \Exception("El token de autorización de PedidosYa no no coincide con la decodificación: \n {$stringReq}");
 
