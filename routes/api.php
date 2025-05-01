@@ -3,6 +3,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BonesIntegrationController;
 use App\Http\Controllers\DeunaWebhookController;
+use App\Http\Controllers\PedidosYaWebhookController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UberWebhookController;
@@ -20,20 +21,12 @@ use App\Http\Controllers\UberWebhookController;
 
 Route::middleware('api')->post('/integracion-uber', [UberWebhookController::class, 'getNotification']);
 Route::middleware('api')->post('/integracion-deuna', [DeunaWebhookController::class, 'getNotification']);
+Route::middleware('api')->post('/integracion-peya/order/{vendorId}', [PedidosYaWebhookController::class,'getNotification']);
+
+
 Route::middleware('api')->post('/integracion-peya', function(Request $request){
 
     info('WEBHOOK GENERAL PEDIDOS YA');
-    info("Info recibida: \n\n ".$request->__toString());
-
-    return response("",200);
-
-});
-Route::middleware('api')->post('/integracion-peya/order/{vendorId}', function(Request $request){
-
-    info("WEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n");
-
-    info($request->header('Authorization')."\n");
-
     info("Info recibida: \n\n ".$request->__toString());
 
     return response("",200);
