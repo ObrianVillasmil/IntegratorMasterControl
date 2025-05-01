@@ -31,6 +31,9 @@ Route::middleware('api')->post('/integracion-peya', function(Request $request){
 Route::middleware('api')->post('/integracion-peya/order/{vendorId}', function(Request $request){
 
     info("WEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n");
+
+    info($request->header('Authorization')."\n");
+
     info("Info recibida: \n\n ".$request->__toString());
 
     return response("",200);
