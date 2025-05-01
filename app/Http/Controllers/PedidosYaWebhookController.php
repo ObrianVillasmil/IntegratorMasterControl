@@ -36,7 +36,7 @@ class PedidosYaWebhookController extends Controller
             if(!isset($jwt))
                 throw new \Exception("No se ha encontrado el token de autorización en la petición de PedidosYa: \n {$stringReq}");
 
-            if(strpos($jwt,'Bearer ') !== 0)
+            if(strpos($jwt,'Bearer ') !== false)
                 throw new \Exception("El token de autorización de PedidosYa no es válido: \n {$stringReq}");
 
             $token = trim(explode('Bearer ',$jwt)[1]);
@@ -48,6 +48,11 @@ class PedidosYaWebhookController extends Controller
             $hJwt = new \stdClass();
 
             JWT::decode($token, new Key($company->secret_key_pedidosya, $p1->alg), $hJwt);
+
+            info('$p2:');
+            info($p2);
+            info('$hJwt:');
+            info($hJwt);
 
             if((!isset($p2->iss) || !isset($p2->iat) || !isset($hJwt->iss) || !isset($hJwt->iat)) || ($hJwt->iss != $p2->iss) || ($hJwt->iat != $p2->iat))
                 throw new \Exception("El token de autorización de PedidosYa no es válido: \n {$stringReq}");
@@ -62,7 +67,7 @@ class PedidosYaWebhookController extends Controller
 
         } catch (\Exception $e) {
 
-            info("Error en la peticion a /integracion-peya/order: \n {$e->getMessage()} {$e->getTraceAsString()}");
+            info("Error en la peticion a /integracion-peya/order: \n\n {$e->getMessage()}");
             return response("Unauthorized",403);
         }
 
