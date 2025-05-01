@@ -16,10 +16,12 @@ class PedidosYaWebhookController extends Controller
 
             $stringReq = $request->__toString();
 
+            info($stringReq);
+
             $arrPath = explode('order/',$request->path());
 
             if(!isset($arrPath[1]))
-                throw new \Exception("No se ha encontrado el vendorId en la petición de PedidosYa: \n {$stringReq}");
+                throw new \Exception("No se ha encontrado el vendorId en la petición de PedidosYa");
 
             $vendorId = $arrPath[1];
 
@@ -34,10 +36,10 @@ class PedidosYaWebhookController extends Controller
             $jwt = $request->header('Authorization');
 
             if(!isset($jwt))
-                throw new \Exception("No se ha encontrado el token de autorización en la petición de PedidosYa: \n {$stringReq}");
+                throw new \Exception("No se ha encontrado el token de autorización en la petición de PedidosYa");
 
             if(strpos($jwt,'Bearer') === false)
-                throw new \Exception("El token de autorización de PedidosYa no es Bearer: \n {$stringReq}");
+                throw new \Exception("El token de autorización de PedidosYa no es Bearer");
 
             $token = trim(explode('Bearer ',$jwt)[1]);
 
@@ -48,10 +50,10 @@ class PedidosYaWebhookController extends Controller
             $hJwt = JWT::decode($token, new Key($company->secret_key_pedidosya, $p1->alg));
 
             if((!isset($p2->iss) || !isset($p2->iat) || !isset($hJwt->iss) || !isset($hJwt->iat)) || ($hJwt->iss != $p2->iss) || ($hJwt->iat != $p2->iat))
-                throw new \Exception("El token de autorización de PedidosYa no no coincide con la decodificación: \n {$stringReq}");
+                throw new \Exception("El token de autorización de PedidosYa no no coincide con la decodificación");
 
 
-            info($request->all());
+            //info($request->all());
 
             return response("",200);
 
