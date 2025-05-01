@@ -57,31 +57,17 @@ class PedidosYaWebhookController extends Controller
             if((!isset($p2->iss) || !isset($p2->iat) || !isset($hJwt->iss) || !isset($hJwt->iat)) || ($hJwt->iss != $p2->iss) || ($hJwt->iat != $p2->iat))
                 throw new \Exception("El token de autorización de PedidosYa no no coincide con la decodificación: \n {$stringReq}");
 
-
+                
 
             info($request->all());
 
-
-
-
+            return response("",200);
 
         } catch (\Exception $e) {
 
             info("Error en la peticion a /integracion-peya/order: \n\n {$e->getMessage()}");
             return response("Unauthorized",403);
         }
-
-
-
-
-
-
-
-
-
-        info(print_r((array)$payload,true)."\n");
-
-        return response("",200);
 
     }
 }
