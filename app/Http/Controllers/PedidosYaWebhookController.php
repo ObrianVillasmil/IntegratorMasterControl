@@ -45,9 +45,9 @@ class PedidosYaWebhookController extends Controller
 
             $p2 = json_decode(base64_decode(explode('.',$token)[1]));
 
-            $hJwt = new \stdClass();
+            //$hJwt = new \stdClass();
 
-            JWT::decode($token, new Key($company->secret_key_pedidosya, $p1->alg), $hJwt);
+            $hJwt = JWT::decode($token, new Key($company->secret_key_pedidosya, $p1->alg));
 
             info('$p2:');
             info((array)$p2);
