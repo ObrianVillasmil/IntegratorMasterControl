@@ -12,7 +12,11 @@ class PedidosYaWebhookController extends Controller
 
         info($request->header('Authorization')."\n");
 
+        info(print_r($request->all())."\n");
+
         info($request->url()."\n");
+
+        info($request->path()."\n");
 
         info("Info recibida: \n\n ".$request->__toString());
 
