@@ -109,6 +109,7 @@ class PedidosYaWebhookController extends Controller
     public static function createNewOrder(Request $request)
     {
         $success = true;
+        $msg = 'Se ha gurado la orden con éxito';
 
         try {
 
@@ -246,10 +247,14 @@ class PedidosYaWebhookController extends Controller
         } catch (\Exception $e) {
 
             $success = false;
+            $msg = $e->getMessage().''.$e->getLine().''.$e->getFile();
 
         }
 
-        return ['success' => $success];
+        return [
+            'success' => $success,
+            'msg' => $msg
+        ];
     }
 
     public static function updateOrder(Request $request)
