@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Company;
 use App\Models\WebhookUber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -338,7 +337,5 @@ class UberNotificationController extends Controller
         }
 
     }
-
-
 
 }

@@ -52,6 +52,9 @@ class RetryUpdateOrderMp implements ShouldQueue
                     case 'UBER_EATS':
                         $logo = 'ubereats.webp';
                         break;
+                    case 'PEDIDOS_YA':
+                        $logo = 'pedidosya.png';
+                        break;
                     default:
                         $logo = 'appdelivery.webp';
                 }
