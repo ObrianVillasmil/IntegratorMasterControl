@@ -42,6 +42,16 @@ Route::middleware('api')->post('/integracion-peya/{catalogImportCallback}', func
 
 });
 
+Route::middleware('api')->put('/remoteId/{remoteId}/remoteOrder/{remoteOrderId}/posOrderStatus', function(Request $request){
+
+    info("WEBHOOK ACTUALIZACION DE PEDIDO DE PEDIDOS YA:\n");
+    info("Info recibida: \n\n ".$request->__toString());
+
+    return response("",200);
+
+});
+
+
 Route::group([
 
     'middleware' => 'api',
