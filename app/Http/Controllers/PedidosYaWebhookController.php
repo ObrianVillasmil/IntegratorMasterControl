@@ -151,7 +151,8 @@ class PedidosYaWebhookController extends Controller
             if(isset($request->products) && is_array($request->products)){
 
                 foreach ($request->products as $product) {
-
+                    info('$product:');
+                    info(print_r($product,true));
                     $dataItem = explode('-',$product->remoteCode);
                     $commnet = '';
                     $discount = 0;
