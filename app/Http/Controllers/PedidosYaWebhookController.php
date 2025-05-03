@@ -98,13 +98,11 @@ class PedidosYaWebhookController extends Controller
 
             }
 
-            //info($request->all());
-
-            return response((object)[
+            return response([
                 'remoteResponse'=> [
                     'remoteOrderId' => $remoteOrderId
                 ]
-            ],200);
+            ],200,['Content-Type' => 'application/json']);
 
         } catch (\Exception $e) {
 
