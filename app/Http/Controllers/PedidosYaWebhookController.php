@@ -153,21 +153,21 @@ class PedidosYaWebhookController extends Controller
                 foreach ($request->products as $product) {
                     info('$product:');
                     info(print_r($product,true));
-                    $dataItem = explode('-',$product->remoteCode);
+                    $dataItem = explode('-',$product['remoteCode']);
                     $commnet = '';
                     $discount = 0;
-                    $subTotal = number_format(($product->unitPrice/(1+($dataItem[6]/100))),2,'.','');
+                    $subTotal = number_format(($product['unitPrice']/(1+($dataItem[6]/100))),2,'.','');
                     $jsonDiscount = null;
 
-                    if(isset($product->comment))
-                        $commnet = $product->comment;
+                    if(isset($product['comment']))
+                        $commnet = $product['comment'];
 
                     $items[] = [
                         'type' => $dataItem[3],
                         'id' => $dataItem[4],
-                        'name' => $product->name,
+                        'name' => $product['name'],
                         'tax' => $dataItem[6],
-                        'quantity' => $product->quantity,
+                        'quantity' => $product['quantity'],
                         'ingredient' => 0,
                         'comment' => $commnet,
                         'sub_total_price' => $subTotal,
@@ -177,27 +177,27 @@ class PedidosYaWebhookController extends Controller
                     ];
 
 
-                    if(isset($product->selectedToppings) && is_array($product->selectedToppings)){
+                    if(isset($product['selectedToppings']) && is_array($product['selectedToppings'])){
 
-                        foreach ($product->selectedToppings as $topping) {
+                        foreach ($product['selectedToppings'] as $topping) {
 
                             $idPcpp = explode('-',$topping->remoteCode)[4];
 
                             foreach ($topping->children as $res) {
 
-                                $dataResponse = explode('-',$res->remoteCode);
+                                $dataResponse = explode('-',$res['remoteCode']);
                                 $discount = 0;
-                                $subTotal =  number_format(($res->price/(1+($dataResponse[7]/100))),2,'.','');
+                                $subTotal =  number_format(($res['price']/(1+($dataResponse[7]/100))),2,'.','');
                                 $jsonDiscount = null;
                                 $pcpRes = DB::connection($request->connect)->table('pos_configuracion_producto')->where('id_pos_configuracion_producto',$dataResponse[3])->first();
 
                                 $items[] = [
                                     'type' => $pcpRes->tabla == 'receta' ? 'R' : 'I',
                                     'id' => $pcpRes->id_producto,
-                                    'name' => $res->name,
+                                    'name' => $res['name'],
                                     'ingredient' => 1,
                                     'tax' => $dataResponse[7],
-                                    'quantity' => $res->quantity*$product->quantity,
+                                    'quantity' => $res['quantity']*$product['quantity'],
                                     'id_pcpp' => $idPcpp,
                                     'sub_total_price' => $subTotal,
                                     'discount' => $discount,
