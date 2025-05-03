@@ -14,15 +14,19 @@ class PedidosYaWebhookController extends Controller
     {
         try {
 
-            info("WEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n");
+            info("\nWEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n");
 
             $stringReq = $request->__toString();
 
             $path = $request->path();
 
-            info($stringReq);
+            info($stringReq."\n");
 
             $arrPath = explode('order/',$path);
+
+            info($path."\n");
+
+            info(print_r($arrPath,true)."\n");
 
             if(!isset($arrPath[1])){
 
@@ -68,6 +72,8 @@ class PedidosYaWebhookController extends Controller
             ]);
 
             //RECEPCION DE NUEVA ORDEN
+            info('order/'.': '.strpos($path,'order/')."\n");
+
             if(strpos($path,'order/') !== false){
 
                 $response = self::createNewOrder($request);
