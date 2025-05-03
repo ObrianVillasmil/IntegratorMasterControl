@@ -66,9 +66,13 @@ class PedidosYaWebhookController extends Controller
             if((!isset($p2->iss) || !isset($p2->iat) || !isset($hJwt->iss) || !isset($hJwt->iat)) || ($hJwt->iss != $p2->iss) || ($hJwt->iat != $p2->iat))
                 throw new \Exception("El token de autorización de PedidosYa no no coincide con la decodificación");
 
+            $random = strtoupper(str_replace('.','',uniqid('',true)));
+            $remoteOrderId = "PREC-{$random}";
+
             $request->query->add([
                 'connect' => $company->connect,
-                'vendorid' => $vendorId
+                'vendorid' => $vendorId,
+                'remoteOrderId' => $remoteOrderId
             ]);
 
             //RECEPCION DE NUEVA ORDEN
@@ -96,12 +100,16 @@ class PedidosYaWebhookController extends Controller
 
             //info($request->all());
 
-            return response("",200);
+            return response((object)[
+                'remoteResponse'=> [
+                    'remoteOrderId' => $remoteOrderId
+                ]
+            ],200);
 
         } catch (\Exception $e) {
 
             info("Error en la peticion a /integracion-peya/order: \n\n {$e->getMessage()}");
-            return response("Unauthorized",403);
+            return response("Unauthorized",401);
         }
 
     }
@@ -129,9 +137,9 @@ class PedidosYaWebhookController extends Controller
             if(isset($request->corporateTaxId) && $request->corporateTaxId !== '')
                 $customerIdentification = $request->corporateTaxId;
 
-            if(isset($request->comments->customerComment) && $request->comments->customerComment !== ''){
+            if(isset($request->comments['customerComment']) && $request->comments['customerComment'] !== ''){
 
-                $arrCustomerComment = explode('|',$request->comments->customerComment);
+                $arrCustomerComment = explode('|',$request->comments['customerComment']);
 
                 foreach($arrCustomerComment as $comment){
 
