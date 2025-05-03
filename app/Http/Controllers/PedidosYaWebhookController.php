@@ -181,9 +181,9 @@ class PedidosYaWebhookController extends Controller
 
                         foreach ($product['selectedToppings'] as $topping) {
 
-                            $idPcpp = explode('-',$topping->remoteCode)[4];
+                            $idPcpp = explode('-',$topping['remoteCode'])[4];
 
-                            foreach ($topping->children as $res) {
+                            foreach ($topping['children'] as $res) {
 
                                 $dataResponse = explode('-',$res['remoteCode']);
                                 $discount = 0;
