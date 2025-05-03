@@ -24,10 +24,6 @@ class PedidosYaWebhookController extends Controller
 
             $arrPath = explode('order/',$path);
 
-            info($path."\n");
-
-            info(print_r($arrPath,true)."\n");
-
             if(!isset($arrPath[1])){
 
                 $arrPath = explode('remoteId/',$path);
@@ -76,13 +72,9 @@ class PedidosYaWebhookController extends Controller
             ]);
 
             //RECEPCION DE NUEVA ORDEN
-            info('order/'.': '.strpos($path,'order/')."\n");
-
             if(strpos($path,'order/') !== false){
 
                 $response = self::createNewOrder($request);
-
-                info(print_r($response,true)."\n");
 
                 if(!$response['success']){
                     //NOTIFICAR QUE NO SE PUDO CREAR LA ORDEN
@@ -167,8 +159,7 @@ class PedidosYaWebhookController extends Controller
             if(isset($request->products) && is_array($request->products)){
 
                 foreach ($request->products as $product) {
-                    info('$product:');
-                    info(print_r($product,true));
+        
                     $dataItem = explode('-',$product['remoteCode']);
                     $commnet = '';
                     $discount = 0;
