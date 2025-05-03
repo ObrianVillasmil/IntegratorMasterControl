@@ -78,6 +78,8 @@ class PedidosYaWebhookController extends Controller
 
                 $response = self::createNewOrder($request);
 
+                info(print_r($response,true)."\n");
+
                 if(!$response['success']){
                     //NOTIFICAR QUE NO SE PUDO CREAR LA ORDEN
                 }
@@ -200,7 +202,6 @@ class PedidosYaWebhookController extends Controller
                                     'comment' => '',
                                     'json_discount' => $jsonDiscount,
                                 ];
-
 
                             }
 
