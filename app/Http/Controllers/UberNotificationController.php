@@ -65,7 +65,7 @@ class UberNotificationController extends Controller
 
                             if(!$deleteOrder['success']){
 
-                                info('Error orderNotification: ');
+                                info('Error orderNotification UBER: ');
                                 info($deleteOrder['msg']);
 
                             }
@@ -241,7 +241,7 @@ class UberNotificationController extends Controller
 
                         if(!$createOrder['success']){
 
-                            info('Error orderNotification: ');
+                            info('Error orderNotification UBER: ');
                             info($createOrder['msg']);
 
                         }
@@ -282,7 +282,7 @@ class UberNotificationController extends Controller
 
                         if(!$updateOrder['success']){
 
-                            info('Error updateMpOrderAppDelivery: ');
+                            info('Error updateMpOrderAppDelivery UBER: ');
                             info($updateOrder['msg']);
 
                         }
@@ -292,13 +292,13 @@ class UberNotificationController extends Controller
                 }else{
 
                     //NO SE RECIBIÓ EL ORDER EN LA PETICION
-                    info('No se recibió el order en la petición '.($data->resource_href.'?'.$params));
+                    info('No se recibió el order de uber en la petición '.($data->resource_href.'?'.$params));
 
                 }
 
             }else{
 
-                info('El webhook no tiene la propiedad order:');
+                info('El webhook de uber no tiene la propiedad order :');
                 info(json_encode($data));
                 info('$response:');
                 info(json_encode($response));
@@ -306,7 +306,7 @@ class UberNotificationController extends Controller
 
         } catch (\Exception $e) {
 
-            info('Error orderNotification: '.$e->getMessage().' '.$e->getLine().' '.$e->getFile());
+            info('Error orderNotification UBER: '.$e->getMessage().' '.$e->getLine().' '.$e->getFile());
 
         }
 
@@ -325,14 +325,14 @@ class UberNotificationController extends Controller
 
             if(!$cancelOrder['success']){
 
-                info('Error orderNotificationFailure: ');
+                info('Error orderNotificationFailure UBER: ');
                 info($cancelOrder['msg']);
 
             }
 
         } catch (\Exception $e) {
 
-            info('Error orderNotificationFailure: '.$e->getMessage().' '.$e->getLine().' '.$e->getFile());
+            info('Error orderNotificationFailure UBER: '.$e->getMessage().' '.$e->getLine().' '.$e->getFile());
 
         }
 

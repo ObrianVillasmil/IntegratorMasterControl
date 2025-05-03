@@ -68,17 +68,23 @@ class PedidosYaWebhookController extends Controller
             $request->query->add([
                 'connect' => $company->connect,
                 'vendorid' => $vendorId,
-                'remoteOrderId' => $remoteOrderId
+                'remoteOrderId' => $remoteOrderId,
+                'url' => $request->path()
             ]);
 
             //RECEPCION DE NUEVA ORDEN
             if(strpos($path,'order/') !== false){
 
+                $request->query->add(['current_status' => 'OFFERED']);
+
                 $response = self::createNewOrder($request);
 
                 if(!$response['success']){
                     //NOTIFICAR QUE NO SE PUDO CREAR LA ORDEN
+                    throw new \Exception($response['msg']);
                 }
+
+                return response(['remoteResponse'=> ['remoteOrderId' => $remoteOrderId]],200,['Content-Type' => 'application/json']);
 
             }else if(strpos($path,'posOrderStatus/') !== false){ //ACTUALIZACION DE ESTADO DE LA ORDEN
 
@@ -86,15 +92,10 @@ class PedidosYaWebhookController extends Controller
 
                 if(!$response['success']){
                     //NOTIFICAR QUE NO SE PUDO CREAR LA ORDEN
+                    throw new \Exception($response['msg']);
                 }
 
             }
-
-            return response([
-                'remoteResponse'=> [
-                    'remoteOrderId' => $remoteOrderId
-                ]
-            ],200,['Content-Type' => 'application/json']);
 
         } catch (\Exception $e) {
 
@@ -159,7 +160,7 @@ class PedidosYaWebhookController extends Controller
             if(isset($request->products) && is_array($request->products)){
 
                 foreach ($request->products as $product) {
-        
+
                     $dataItem = explode('-',$product['remoteCode']);
                     $commnet = '';
                     $discount = 0;
@@ -246,11 +247,9 @@ class PedidosYaWebhookController extends Controller
             if(!$createOrder['success']){
 
                 //NOTIFICAR QUE NO SE PUDO CREAR LA ORDEN
-                info('Error orderNotification: ');
+                info('Error createNewOrder PEDIDOS YA: ');
                 info($createOrder['msg']);
-
-                $msg = $createOrder['msg'];
-                $success = false;
+                throw new \Exception($createOrder['msg']);
 
             }
 
@@ -270,6 +269,63 @@ class PedidosYaWebhookController extends Controller
 
     public static function updateOrder(Request $request)
     {
+        $success = true;
+        $msg = 'Se ha actualizado la orden con éxito';
+
+        try {
+
+            $remoteOrderId = explode('/',$request->url)[6];
+            $vendorId = explode('/',$request->url)[4];
+
+            $company = Company::where('token',$vendorId)->first();
+
+            $precAppDelivery = DB::connection($company->connect)->table('precuenta_app_delivery')
+            ->where('cuerpo->remoteOrderId',$remoteOrderId)
+            ->whereIn('estado_app',['ACCEPTED','OFFERED'])
+            ->where('estado',true)->first();
+
+            if(!$precAppDelivery)
+                throw new \Exception("No se ha encontrado una orden con el remoteOrderId {$remoteOrderId} en en vendor {$vendorId}");
+
+            $cuerpo = json_decode($precAppDelivery->cuerpo);
+
+            if(isset($request->status))
+                $cuerpo->current_status = $request->status;
+
+            if(isset($request->message))
+                $cuerpo->canceled_message = $request->message;
+
+            $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
+                'order_id' => $cuerpo->token,
+                'status' => $request->status,
+                'ordering_platform' => $cuerpo->localInfo['platform'],
+                'body' => json_encode($cuerpo),
+                'connect' => base64_encode($cuerpo->connect),
+                'tiempo_preparacion' => $precAppDelivery->tiempo_preparacion
+            ]));
+
+            $updateOrder = $updateOrder->getData(true);
+
+            if(!$updateOrder['success']){
+
+                info('Error updateOrder PEDIDOS YA: ');
+                info($updateOrder['msg']);
+                $msg = $updateOrder['msg'];
+                $success = false;
+
+            }
+
+        } catch (\Exception $e) {
+
+            $success = false;
+            $msg = $e->getMessage().' '.$e->getLine().' '.$e->getFile();
+
+        }
+
+        return [
+            'success' => $success,
+            'msg' => $msg
+        ];
 
     }
 

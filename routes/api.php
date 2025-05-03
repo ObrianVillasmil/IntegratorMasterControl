@@ -22,7 +22,7 @@ use App\Http\Controllers\UberWebhookController;
 Route::middleware('api')->post('/integracion-uber', [UberWebhookController::class, 'getNotification']);
 Route::middleware('api')->post('/integracion-deuna', [DeunaWebhookController::class, 'getNotification']);
 Route::middleware('api')->post('/integracion-peya/order/{vendorId}', [PedidosYaWebhookController::class,'getNotification']);
-
+Route::middleware('api')->put('/integracion-peya/remoteId/{remoteId}/remoteOrder/{remoteOrderId}/posOrderStatus',[PedidosYaWebhookController::class,'getNotification']);
 
 Route::middleware('api')->post('/integracion-peya', function(Request $request){
 
@@ -41,16 +41,6 @@ Route::middleware('api')->post('/integracion-peya/{catalogImportCallback}', func
     return response("",200);
 
 });
-
-Route::middleware('api')->put('/integracion-peya/remoteId/{remoteId}/remoteOrder/{remoteOrderId}/posOrderStatus', function(Request $request){
-
-    info("WEBHOOK ACTUALIZACION DE PEDIDO DE PEDIDOS YA:\n");
-    info("Info recibida: \n\n ".$request->__toString());
-
-    return response("",200);
-
-});
-
 
 Route::group([
 
