@@ -121,7 +121,7 @@ class PedidosYaWebhookController extends Controller
 
             $customerIdentification = null;
             $customerEmail = 'a@gmail.com';
-            $customer = null;
+            $customer = $request->customer['firstName'].' '.$request->customer['lastName'];
             $customerAddress = null;
             $customerPhone = null;
             $items = [];
@@ -137,6 +137,16 @@ class PedidosYaWebhookController extends Controller
 
                     if(strpos($comment,'Email del Cliente:') === 0)
                         $customerEmail = trim(explode(':',$comment)[1]);
+
+                    if(strpos($comment,'Facturar a empresa:') === 0){
+
+                        $arrCustomer = explode(':',$comment);
+
+                        $customerIdentification = trim($arrCustomer[2]);
+
+                        $customer = trim(explode('-',$arrCustomer[1])[0]);
+
+                    }
 
                 }
 
@@ -241,6 +251,9 @@ class PedidosYaWebhookController extends Controller
                 //NOTIFICAR QUE NO SE PUDO CREAR LA ORDEN
                 info('Error orderNotification: ');
                 info($createOrder['msg']);
+
+                $msg = $createOrder['msg'];
+                $success = false;
 
             }
 
