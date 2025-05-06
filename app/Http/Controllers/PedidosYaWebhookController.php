@@ -20,20 +20,31 @@ class PedidosYaWebhookController extends Controller
 
             $path = $request->path();
 
+            info('$path: '.$path."\n");
+
             info($stringReq."\n");
 
-            $arrPath = explode('order/',$path);
+            $arrPath = explode('/',$path);
 
-            if(!isset($arrPath[1])){
+            $vendorId = null;
 
-                $arrPath = explode('remoteId/',$path);
+            $remoteIds = Company::whereNull('secret_key_pedidosya')->select('token')->get()->pluck('token')->toArray();
 
-                if(!isset($arrPath[1]))
-                    throw new \Exception("No se ha encontrado el vendorId en la petición de PedidosYa");
+            foreach($arrPath as $string){
+
+                if(in_array(trim($string),$remoteIds)){
+
+                    $vendorId = trim($string);
+                    break;
+
+                }
 
             }
 
-            $vendorId = $arrPath[1];
+            if(!isset($vendorId))
+                throw new \Exception("No se ha encontrado el vendorId en la petición de PedidosYa");
+
+
 
             $company = Company::where('token',$vendorId)->first();
 
@@ -86,7 +97,7 @@ class PedidosYaWebhookController extends Controller
 
                 return response(['remoteResponse'=> ['remoteOrderId' => $remoteOrderId]],200,['Content-Type' => 'application/json']);
 
-            }else if(strpos($path,'posOrderStatus/') !== false){ //ACTUALIZACION DE ESTADO DE LA ORDEN
+            }else if(strpos($path,'posOrderStatus') !== false){ //ACTUALIZACION DE ESTADO DE LA ORDEN
 
                 $response = self::updateOrder($request);
 
@@ -99,7 +110,7 @@ class PedidosYaWebhookController extends Controller
 
         } catch (\Exception $e) {
 
-            info("Error en la peticion a /integracion-peya/order: \n\n {$e->getMessage()}");
+            info("Error en la peticion a {$request->path()}: \n\n {$e->getMessage()}");
             return response("Unauthorized",401);
         }
 
