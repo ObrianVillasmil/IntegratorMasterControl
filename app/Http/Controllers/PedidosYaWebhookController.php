@@ -279,7 +279,7 @@ class PedidosYaWebhookController extends Controller
                 'customer_email' => $customerEmail,
                 'customer_phone' => $customerPhone,
                 'app_deliverys' => true,
-                'total' => $request->price['totalNet'],
+                'total' => $request->price['totalNet'] - $request->price['discountAmountTotal'],
                 'payment_type_id' => $request->payment['type'] === 'Efectivo' ? 1 : $store->id_tipo_pago_peya,
                 'sale_type_id' => $store->id_tipo_venta_peya,
                 'items' => json_encode($items,JSON_NUMERIC_CHECK|JSON_PRESERVE_ZERO_FRACTION),
