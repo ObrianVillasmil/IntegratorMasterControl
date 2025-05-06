@@ -67,12 +67,7 @@ class PedidosYaWebhookController extends Controller
 
             $p2 = json_decode(base64_decode(explode('.',$token)[1]));
 
-            info(print_r($p1,true));
-            info(print_r($p2,true));
-
             $hJwt = JWT::decode($token, new Key($company->secret_key_pedidosya, $p1->alg));
-
-            info(print_r($hJwt,true));
 
             if((!isset($p2->iss) || !isset($p2->service) || !isset($hJwt->iss) || !isset($hJwt->service)) || ($hJwt->iss != $p2->iss) || ($hJwt->service != $p2->service))
                 throw new \Exception("El token de autorización de PedidosYa no no coincide con la decodificación");
@@ -104,7 +99,8 @@ class PedidosYaWebhookController extends Controller
             }else if(strpos($path,'posOrderStatus') !== false){ //ACTUALIZACION DE ESTADO DE LA ORDEN
 
                 $response = self::updateOrder($request);
-
+                info("self::updateOrder \n");
+                info(print_r($response,true));
                 if(!$response['success']){
                     //NOTIFICAR QUE NO SE PUDO CREAR LA ORDEN
                     throw new \Exception($response['msg']);
@@ -238,6 +234,39 @@ class PedidosYaWebhookController extends Controller
 
             }
 
+
+
+            if(isset($request->discounts) && is_array($request->discounts)){
+
+                $discounts = [
+                    'id_descuento' => "descuento_".strtoupper(str_replace('.','',uniqid('',true))),
+                    'nombre' => "",
+                    'tipo' => "MONTO",
+                    'porcentaje' => "",
+                    'monto' => 0,
+                    'id_rol' => "",
+                    'cantidad_aplicable' => "0",
+                    'id_producto_x' => "",
+                    'cant_producto_x' => "",
+                    'id_producto_y' => "",
+                    'cant_producto_y' => "",
+                    'n_producto' => "",
+                    'monto_consumir' => "",
+                    'tipo_producto_x' => "",
+                    'tipo_producto_y' => "",
+                    'condicion_aplicable' => "1",
+                    'productos' => []
+                ];
+
+                foreach ($request->discounts as $discount) {
+
+                    $discounts['nombre'] .= $discount['name']." - ";
+                    $discounts['monto'] += $discount['amount'];
+
+                }
+
+            }
+
             $createOrder = MpFunctionController::createMpOrder(new Request([
                 'id_branch_office' => $store->id_sucursal,
                 'order_id' => $request->token,
@@ -254,7 +283,8 @@ class PedidosYaWebhookController extends Controller
                 'payment_type_id' => $request->payment['type'] === 'Efectivo' ? 1 : $store->id_tipo_pago_peya,
                 'sale_type_id' => $store->id_tipo_venta_peya,
                 'items' => json_encode($items,JSON_NUMERIC_CHECK|JSON_PRESERVE_ZERO_FRACTION),
-                'body' => json_encode($request->all())
+                'body' => json_encode($request->all()),
+                'json_desc_subtotal' => isset($discounts) ? $discounts : null
             ]));
 
             $createOrder = $createOrder->getData(true);

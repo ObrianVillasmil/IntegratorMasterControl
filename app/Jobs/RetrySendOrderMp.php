@@ -97,7 +97,8 @@ class RetrySendOrderMp implements ShouldQueue
                 $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
 
                 $precuentaId = !isset($prec) ? 1 : ($prec->id_precuenta+1);
-
+                info('$this->data:'."\n");
+                info(print_r($this->data,true));
                 $connection->table('precuenta')->insert([
                     'id_precuenta' => $precuentaId,
                     'id_sucursal' => $this->data['id_branch_office'],
@@ -112,6 +113,7 @@ class RetrySendOrderMp implements ShouldQueue
                     'total_venta_web' => $this->data['total'],
                     'tipo_pago_venta_web' => $this->data['payment_type_id'],
                     'tipo' => $this->data['ordering_platform'],
+                    'json_descuento' => isset($this->data['json_desc_subtotal']) ? json_encode($this->data['json_desc_subtotal']) : null,
                     'base0' => 0,
                     'base12' => 0,
                     'propina' => 0,
