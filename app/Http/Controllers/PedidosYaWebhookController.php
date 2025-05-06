@@ -28,9 +28,9 @@ class PedidosYaWebhookController extends Controller
 
             $vendorId = null;
 
-            $remoteIds = Company::whereNull('secret_key_pedidosya')->select('token')->get()->pluck('token')->toArray();
+            $remoteIds = Company::whereNotNull('secret_key_pedidosya')->select('token')->get()->pluck('token')->toArray();
             info(print_r($arrPath,true)."\n");
-
+            info(print_r($remoteIds,true)."\n");
             foreach($arrPath as $string){
 
                 if(in_array(trim($string),$remoteIds)){
@@ -44,7 +44,6 @@ class PedidosYaWebhookController extends Controller
             info('$vendorId: '.$vendorId."\n");
             if(!isset($vendorId))
                 throw new \Exception("No se ha encontrado el vendorId en la petición de PedidosYa");
-
 
 
             $company = Company::where('token',$vendorId)->first();
