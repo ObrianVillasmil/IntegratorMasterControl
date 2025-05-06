@@ -284,7 +284,7 @@ class PedidosYaWebhookController extends Controller
                 'sale_type_id' => $store->id_tipo_venta_peya,
                 'items' => json_encode($items,JSON_NUMERIC_CHECK|JSON_PRESERVE_ZERO_FRACTION),
                 'body' => json_encode($request->all()),
-                'json_desc_subtotal' => isset($discounts) ? $discounts : null
+                'json_desc_subtotal' => isset($discounts) ? [$discounts] : null
             ]));
 
             $createOrder = $createOrder->getData(true);
