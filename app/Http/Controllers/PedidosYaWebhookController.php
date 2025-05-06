@@ -289,18 +289,15 @@ class PedidosYaWebhookController extends Controller
 
         try {
 
-            $remoteOrderId = explode('/',$request->url)[6];
-            $vendorId = explode('/',$request->url)[4];
+            $remoteOrderId = explode('/',$request->url)[5];
 
-            $company = Company::where('token',$vendorId)->first();
-
-            $precAppDelivery = DB::connection($company->connect)->table('precuenta_app_delivery')
+            $precAppDelivery = DB::connection($request->connect)->table('precuenta_app_delivery')
             ->where('cuerpo->remoteOrderId',$remoteOrderId)
             ->whereIn('estado_app',['ACCEPTED','OFFERED'])
             ->where('estado',true)->first();
 
             if(!$precAppDelivery)
-                throw new \Exception("No se ha encontrado una orden con el remoteOrderId {$remoteOrderId} en en vendor {$vendorId}");
+                throw new \Exception("No se ha encontrado una orden con el remoteOrderId {$remoteOrderId} en en vendor {$request->vendorid}");
 
             $cuerpo = json_decode($precAppDelivery->cuerpo);
 
