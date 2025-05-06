@@ -74,7 +74,7 @@ class PedidosYaWebhookController extends Controller
 
             info(print_r($hJwt,true));
 
-            if((!isset($p2->iss) || !isset($p2->iat) || !isset($hJwt->iss) || !isset($hJwt->iat)) || ($hJwt->iss != $p2->iss) || ($hJwt->iat != $p2->iat))
+            if((!isset($p2->iss) || !isset($p2->service) || !isset($hJwt->iss) || !isset($hJwt->service)) || ($hJwt->iss != $p2->iss) || ($hJwt->service != $p2->service))
                 throw new \Exception("El token de autorización de PedidosYa no no coincide con la decodificación");
 
             $random = strtoupper(str_replace('.','',uniqid('',true)));
