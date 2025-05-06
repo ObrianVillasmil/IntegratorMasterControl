@@ -29,8 +29,7 @@ class PedidosYaWebhookController extends Controller
             $vendorId = null;
 
             $remoteIds = Company::whereNotNull('secret_key_pedidosya')->select('token')->get()->pluck('token')->toArray();
-            info(print_r($arrPath,true)."\n");
-            info(print_r($remoteIds,true)."\n");
+
             foreach($arrPath as $string){
 
                 if(in_array(trim($string),$remoteIds)){
@@ -41,7 +40,7 @@ class PedidosYaWebhookController extends Controller
                 }
 
             }
-            info('$vendorId: '.$vendorId."\n");
+
             if(!isset($vendorId))
                 throw new \Exception("No se ha encontrado el vendorId en la petición de PedidosYa");
 
@@ -68,7 +67,12 @@ class PedidosYaWebhookController extends Controller
 
             $p2 = json_decode(base64_decode(explode('.',$token)[1]));
 
+            info(print_r($p1,true));
+            info(print_r($p2,true));
+
             $hJwt = JWT::decode($token, new Key($company->secret_key_pedidosya, $p1->alg));
+
+            info(print_r($hJwt,true));
 
             if((!isset($p2->iss) || !isset($p2->iat) || !isset($hJwt->iss) || !isset($hJwt->iat)) || ($hJwt->iss != $p2->iss) || ($hJwt->iat != $p2->iat))
                 throw new \Exception("El token de autorización de PedidosYa no no coincide con la decodificación");
