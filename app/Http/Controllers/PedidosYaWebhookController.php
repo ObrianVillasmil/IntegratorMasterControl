@@ -340,7 +340,7 @@ class PedidosYaWebhookController extends Controller
             $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
                 'order_id' => $cuerpo->token,
                 'status' => $request->status,
-                'ordering_platform' => $cuerpo->localInfo['platform'],
+                'ordering_platform' => $cuerpo->localInfo->platform,
                 'body' => json_encode($cuerpo),
                 'connect' => base64_encode($cuerpo->connect),
                 'tiempo_preparacion' => $precAppDelivery->tiempo_preparacion
