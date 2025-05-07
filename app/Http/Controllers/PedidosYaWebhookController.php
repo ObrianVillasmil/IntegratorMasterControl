@@ -135,6 +135,7 @@ class PedidosYaWebhookController extends Controller
             $customerAddress = null;
             $customerPhone = null;
             $items = [];
+            $subtotalNet = 0;
 
             if(isset($request->corporateTaxId) && $request->corporateTaxId !== '')
                 $customerIdentification = $request->corporateTaxId;
@@ -176,6 +177,7 @@ class PedidosYaWebhookController extends Controller
                     $commnet = '';
                     $discount = 0;
                     $subTotal = number_format(($product['unitPrice']/(1+($dataItem[6]/100))),3,'.','');
+                    $subtotalNet+= $subTotal;
                     $jsonDiscount = null;
 
                     if(isset($product['comment']))
@@ -206,7 +208,8 @@ class PedidosYaWebhookController extends Controller
 
                                 $dataResponse = explode('-',$res['remoteCode']);
                                 $discount = 0;
-                                $subTotal =  number_format(($res['price']/(1+($dataResponse[7]/100))),2,'.','');
+                                $subTotal =  number_format(($res['price']/(1+($dataResponse[7]/100))),3,'.','');
+                                $subtotalNet+= $subTotal;
                                 $jsonDiscount = null;
                                 $pcpRes = DB::connection($request->connect)->table('pos_configuracion_producto')->where('id_pos_configuracion_producto',$dataResponse[3])->first();
 
@@ -234,8 +237,6 @@ class PedidosYaWebhookController extends Controller
 
             }
 
-
-
             if(isset($request->discounts) && is_array($request->discounts)){
 
                 $discounts = [
@@ -258,12 +259,16 @@ class PedidosYaWebhookController extends Controller
                     'productos' => []
                 ];
 
-                foreach ($request->discounts as $discount) {
-
+                foreach ($request->discounts as $discount)
                     $discounts['nombre'] .= ($discount['name']." $".$discount['amount']." - ");
-                    $discounts['monto'] += $discount['amount'];
 
-                }
+                //GRACIAS A LOS MALDITOS DE PEDIDOS YA
+
+                //CALCULA EL PORCENTAJE DE DESCUENTO AL TOTAL
+                $percentage = ($request->price['discountAmountTotal']*100)/$request->price['subTotal'];
+
+                //CALCULA EL PORCENTAJE DE DESCUENTO AL SUB TOTAL
+                $discounts['monto'] = number_format(($subtotalNet*$percentage)/100,2,'.','');
 
             }
 
