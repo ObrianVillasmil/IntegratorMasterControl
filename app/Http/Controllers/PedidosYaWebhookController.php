@@ -175,7 +175,7 @@ class PedidosYaWebhookController extends Controller
                     $dataItem = explode('-',$product['remoteCode']);
                     $commnet = '';
                     $discount = 0;
-                    $subTotal = number_format(($product['unitPrice']/(1+($dataItem[6]/100))),2,'.','');
+                    $subTotal = number_format(($product['unitPrice']/(1+($dataItem[6]/100))),3,'.','');
                     $jsonDiscount = null;
 
                     if(isset($product['comment']))
@@ -260,7 +260,7 @@ class PedidosYaWebhookController extends Controller
 
                 foreach ($request->discounts as $discount) {
 
-                    $discounts['nombre'] .= $discount['name']." - ";
+                    $discounts['nombre'] .= ($discount['name']." $".$discount['amount']." - ");
                     $discounts['monto'] += $discount['amount'];
 
                 }
