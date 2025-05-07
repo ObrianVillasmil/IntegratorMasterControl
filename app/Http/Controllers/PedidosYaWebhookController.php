@@ -178,7 +178,7 @@ class PedidosYaWebhookController extends Controller
                     $discount = 0;
                     $subTotal = number_format(($product['unitPrice']/(1+($dataItem[6]/100))),3,'.','');
                     info('$subTotal: '.$subTotal);
-                    $subtotalNet+= $subTotal;
+                    $subtotalNet+= $subTotal*$product['quantity'];
                     $jsonDiscount = null;
 
                     if(isset($product['comment']))
