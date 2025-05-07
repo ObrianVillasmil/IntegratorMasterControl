@@ -177,6 +177,7 @@ class PedidosYaWebhookController extends Controller
                     $commnet = '';
                     $discount = 0;
                     $subTotal = number_format(($product['unitPrice']/(1+($dataItem[6]/100))),3,'.','');
+                    info('$subTotal: '.$subTotal);
                     $subtotalNet+= $subTotal;
                     $jsonDiscount = null;
 
@@ -209,6 +210,7 @@ class PedidosYaWebhookController extends Controller
                                 $dataResponse = explode('-',$res['remoteCode']);
                                 $discount = 0;
                                 $subTotal =  number_format(($res['price']/(1+($dataResponse[7]/100))),3,'.','');
+                                info('$subTotal: '.$subTotal);
                                 $subtotalNet+= $subTotal;
                                 $jsonDiscount = null;
                                 $pcpRes = DB::connection($request->connect)->table('pos_configuracion_producto')->where('id_pos_configuracion_producto',$dataResponse[3])->first();
@@ -268,6 +270,8 @@ class PedidosYaWebhookController extends Controller
                 $percentage = ($request->price['discountAmountTotal']*100)/$request->price['subTotal'];
 
                 //CALCULA EL PORCENTAJE DE DESCUENTO AL SUB TOTAL
+                info('$subtotalNet: '.$subtotalNet);
+                info('$percentage: '.$percentage);
                 $discounts['monto'] = number_format(($subtotalNet*$percentage)/100,2,'.','');
 
             }

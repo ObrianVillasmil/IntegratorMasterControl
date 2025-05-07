@@ -97,8 +97,7 @@ class RetrySendOrderMp implements ShouldQueue
                 $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
 
                 $precuentaId = !isset($prec) ? 1 : ($prec->id_precuenta+1);
-                info('$this->data:'."\n");
-                info(print_r($this->data,true));
+
                 $connection->table('precuenta')->insert([
                     'id_precuenta' => $precuentaId,
                     'id_sucursal' => $this->data['id_branch_office'],
