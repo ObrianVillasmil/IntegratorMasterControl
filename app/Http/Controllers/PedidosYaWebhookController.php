@@ -176,7 +176,13 @@ class PedidosYaWebhookController extends Controller
                     $dataItem = explode('-',$product['remoteCode']);
                     $commnet = '';
                     $discount = 0;
-                    $subTotal = number_format(($product['unitPrice']/(1+($dataItem[6]/100))),3,'.','');
+
+                    $imp = DB::connection($request->connect)->table('pos_configuracion_producto as pcp')
+                    ->join('impuestos as i', 'pcp.id_impuesto','i.id_impuesto')
+                    ->where('pcp.id_pos_configuracion_producto', $dataItem[2])
+                    ->select('i.valor')->first();
+
+                    $subTotal = number_format(($product['unitPrice']/(1+($imp->valor/100))),3,'.','');
 
                     $subtotalNet+= $subTotal*$product['quantity'];
                     $jsonDiscount = null;
@@ -188,7 +194,7 @@ class PedidosYaWebhookController extends Controller
                         'type' => $dataItem[3],
                         'id' => $dataItem[4],
                         'name' => $product['name'],
-                        'tax' => $dataItem[6],
+                        'tax' => $imp->valor,
                         'quantity' => $product['quantity'],
                         'ingredient' => 0,
                         'comment' => $commnet,
@@ -208,12 +214,17 @@ class PedidosYaWebhookController extends Controller
                             foreach ($topping['children'] as $res) {
 
                                 $dataResponse = explode('-',$res['remoteCode']);
+                                $pcpRes = DB::connection($request->connect)->table('pos_configuracion_producto as pcp')
+                                ->join('impuestos as i', 'pcp.id_impuesto','i.id_impuesto')
+                                ->where('pcp.id_pos_configuracion_producto',$dataResponse[7])
+                                ->select('i.valor')->first();
+
                                 $discount = 0;
                                 $subTotal =  number_format(($res['price']/(1+($dataResponse[7]/100))),3,'.','');
 
                                 $subtotalNet+= $subTotal;
                                 $jsonDiscount = null;
-                                $pcpRes = DB::connection($request->connect)->table('pos_configuracion_producto')->where('id_pos_configuracion_producto',$dataResponse[3])->first();
+
 
                                 $items[] = [
                                     'type' => $pcpRes->tabla == 'receta' ? 'R' : 'I',
