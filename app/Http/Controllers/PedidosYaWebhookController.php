@@ -214,13 +214,14 @@ class PedidosYaWebhookController extends Controller
                             foreach ($topping['children'] as $res) {
 
                                 $dataResponse = explode('-',$res['remoteCode']);
+
                                 $pcpRes = DB::connection($request->connect)->table('pos_configuracion_producto as pcp')
                                 ->join('impuestos as i', 'pcp.id_impuesto','i.id_impuesto')
-                                ->where('pcp.id_pos_configuracion_producto',$dataResponse[7])
-                                ->select('i.valor')->first();
+                                ->where('pcp.id_pos_configuracion_producto',$dataResponse[3])
+                                ->select('pcp.*','i.valor')->first();
 
                                 $discount = 0;
-                                $subTotal =  number_format(($res['price']/(1+($dataResponse[7]/100))),3,'.','');
+                                $subTotal =  number_format(($res['price']/(1+($pcpRes->valor/100))),3,'.','');
 
                                 $subtotalNet+= $subTotal;
                                 $jsonDiscount = null;
@@ -231,7 +232,7 @@ class PedidosYaWebhookController extends Controller
                                     'id' => $pcpRes->id_producto,
                                     'name' => $res['name'],
                                     'ingredient' => 1,
-                                    'tax' => $dataResponse[7],
+                                    'tax' => $pcpRes->valor,
                                     'quantity' => $res['quantity']*$product['quantity'],
                                     'id_pcpp' => $idPcpp,
                                     'sub_total_price' => $subTotal,
