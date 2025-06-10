@@ -6,6 +6,17 @@ use Illuminate\Http\Request;
 
 class RappiWebhookcontroller extends Controller
 {
+    const EVENTS = [
+        'NEW_ORDER',
+        'ORDER_EVENT_CANCEL',
+        'ORDER_OTHER_EVENT',
+        'ORDER_RT_TRACKING',
+        'MENU_APPROVED',
+        'MENU_REJECTED',
+        'PING',
+        'STORE_CONNECTIVITY'
+    ];
+
     public function getNotification(Request $request)
     {
         info('getNotification RAPPI');
