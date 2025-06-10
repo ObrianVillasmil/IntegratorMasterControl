@@ -178,7 +178,7 @@ class PedidosYaWebhookController extends Controller
                     $discount = 0;
 
                     $imp = DB::connection($request->connect)->table('pos_configuracion_producto as pcp')
-                    ->join('impuestos as i', 'pcp.id_impuesto','i.id_impuesto')
+                    ->join('impuesto as i', 'pcp.id_impuesto','i.id_impuesto')
                     ->where('pcp.id_pos_configuracion_producto', $dataItem[2])
                     ->select('i.valor')->first();
 
@@ -216,7 +216,7 @@ class PedidosYaWebhookController extends Controller
                                 $dataResponse = explode('-',$res['remoteCode']);
 
                                 $pcpRes = DB::connection($request->connect)->table('pos_configuracion_producto as pcp')
-                                ->join('impuestos as i', 'pcp.id_impuesto','i.id_impuesto')
+                                ->join('impuesto as i', 'pcp.id_impuesto','i.id_impuesto')
                                 ->where('pcp.id_pos_configuracion_producto',$dataResponse[3])
                                 ->select('pcp.*','i.valor')->first();
 
