@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BonesIntegrationController;
 use App\Http\Controllers\DeunaWebhookController;
 use App\Http\Controllers\PedidosYaWebhookController;
+use App\Http\Controllers\RappiWebhookcontroller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UberWebhookController;
@@ -23,6 +24,7 @@ Route::middleware('api')->post('/integracion-uber', [UberWebhookController::clas
 Route::middleware('api')->post('/integracion-deuna', [DeunaWebhookController::class, 'getNotification']);
 Route::middleware('api')->post('/integracion-peya/order/{vendorId}', [PedidosYaWebhookController::class,'getNotification']);
 Route::middleware('api')->put('/integracion-peya/remoteId/{remoteId}/remoteOrder/{remoteOrderId}/posOrderStatus',[PedidosYaWebhookController::class,'getNotification']);
+Route::middleware('api')->post('/integracion-rappi', [RappiWebhookcontroller::class,'getNotification']);
 
 Route::middleware('api')->post('/integracion-peya', function(Request $request){
 
