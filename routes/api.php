@@ -24,7 +24,7 @@ Route::middleware('api')->post('/integracion-uber', [UberWebhookController::clas
 Route::middleware('api')->post('/integracion-deuna', [DeunaWebhookController::class, 'getNotification']);
 Route::middleware('api')->post('/integracion-peya/order/{vendorId}', [PedidosYaWebhookController::class,'getNotification']);
 Route::middleware('api')->put('/integracion-peya/remoteId/{remoteId}/remoteOrder/{remoteOrderId}/posOrderStatus',[PedidosYaWebhookController::class,'getNotification']);
-Route::middleware('api')->post('/integracion-rappi', [RappiWebhookcontroller::class,'getNotification']);
+
 
 Route::middleware('api')->post('/integracion-peya', function(Request $request){
 
@@ -35,6 +35,7 @@ Route::middleware('api')->post('/integracion-peya', function(Request $request){
 
 });
 
+
 Route::middleware('api')->post('/integracion-peya/{catalogImportCallback}', function(Request $request){
 
     info("WEBHOOK IMPORTACION DE MENU PEDIDOS YA:\n");
@@ -43,6 +44,17 @@ Route::middleware('api')->post('/integracion-peya/{catalogImportCallback}', func
     return response("",200);
 
 });
+
+
+Route::middleware('api')->post('/integracion-rappi/new-order', [RappiWebhookcontroller::class,'newOrder']);
+Route::middleware('api')->post('/integracion-rappi/order-event-cancel', [RappiWebhookcontroller::class,'orderEventCancel']);
+Route::middleware('api')->post('/integracion-rappi/order-other-event', [RappiWebhookcontroller::class,'orderOtherEvent']);
+Route::middleware('api')->post('/integracion-rappi/order-rt-tracking', [RappiWebhookcontroller::class,'orderRtTracking']);
+Route::middleware('api')->post('/integracion-rappi/menu-approved', [RappiWebhookcontroller::class,'menuApproved']);
+Route::middleware('api')->post('/integracion-rappi/menu-rejected', [RappiWebhookcontroller::class,'menuRejected']);
+Route::middleware('api')->post('/integracion-rappi/ping', [RappiWebhookcontroller::class,'pingRappi']);
+Route::middleware('api')->post('/integracion-rappi/store-connectvity', [RappiWebhookcontroller::class,'storeConnectvity']);
+
 
 Route::group([
 
