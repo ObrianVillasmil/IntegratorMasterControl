@@ -9,7 +9,7 @@ class SecretWebHookRappi extends Model
 {
     use HasFactory;
 
-    $fillable = [
+    protected $fillable = [
         'event',
         'secret'
     ];

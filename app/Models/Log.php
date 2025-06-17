@@ -9,7 +9,7 @@ class Log extends Model
 {
     use HasFactory;
 
-    private $fillable=[
+    protected $fillable=[
         'id_user',
         'ip',
         'end_point',

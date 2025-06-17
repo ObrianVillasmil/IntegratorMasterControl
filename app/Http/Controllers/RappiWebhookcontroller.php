@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\SecretWebHookRappi;
 use Illuminate\Http\Request;
 
 class RappiWebhookcontroller extends Controller
@@ -22,7 +23,9 @@ class RappiWebhookcontroller extends Controller
         info('newOrder RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
 
-        $request->query->add(['secret'=>'7DC32C2162CE1250720884596DF87B7C988F38580E91167278B983E15B7A2D29']);
+        $secret = SecretWebHookRappi::where('event','NEW_ORDER')->first();
+
+        $request->query->add(['secret'=> $secret->secret]);
 
         return self::validateSignature($request);//response(self::validateSignature($request),200);
     }
