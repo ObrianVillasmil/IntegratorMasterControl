@@ -79,7 +79,7 @@ class PedidosYaWebhookController extends Controller
                 'remoteOrderId' => $remoteOrderId,
                 'url' => $request->path()
             ]);
-
+            
             //RECEPCION DE NUEVA ORDEN
             if(strpos($path,'order/') !== false){
 
@@ -120,6 +120,8 @@ class PedidosYaWebhookController extends Controller
         $msg = 'Se ha gurado la orden con éxito';
 
         try {
+
+
 
             WebhookPedidoya::create(['order' => json_encode($request->all())]);
 
