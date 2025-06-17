@@ -22,7 +22,9 @@ class RappiWebhookcontroller extends Controller
         info('newOrder RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
 
-        return response("",200);
+        $request->query->add(['secret'=>'7DC32C2162CE1250720884596DF87B7C988F38580E91167278B983E15B7A2D29']);
+
+        return self::validateSignature($request);//response(self::validateSignature($request),200);
     }
 
     public function orderEventCancel(Request $request)
@@ -79,6 +81,66 @@ class RappiWebhookcontroller extends Controller
         info("Info recibida: \n\n ".$request->__toString());
 
         return response("",200);
+    }
+
+    private static function validateSignature(Request $request)
+    {
+
+        try {
+
+            $signature = $request->header('Rappi-Signature');
+
+            if(!$signature)
+                throw new \Exception('No se ha recibido la firma de la petición');
+
+            $arrSignature = explode(',', $signature);
+
+            if(count($arrSignature) != 2)
+                throw new \Exception('El formato de la firma en la petición no es válida');
+
+            $t = null;
+
+            foreach ($arrSignature as $x => $signature) {
+
+                $arr = explode('=', $signature);
+
+                if(count($arr) != 2)
+                    throw new \Exception('El formato de la firma en la petición no es válida');
+
+                if($x == 0 && $arr[0] != 't'){
+
+                    throw new \Exception('El formato de la firma en la petición no es válida');
+
+                }else if($x == 0){
+
+                    $t = $arr[1];
+                }
+
+                if($x == 1 && $arr[0] != 'sign'){
+                    throw new \Exception('El formato de la firma en la petición no es válida');
+                }else if($x == 1 ){
+                    $sign = $arr[1];
+                }
+
+            }
+
+            $signedPayload = "{$t}.{$request->getContent()}";
+
+            return [
+                'success' => hash_hmac('sha256', $signedPayload, $request->secret) === $sign
+            ];
+
+        } catch (\Exception $e) {
+
+            return [
+                'success' => false,
+                'msg' => $e->getMessage()
+            ];
+
+
+
+        }
+
     }
 
 }
