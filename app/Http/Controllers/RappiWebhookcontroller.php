@@ -20,7 +20,7 @@ class RappiWebhookcontroller extends Controller
 
     public function newOrder(Request $request)
     {
-        info("\n newOrder RAPPI");
+        info("newOrder RAPPI");
         info("Info recibida: \n\n ".$request->__toString());
 
         $secret = SecretWebHookRappi::where('event','NEW_ORDER')->first();
@@ -34,13 +34,10 @@ class RappiWebhookcontroller extends Controller
 
         if(!$validSign['success']){
 
-            info("\n Unauthorized: \n {$validSign['msg']}");
+            info("Unauthorized: \n {$validSign['msg']}");
             return response("Unauthorized \n {$validSign['msg']}",401);
 
         }
-
-
-
 
         return response(self::validateSignature($request),200);
 
@@ -121,7 +118,8 @@ class RappiWebhookcontroller extends Controller
                 throw new \Exception('El formato de la firma en la petición no es válida');
 
             $t = null;
-
+            $sign = null;
+            
             foreach ($arrSignature as $x => $signature) {
 
                 $arr = explode('=', $signature);
@@ -156,10 +154,10 @@ class RappiWebhookcontroller extends Controller
 
             if(!$success){
 
-                info("\n Verificacion de firma Rappi ");
-                info("signedPayload \n {$signedPayload}\n");
-                info("request->secret \n {$request->secret}\n");
-                info("sign \n {$sign}\n");
+                info("Verificacion de firma Rappi: ");
+                info("signedPayload \n {$signedPayload}");
+                info("request->secret \n {$request->secret}");
+                info("sign \n {$sign}");
                 info("hmac: \n ".hash_hmac('sha256', $signedPayload, $request->secret)."\n");
 
             }
