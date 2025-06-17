@@ -151,15 +151,20 @@ class RappiWebhookcontroller extends Controller
             }
 
             $signedPayload = "{$t}.{$request->getContent()}";
-            info("\n Verificacion de firma Rappi ");
-            info("signedPayload \n {$signedPayload}\n");
-            info("sign \n {$sign}\n");
-            info("request->secret \n {$request->secret}\n");
-            info("hmac: \n ".hash_hmac('sha256', $signedPayload, $request->secret)."\n");
 
-            return [
-                'success' => hash_hmac('sha256', $signedPayload, $request->secret) === $sign
-            ];
+            $success = hash_hmac('sha256', $signedPayload, $request->secret) === $sign;
+
+            if(!$success){
+
+                info("\n Verificacion de firma Rappi ");
+                info("signedPayload \n {$signedPayload}\n");
+                info("request->secret \n {$request->secret}\n");
+                info("sign \n {$sign}\n");
+                info("hmac: \n ".hash_hmac('sha256', $signedPayload, $request->secret)."\n");
+
+            }
+
+            return ['success' => $success ];
 
         } catch (\Exception $e) {
 
