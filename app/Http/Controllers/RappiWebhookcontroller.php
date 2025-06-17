@@ -20,14 +20,31 @@ class RappiWebhookcontroller extends Controller
 
     public function newOrder(Request $request)
     {
-        info('newOrder RAPPI');
+        info("\n newOrder RAPPI");
         info("Info recibida: \n\n ".$request->__toString());
 
         $secret = SecretWebHookRappi::where('event','NEW_ORDER')->first();
 
-        $request->query->add(['secret'=> $secret->secret]);
+        $request->query->add([
+            'secret'=> $secret->secret,
+            'event' => 'NEW_ORDER'
+        ]);
 
-        return self::validateSignature($request);//response(self::validateSignature($request),200);
+        $validSign = self::validateSignature($request);
+
+        if(!$validSign['success']){
+
+            info("\n Unauthorized: \n {$validSign['msg']}");
+            return response("Unauthorized \n {$validSign['msg']}",401);
+
+        }
+
+
+
+
+        return response(self::validateSignature($request),200);
+
+
     }
 
     public function orderEventCancel(Request $request)
@@ -88,8 +105,10 @@ class RappiWebhookcontroller extends Controller
 
     private static function validateSignature(Request $request)
     {
-
         try {
+
+            if(!$request->secret)
+                throw new \Exception("No se ha configurado el secret del evento {$request->event}");
 
             $signature = $request->header('Rappi-Signature');
 
@@ -120,14 +139,23 @@ class RappiWebhookcontroller extends Controller
                 }
 
                 if($x == 1 && $arr[0] != 'sign'){
+
                     throw new \Exception('El formato de la firma en la petición no es válida');
+
                 }else if($x == 1 ){
+
                     $sign = $arr[1];
+
                 }
 
             }
 
             $signedPayload = "{$t}.{$request->getContent()}";
+            info("\n Verificacion de firma Rappi ");
+            info("signedPayload \n {$signedPayload}\n");
+            info("sign \n {$sign}\n");
+            info("request->secret \n {$request->secret}\n");
+            info("hmac: \n ".hash_hmac('sha256', $signedPayload, $request->secret)."\n");
 
             return [
                 'success' => hash_hmac('sha256', $signedPayload, $request->secret) === $sign
