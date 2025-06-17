@@ -189,6 +189,7 @@ class RetrySendOrderMp implements ShouldQueue
 
                 $connection->commit();
 
+                
             } catch (\Exception $e) {
 
                 info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());

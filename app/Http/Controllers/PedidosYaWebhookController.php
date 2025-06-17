@@ -79,7 +79,7 @@ class PedidosYaWebhookController extends Controller
                 'remoteOrderId' => $remoteOrderId,
                 'url' => $request->path()
             ]);
-            
+
             //RECEPCION DE NUEVA ORDEN
             if(strpos($path,'order/') !== false){
 
