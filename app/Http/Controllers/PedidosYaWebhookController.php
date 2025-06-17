@@ -14,13 +14,11 @@ class PedidosYaWebhookController extends Controller
     {
         try {
 
-            info("\nWEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n");
+            info(" WEBHOOK RECEPCION DE PEDIDO PEDIDOS YA:\n");
 
             $stringReq = $request->__toString();
 
             $path = $request->path();
-
-            info('$path: '.$path."\n");
 
             info($stringReq."\n");
 
