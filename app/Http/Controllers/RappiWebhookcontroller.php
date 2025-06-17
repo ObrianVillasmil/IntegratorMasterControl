@@ -39,7 +39,11 @@ class RappiWebhookcontroller extends Controller
 
         }
 
-        return response(self::validateSignature($request),200);
+        
+
+
+
+        return response("",200);
 
 
     }
@@ -73,6 +77,22 @@ class RappiWebhookcontroller extends Controller
         info('menuApproved RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
 
+        $secret = SecretWebHookRappi::where('event','MENU_APPROVED')->first();
+
+        $request->query->add([
+            'secret'=> $secret->secret,
+            'event' => 'MENU_APPROVED'
+        ]);
+
+        $validSign = self::validateSignature($request);
+
+        if(!$validSign['success']){
+
+            info("Unauthorized: \n {$validSign['msg']}");
+            return response("Unauthorized \n {$validSign['msg']}",401);
+
+        }
+
         return response("",200);
     }
 
@@ -80,6 +100,22 @@ class RappiWebhookcontroller extends Controller
     {
         info('menuRejected RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
+
+        $secret = SecretWebHookRappi::where('event','MENU_REJECTED')->first();
+
+        $request->query->add([
+            'secret'=> $secret->secret,
+            'event' => 'MENU_REJECTED'
+        ]);
+
+        $validSign = self::validateSignature($request);
+
+        if(!$validSign['success']){
+
+            info("Unauthorized: \n {$validSign['msg']}");
+            return response("Unauthorized \n {$validSign['msg']}",401);
+
+        }
 
         return response("",200);
     }
@@ -119,7 +155,7 @@ class RappiWebhookcontroller extends Controller
 
             $t = null;
             $sign = null;
-            
+
             foreach ($arrSignature as $x => $signature) {
 
                 $arr = explode('=', $signature);
