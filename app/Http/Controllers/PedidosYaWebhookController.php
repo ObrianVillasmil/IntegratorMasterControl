@@ -121,8 +121,6 @@ class PedidosYaWebhookController extends Controller
 
         try {
 
-
-
             WebhookPedidoya::create(['order' => json_encode($request->all())]);
 
             $store = DB::connection($request->connect)->table('sucursal_tienda_peya as stpeya')
@@ -174,7 +172,7 @@ class PedidosYaWebhookController extends Controller
                 foreach ($request->products as $product) {
 
                     $dataItem = explode('-',$product['remoteCode']);
-                    $commnet = '';
+                    $comment = '';
                     $discount = 0;
 
                     $imp = DB::connection($request->connect)->table('pos_configuracion_producto as pcp')
@@ -188,7 +186,7 @@ class PedidosYaWebhookController extends Controller
                     $jsonDiscount = null;
 
                     if(isset($product['comment']))
-                        $commnet = $product['comment'];
+                        $comment = $product['comment'];
 
                     $items[] = [
                         'type' => $dataItem[3],
@@ -197,7 +195,7 @@ class PedidosYaWebhookController extends Controller
                         'tax' => $imp->valor,
                         'quantity' => $product['quantity'],
                         'ingredient' => 0,
-                        'comment' => $commnet,
+                        'comment' => $comment,
                         'sub_total_price' => $subTotal,
                         'id_pcpp' => null,
                         'discount' => $discount,

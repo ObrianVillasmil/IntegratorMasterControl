@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\SecretWebHookRappi;
+use App\Models\WebhookRappi;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RappiWebhookcontroller extends Controller
 {
@@ -23,25 +26,175 @@ class RappiWebhookcontroller extends Controller
         info("newOrder RAPPI");
         info("Info recibida: \n\n ".$request->__toString());
 
-        $secret = SecretWebHookRappi::where('event','NEW_ORDER')->first();
-
-        $request->query->add([
-            'secret'=> $secret->secret,
-            'event' => 'NEW_ORDER'
-        ]);
+        $request->query->add(['event' => 'NEW_ORDER']);
 
         $validSign = self::validateSignature($request);
 
         if(!$validSign['success']){
 
             info("Unauthorized: \n {$validSign['msg']}");
-            return response("Unauthorized \n {$validSign['msg']}",401);
+            return response("Unauthorized: {$validSign['msg']}",401);
 
         }
 
-        
+        //WebhookRappi::create(['order' => json_encode($req->all())]);
 
 
+        WebhookRappi::create(['order' => $request->getContent()]);
+        $request = json_decode($request->getContent());
+
+        $company = Company::where('token',$request->store->internal_id)->first();
+
+        $store = DB::connection($company->connect)->table('sucursal_tienda_peya as stpeya')
+        ->join('sucursal as s','s.id_sucursal','stpeya.id_sucursal')
+        ->where('stpeya.posvendorid',$request->vendorid)->first();
+
+        $customerIdentification = null;
+        $customerEmail = 'a@gmail.com';
+        $customer = null;
+        $customerAddress = null;
+        $customerPhone = null;
+        $items = [];
+        $subtotalNet = 0;
+
+        if($request->customer && is_object($request->customer)){
+
+            if(isset($request->customer->document_number))
+                $customerIdentification = $request->customer->document_number;
+
+            if(isset($request->customer->email))
+                $customerEmail = $request->customer->email;
+
+            if(isset($request->customer->first_name))
+                $customer = $request->customer->first_name;
+
+            if(isset($request->customer->last_name))
+                $customer = $customer.' '.$request->customer->last_name;
+
+            if(isset($request->customer->phone_number))
+                $customerPhone = $request->customer->phone_number;
+
+        }
+
+        if(isset($request->billing_information) && is_object($request->billing_information)){
+
+            if(isset($request->billing_information->document_number))
+                $customerIdentification = $request->billing_information->document_number;
+
+            if(isset($request->billing_information->email))
+                $customerEmail = $request->billing_information->email;
+
+            if(isset($request->billing_information->name))
+                $customer = $request->billing_information->name;
+
+            if(isset($request->billing_information->phone))
+                $customerPhone = $request->billing_information->phone;
+
+            if(isset($request->billing_information->address))
+                $customerAddress = $request->billing_information->address;
+
+        }
+
+        if(isset($request->order_detail->items) && is_array($request->order_detail->items)){
+
+            foreach ($request->order_detail->items as $item) {
+
+                $dataItem = explode('-',$item->sku);
+                $comment = '';
+                $discount = 0;
+
+                $imp = DB::connection($company->connect)->table('pos_configuracion_producto as pcp')
+                ->join('impuesto as i', 'pcp.id_impuesto','i.id_impuesto')
+                ->where('pcp.id_pos_configuracion_producto', $dataItem[2])
+                ->select('i.valor')->first();
+
+                $subTotal = number_format(($item->price/(1+($imp->valor/100))),3,'.','');
+
+                $subtotalNet+= $subTotal*$item->quantity;
+                $jsonDiscount = null;
+
+                if(isset($product['comment']))
+                    $comment = $product['comment'];
+
+                // EXISTEN DESCUENTOS
+                if(isset($request->discounts) && is_array($request->discounts)){
+
+                    //HAY PRODUCTOS CON DESCUENTOS
+                    $prodsDesc = array_filter($request->discounts, function($arr) use($item){
+                        return $item->sku === $arr['sku'];
+                    });
+
+                    foreach ($prodsDesc as $desc) {
+
+                        $discount = $desc->value;
+
+                        $jsonDiscount = json_encode([
+                            'id_descuento' => '-1',
+                            'nombre' => $desc->title,
+                            'tipo' => $desc->value_type ==='percentage' ? 'PORCENTAJE' : 'MONTO',
+                            'aplicacion' => 'ITEM',
+                            'monto' => $discount,
+                            'porcentaje' => null,
+                            'condicion_aplicable'=> 0,
+                            'producto' => $dataItem[2].'_'.$dataItem[3]
+                        ]);
+
+                        if($discount > $subTotal)
+                            $discount = $subTotal;
+
+                    }
+
+                }
+
+                $items[] = [
+                    'type' => $dataItem[3],
+                    'id' => $dataItem[4],
+                    'name' => $item->name,
+                    'tax' => $imp->valor,
+                    'quantity' => $item->quantity,
+                    'ingredient' => 0,
+                    'comment' => $comment,
+                    'sub_total_price' => $subTotal,
+                    'id_pcpp' => null,
+                    'discount' => $discount,
+                    'json_discount' => $jsonDiscount,
+                ];
+
+                if(isset($item->subitems) && is_array($item->subitems)){
+
+                    foreach ($item->subitems as $subItem) {
+
+                        $dataSubItem = explode('-',$subItem->sku);
+
+                        $pcpRes = DB::connection($company->connect)->table('pos_configuracion_producto as pcp')
+                        ->join('impuestos as imp','pcp.id_impuesto','imp.id_impuesto')
+                        ->where('id_pos_configuracion_producto',$dataSubItem[3])
+                        ->select('pcp.id_producto','impuestos.valor')->first();
+
+                        $subTotal = number_format(($subItem->price/(1+($pcpRes->valor/100))),3,'.','');
+
+                        $items[] = [
+                            'type' => $pcpRes->tabla === 'receta' ? 'R' : 'I',
+                            'id' => $pcpRes->id_producto,
+                            'name' => $subItem->name,
+                            'ingredient' => 1,
+                            'tax' => $pcpRes->valor,
+                            'quantity' => $item->quantity*$subItem->quantity,
+                            'id_pcpp' => $dataSubItem[7],
+                            'sub_total_price' => $subTotal,
+                            'discount' => 0,
+                            'comment' => '',
+                            'json_discount' =>null ,
+                        ];
+
+                    }
+
+                }
+
+
+            }
+
+        }
 
         return response("",200);
 
@@ -77,12 +230,7 @@ class RappiWebhookcontroller extends Controller
         info('menuApproved RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
 
-        $secret = SecretWebHookRappi::where('event','MENU_APPROVED')->first();
-
-        $request->query->add([
-            'secret'=> $secret->secret,
-            'event' => 'MENU_APPROVED'
-        ]);
+        $request->query->add(['event' => 'MENU_APPROVED']);
 
         $validSign = self::validateSignature($request);
 
@@ -101,12 +249,7 @@ class RappiWebhookcontroller extends Controller
         info('menuRejected RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
 
-        $secret = SecretWebHookRappi::where('event','MENU_REJECTED')->first();
-
-        $request->query->add([
-            'secret'=> $secret->secret,
-            'event' => 'MENU_REJECTED'
-        ]);
+        $request->query->add(['event' => 'MENU_REJECTED']);
 
         $validSign = self::validateSignature($request);
 
@@ -140,10 +283,15 @@ class RappiWebhookcontroller extends Controller
     {
         try {
 
-            if(!$request->secret)
-                throw new \Exception("No se ha configurado el secret del evento {$request->event}");
+            if(!$request->event)
+                throw new \Exception("No obtuvo el evento");
 
             $signature = $request->header('Rappi-Signature');
+
+            $secret = SecretWebHookRappi::where('event',$request->event)->first();
+
+            if(!isset($secret))
+                throw new \Exception("No se ha configurado el secret del evento {$request->event}");
 
             if(!$signature)
                 throw new \Exception('No se ha recibido la firma de la petición');
@@ -186,19 +334,20 @@ class RappiWebhookcontroller extends Controller
 
             $signedPayload = "{$t}.{$request->getContent()}";
 
-            $success = hash_hmac('sha256', $signedPayload, $request->secret) === $sign;
+            $success = hash_hmac('sha256', $signedPayload, $secret->secret) === $sign;
 
             if(!$success){
 
                 info("Verificacion de firma Rappi: ");
                 info("signedPayload \n {$signedPayload}");
-                info("request->secret \n {$request->secret}");
+                info("request->secret \n {$secret->secret}");
                 info("sign \n {$sign}");
-                info("hmac: \n ".hash_hmac('sha256', $signedPayload, $request->secret)."\n");
+                info("hmac: \n ".hash_hmac('sha256', $signedPayload, $secret->secret)."\n");
+                throw new \Exception("La firma no es válida");
 
             }
 
-            return ['success' => $success ];
+            return ['success' => $success];
 
         } catch (\Exception $e) {
 
@@ -206,8 +355,6 @@ class RappiWebhookcontroller extends Controller
                 'success' => false,
                 'msg' => $e->getMessage()
             ];
-
-
 
         }
 
