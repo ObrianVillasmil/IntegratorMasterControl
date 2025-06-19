@@ -31,11 +31,11 @@ class RappiWebhookcontroller extends Controller
 
             }
 
-            //WebhookRappi::create(['order' => json_encode($req->all())]);
+            WebhookRappi::create(['order' => json_encode($request->all())]);
 
 
-            WebhookRappi::create(['order' => $request->getContent()]);
-            $request = json_decode($request->getContent());
+            //WebhookRappi::create(['order' => $request->getContent()]);
+            //$request = json_decode($request->getContent());
 
             $company = Company::where('token',$request->store->internal_id)->first();
 
@@ -235,7 +235,7 @@ class RappiWebhookcontroller extends Controller
                 'id_branch_office' => $store->id_sucursal,
                 'order_id' => $request->order_detail->order_id,
                 'connect' => base64_encode($company->connect),
-                'name' => 'RAPPI '.$request->shortCode,
+                'name' => 'RAPPI '.$request->order_detail->order_id,
                 'ordering_platform' => 'RAPPI',
                 'customer' => $customer,
                 'customer_identification' => $customerIdentification,

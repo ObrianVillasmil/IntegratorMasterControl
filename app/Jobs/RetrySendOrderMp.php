@@ -134,6 +134,9 @@ class RetrySendOrderMp implements ShouldQueue
                         case 'PEDIDOS_YA':
                             $logo = 'pedidosya.png';
                             break;
+                        case 'RAPPI':
+                            $logo = 'rappi.webp';
+                            break;
                         default:
                             $logo = 'appdelivery.webp';
                     }
@@ -189,7 +192,7 @@ class RetrySendOrderMp implements ShouldQueue
 
                 $connection->commit();
 
-                
+
             } catch (\Exception $e) {
 
                 info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
