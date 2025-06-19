@@ -244,7 +244,7 @@ class RappiWebhookcontroller extends Controller
                 'payment_type_id' => $store->id_tipo_pago_rappi,
                 'sale_type_id' => $store->id_tipo_venta_rappi,
                 'items' => json_encode($items,JSON_NUMERIC_CHECK|JSON_PRESERVE_ZERO_FRACTION),
-                'body' => json_encode($request->all()),
+                'body' => json_encode($request),
                 'json_desc_subtotal' => isset($discountsTotal) ? [$discountsTotal] : null
             ]));
 
