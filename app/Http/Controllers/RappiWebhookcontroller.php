@@ -158,9 +158,9 @@ class RappiWebhookcontroller extends Controller
                             $dataSubItem = explode('-',$subItem->sku);
 
                             $pcpRes = DB::connection($company->connect)->table('pos_configuracion_producto as pcp')
-                            ->join('impuestos as imp','pcp.id_impuesto','imp.id_impuesto')
+                            ->join('impuesto as imp','pcp.id_impuesto','imp.id_impuesto')
                             ->where('id_pos_configuracion_producto',$dataSubItem[3])
-                            ->select('pcp.id_producto','impuestos.valor')->first();
+                            ->select('pcp.id_producto','impuesto.valor')->first();
 
                             $subTotal = number_format(($subItem->price/(1+($pcpRes->valor/100))),3,'.','');
                             $subtotalNet+= $subTotal*$subItem->quantity;
@@ -265,6 +265,7 @@ class RappiWebhookcontroller extends Controller
 
             $success = false;
             $msg = $e->getMessage().' '.$e->getLine().' '.$e->getFile();
+            info('Error createNewOrder RAPPI: ');
             info($msg);
         }
 
