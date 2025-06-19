@@ -10,193 +10,271 @@ use Illuminate\Support\Facades\DB;
 
 class RappiWebhookcontroller extends Controller
 {
-    const EVENTS = [
-        'NEW_ORDER',
-        'ORDER_EVENT_CANCEL',
-        'ORDER_OTHER_EVENT',
-        'ORDER_RT_TRACKING',
-        'MENU_APPROVED',
-        'MENU_REJECTED',
-        'PING',
-        'STORE_CONNECTIVITY'
-    ];
-
     public function newOrder(Request $request)
     {
         info("newOrder RAPPI");
         info("Info recibida: \n\n ".$request->__toString());
 
-        $request->query->add(['event' => 'NEW_ORDER']);
+        $success = true;
+        $msg = 'Se ha gurado la orden con éxito';
 
-        $validSign = self::validateSignature($request);
+        try {
 
-        if(!$validSign['success']){
+            $request->query->add(['event' => 'NEW_ORDER']);
 
-            info("Unauthorized: \n {$validSign['msg']}");
-            return response("Unauthorized: {$validSign['msg']}",401);
+            $validSign = self::validateSignature($request);
 
-        }
+            if(!$validSign['success']){
 
-        //WebhookRappi::create(['order' => json_encode($req->all())]);
-
-
-        WebhookRappi::create(['order' => $request->getContent()]);
-        $request = json_decode($request->getContent());
-
-        $company = Company::where('token',$request->store->internal_id)->first();
-
-        $store = DB::connection($company->connect)->table('sucursal_tienda_peya as stpeya')
-        ->join('sucursal as s','s.id_sucursal','stpeya.id_sucursal')
-        ->where('stpeya.posvendorid',$request->vendorid)->first();
-
-        $customerIdentification = null;
-        $customerEmail = 'a@gmail.com';
-        $customer = null;
-        $customerAddress = null;
-        $customerPhone = null;
-        $items = [];
-        $subtotalNet = 0;
-
-        if($request->customer && is_object($request->customer)){
-
-            if(isset($request->customer->document_number))
-                $customerIdentification = $request->customer->document_number;
-
-            if(isset($request->customer->email))
-                $customerEmail = $request->customer->email;
-
-            if(isset($request->customer->first_name))
-                $customer = $request->customer->first_name;
-
-            if(isset($request->customer->last_name))
-                $customer = $customer.' '.$request->customer->last_name;
-
-            if(isset($request->customer->phone_number))
-                $customerPhone = $request->customer->phone_number;
-
-        }
-
-        if(isset($request->billing_information) && is_object($request->billing_information)){
-
-            if(isset($request->billing_information->document_number))
-                $customerIdentification = $request->billing_information->document_number;
-
-            if(isset($request->billing_information->email))
-                $customerEmail = $request->billing_information->email;
-
-            if(isset($request->billing_information->name))
-                $customer = $request->billing_information->name;
-
-            if(isset($request->billing_information->phone))
-                $customerPhone = $request->billing_information->phone;
-
-            if(isset($request->billing_information->address))
-                $customerAddress = $request->billing_information->address;
-
-        }
-
-        if(isset($request->order_detail->items) && is_array($request->order_detail->items)){
-
-            foreach ($request->order_detail->items as $item) {
-
-                $dataItem = explode('-',$item->sku);
-                $comment = '';
-                $discount = 0;
-
-                $imp = DB::connection($company->connect)->table('pos_configuracion_producto as pcp')
-                ->join('impuesto as i', 'pcp.id_impuesto','i.id_impuesto')
-                ->where('pcp.id_pos_configuracion_producto', $dataItem[2])
-                ->select('i.valor')->first();
-
-                $subTotal = number_format(($item->price/(1+($imp->valor/100))),3,'.','');
-
-                $subtotalNet+= $subTotal*$item->quantity;
-                $jsonDiscount = null;
-
-                if(isset($product['comment']))
-                    $comment = $product['comment'];
-
-                // EXISTEN DESCUENTOS
-                if(isset($request->discounts) && is_array($request->discounts)){
-
-                    //HAY PRODUCTOS CON DESCUENTOS
-                    $prodsDesc = array_filter($request->discounts, function($arr) use($item){
-                        return $item->sku === $arr['sku'];
-                    });
-
-                    foreach ($prodsDesc as $desc) {
-
-                        $discount = $desc->value;
-
-                        $jsonDiscount = json_encode([
-                            'id_descuento' => '-1',
-                            'nombre' => $desc->title,
-                            'tipo' => $desc->value_type ==='percentage' ? 'PORCENTAJE' : 'MONTO',
-                            'aplicacion' => 'ITEM',
-                            'monto' => $discount,
-                            'porcentaje' => null,
-                            'condicion_aplicable'=> 0,
-                            'producto' => $dataItem[2].'_'.$dataItem[3]
-                        ]);
-
-                        if($discount > $subTotal)
-                            $discount = $subTotal;
-
-                    }
-
-                }
-
-                $items[] = [
-                    'type' => $dataItem[3],
-                    'id' => $dataItem[4],
-                    'name' => $item->name,
-                    'tax' => $imp->valor,
-                    'quantity' => $item->quantity,
-                    'ingredient' => 0,
-                    'comment' => $comment,
-                    'sub_total_price' => $subTotal,
-                    'id_pcpp' => null,
-                    'discount' => $discount,
-                    'json_discount' => $jsonDiscount,
-                ];
-
-                if(isset($item->subitems) && is_array($item->subitems)){
-
-                    foreach ($item->subitems as $subItem) {
-
-                        $dataSubItem = explode('-',$subItem->sku);
-
-                        $pcpRes = DB::connection($company->connect)->table('pos_configuracion_producto as pcp')
-                        ->join('impuestos as imp','pcp.id_impuesto','imp.id_impuesto')
-                        ->where('id_pos_configuracion_producto',$dataSubItem[3])
-                        ->select('pcp.id_producto','impuestos.valor')->first();
-
-                        $subTotal = number_format(($subItem->price/(1+($pcpRes->valor/100))),3,'.','');
-
-                        $items[] = [
-                            'type' => $pcpRes->tabla === 'receta' ? 'R' : 'I',
-                            'id' => $pcpRes->id_producto,
-                            'name' => $subItem->name,
-                            'ingredient' => 1,
-                            'tax' => $pcpRes->valor,
-                            'quantity' => $item->quantity*$subItem->quantity,
-                            'id_pcpp' => $dataSubItem[7],
-                            'sub_total_price' => $subTotal,
-                            'discount' => 0,
-                            'comment' => '',
-                            'json_discount' =>null ,
-                        ];
-
-                    }
-
-                }
-
+                info("Unauthorized: \n {$validSign['msg']}");
+                return response("Unauthorized: {$validSign['msg']}",401);
 
             }
 
+            //WebhookRappi::create(['order' => json_encode($req->all())]);
+
+
+            WebhookRappi::create(['order' => $request->getContent()]);
+            $request = json_decode($request->getContent());
+
+            $company = Company::where('token',$request->store->internal_id)->first();
+
+            $store = DB::connection($company->connect)->table('sucursal_tienda_rappi as strappi')
+            ->join('sucursal as s','s.id_sucursal','strappi.id_sucursal')
+            ->where('strappi.store_id',$request->store->internal_id)->first();
+
+            $customerIdentification = null;
+            $customerEmail = 'a@gmail.com';
+            $customer = null;
+            $customerAddress = null;
+            $customerPhone = null;
+            $items = [];
+            $subtotalNet = 0;
+
+            if($request->customer && is_object($request->customer)){
+
+                if(isset($request->customer->document_number))
+                    $customerIdentification = $request->customer->document_number;
+
+                if(isset($request->customer->email))
+                    $customerEmail = $request->customer->email;
+
+                if(isset($request->customer->first_name))
+                    $customer = $request->customer->first_name;
+
+                if(isset($request->customer->last_name))
+                    $customer = $customer.' '.$request->customer->last_name;
+
+                if(isset($request->customer->phone_number))
+                    $customerPhone = $request->customer->phone_number;
+
+            }
+
+            if(isset($request->billing_information) && is_object($request->billing_information)){
+
+                if(isset($request->billing_information->document_number))
+                    $customerIdentification = $request->billing_information->document_number;
+
+                if(isset($request->billing_information->email))
+                    $customerEmail = $request->billing_information->email;
+
+                if(isset($request->billing_information->name))
+                    $customer = $request->billing_information->name;
+
+                if(isset($request->billing_information->phone))
+                    $customerPhone = $request->billing_information->phone;
+
+                if(isset($request->billing_information->address))
+                    $customerAddress = $request->billing_information->address;
+
+            }
+
+            if(isset($request->order_detail->items) && is_array($request->order_detail->items)){
+
+                foreach ($request->order_detail->items as $item) {
+
+                    $dataItem = explode('-',$item->sku);
+                    $comment = '';
+                    $discount = 0;
+
+                    $imp = DB::connection($company->connect)->table('pos_configuracion_producto as pcp')
+                    ->join('impuesto as i', 'pcp.id_impuesto','i.id_impuesto')
+                    ->where('pcp.id_pos_configuracion_producto', $dataItem[2])
+                    ->select('i.valor')->first();
+
+                    $subTotal = number_format(($item->price/(1+($imp->valor/100))),3,'.','');
+
+                    $subtotalNet+= $subTotal*$item->quantity;
+                    $jsonDiscount = null;
+
+                    if(isset($product['comment']))
+                        $comment = $product['comment'];
+
+                    // EXISTEN DESCUENTOS
+                    if(isset($request->order_detail->discounts) && is_array($request->order_detail->discounts)){
+
+                        //HAY PRODUCTOS CON DESCUENTOS
+                        $prodsDesc = array_filter($request->discounts, function($arr) use($item){
+                            return $arr->type ==='offer_by_product' && $item->sku === $arr->sku;
+                        });
+
+                        foreach ($prodsDesc as $desc) {
+
+                            $discount = $desc->value;
+
+                            $jsonDiscount = json_encode([
+                                'id_descuento' => '-1',
+                                'nombre' => $desc->title,
+                                'tipo' => $desc->value_type ==='percentage' ? 'PORCENTAJE' : 'MONTO',
+                                'aplicacion' => 'ITEM',
+                                'monto' => $discount,
+                                'porcentaje' => null,
+                                'condicion_aplicable'=> 0,
+                                'producto' => $dataItem[2].'_'.$dataItem[3]
+                            ]);
+
+                            if($discount > $subTotal)
+                                $discount = $subTotal;
+
+                        }
+
+                    }
+
+                    $items[] = [
+                        'type' => $dataItem[3],
+                        'id' => $dataItem[4],
+                        'name' => $item->name,
+                        'tax' => $imp->valor,
+                        'quantity' => $item->quantity,
+                        'ingredient' => 0,
+                        'comment' => $comment,
+                        'sub_total_price' => $subTotal,
+                        'id_pcpp' => null,
+                        'discount' => $discount,
+                        'json_discount' => $jsonDiscount,
+                    ];
+
+                    if(isset($item->subitems) && is_array($item->subitems)){
+
+                        foreach ($item->subitems as $subItem) {
+
+                            $dataSubItem = explode('-',$subItem->sku);
+
+                            $pcpRes = DB::connection($company->connect)->table('pos_configuracion_producto as pcp')
+                            ->join('impuestos as imp','pcp.id_impuesto','imp.id_impuesto')
+                            ->where('id_pos_configuracion_producto',$dataSubItem[3])
+                            ->select('pcp.id_producto','impuestos.valor')->first();
+
+                            $subTotal = number_format(($subItem->price/(1+($pcpRes->valor/100))),3,'.','');
+                            $subtotalNet+= $subTotal*$subItem->quantity;
+
+                            $items[] = [
+                                'type' => $pcpRes->tabla === 'receta' ? 'R' : 'I',
+                                'id' => $pcpRes->id_producto,
+                                'name' => $subItem->name,
+                                'ingredient' => 1,
+                                'tax' => $pcpRes->valor,
+                                'quantity' => $item->quantity*$subItem->quantity,
+                                'id_pcpp' => $dataSubItem[7],
+                                'sub_total_price' => $subTotal,
+                                'discount' => 0,
+                                'comment' => '',
+                                'json_discount' =>null ,
+                            ];
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+            if(isset($request->order_detail->discounts) && is_array($request->order_detail->discounts)){
+
+                //HAY DESCUENTOS AL TOTAL
+                $discountsTotal = [
+                    'id_descuento' => "descuento_".strtoupper(str_replace('.','',uniqid('',true))),
+                    'nombre' => "",
+                    'tipo' => "MONTO",
+                    'porcentaje' => "",
+                    'monto' => 0,
+                    'id_rol' => "",
+                    'cantidad_aplicable' => "0",
+                    'id_producto_x' => "",
+                    'cant_producto_x' => "",
+                    'id_producto_y' => "",
+                    'cant_producto_y' => "",
+                    'n_producto' => "",
+                    'monto_consumir' => "",
+                    'tipo_producto_x' => "",
+                    'tipo_producto_y' => "",
+                    'condicion_aplicable' => "1",
+                    'productos' => []
+                ];
+
+                $dsctosTotal = array_filter($request->order_detail->discounts, function($arr){
+                    return !$arr->sku && $arr->type !== 'free_shipping';
+                });
+
+                foreach ($dsctosTotal as $desc) {
+
+                    $discountsTotal['nombre'] .= ($desc->title." | $".$desc->value." ");
+
+                    //CALCULA EL PORCENTAJE DE DESCUENTO AL TOTAL
+                    $percentage = ($desc->value*100)/$request->order_detail->totals->total_products_with_discount;
+
+                    //CALCULA EL PORCENTAJE DE DESCUENTO AL SUB TOTAL
+                    $discountsTotal['monto'] += number_format(($subtotalNet*$percentage)/100,2,'.','');
+
+                }
+
+            }
+
+            $createOrder = MpFunctionController::createMpOrder(new Request([
+                'id_branch_office' => $store->id_sucursal,
+                'order_id' => $request->order_detail->order_id,
+                'connect' => base64_encode($company->connect),
+                'name' => 'RAPPI '.$request->shortCode,
+                'ordering_platform' => 'RAPPI',
+                'customer' => $customer,
+                'customer_identification' => $customerIdentification,
+                'customer_address' => $customerAddress,
+                'customer_email' => $customerEmail,
+                'customer_phone' => $customerPhone,
+                'app_deliverys' => true,
+                'total' => $request->order_detail->totals->total_products_with_discount - (isset($discountsTotal) ? $discountsTotal['monto'] : 0),
+                'payment_type_id' => $store->id_tipo_pago_rappi,
+                'sale_type_id' => $store->id_tipo_venta_rappi,
+                'items' => json_encode($items,JSON_NUMERIC_CHECK|JSON_PRESERVE_ZERO_FRACTION),
+                'body' => json_encode($request->all()),
+                'json_desc_subtotal' => isset($discountsTotal) ? [$discountsTotal] : null
+            ]));
+
+            $createOrder = $createOrder->getData(true);
+
+            if(!$createOrder['success']){
+
+                //NOTIFICAR QUE NO SE PUDO CREAR LA ORDEN
+                info('Error createNewOrder RAPPI: ');
+                info($createOrder['msg']);
+                throw new \Exception($createOrder['msg']);
+
+            }
+
+            return response("",200);
+
+        } catch (\Exception $e) {
+
+            $success = false;
+            $msg = $e->getMessage().''.$e->getLine().''.$e->getFile();
+
         }
 
-        return response("",200);
+        return [
+            'success' => $success,
+            'msg' => $msg
+        ];
 
 
     }
