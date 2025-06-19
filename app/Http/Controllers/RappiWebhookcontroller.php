@@ -111,7 +111,7 @@ class RappiWebhookcontroller extends Controller
                     if(isset($request->order_detail->discounts) && is_array($request->order_detail->discounts)){
 
                         //HAY PRODUCTOS CON DESCUENTOS
-                        $prodsDesc = array_filter($request->discounts, function($arr) use($item){
+                        $prodsDesc = array_filter($request->order_detail->discounts, function($arr) use($item){
                             return $arr->type ==='offer_by_product' && $item->sku === $arr->sku;
                         });
 
@@ -264,7 +264,7 @@ class RappiWebhookcontroller extends Controller
         } catch (\Exception $e) {
 
             $success = false;
-            $msg = $e->getMessage().''.$e->getLine().''.$e->getFile();
+            $msg = $e->getMessage().' '.$e->getLine().' '.$e->getFile();
             info($msg);
         }
 
