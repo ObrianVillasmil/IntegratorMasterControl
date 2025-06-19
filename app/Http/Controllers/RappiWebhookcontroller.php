@@ -160,7 +160,7 @@ class RappiWebhookcontroller extends Controller
                             $pcpRes = DB::connection($company->connect)->table('pos_configuracion_producto as pcp')
                             ->join('impuesto as imp','pcp.id_impuesto','imp.id_impuesto')
                             ->where('id_pos_configuracion_producto',$dataSubItem[3])
-                            ->select('pcp.id_producto','impuesto.valor')->first();
+                            ->select('pcp.id_producto','imp.valor')->first();
 
                             $subTotal = number_format(($subItem->price/(1+($pcpRes->valor/100))),3,'.','');
                             $subtotalNet+= $subTotal*$subItem->quantity;
