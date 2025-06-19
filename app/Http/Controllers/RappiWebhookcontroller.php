@@ -265,7 +265,7 @@ class RappiWebhookcontroller extends Controller
 
             $success = false;
             $msg = $e->getMessage().''.$e->getLine().''.$e->getFile();
-
+            info($msg);
         }
 
         return [
