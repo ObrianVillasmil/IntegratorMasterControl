@@ -124,8 +124,7 @@ class RappiWebhookcontroller extends Controller
                                 'aplicacion' => 'ITEM',
                                 'monto' => 0,
                                 'porcentaje' => 0,
-                                'condicion_aplicable'=> 1,
-                                'cantidad_aplicable' => 99,
+                                'condicion_aplicable'=> 0,
                                 'producto' => $dataItem[3].'_'.$dataItem[2]
                             ];
 
@@ -138,7 +137,7 @@ class RappiWebhookcontroller extends Controller
                             }else{
 
                                 $discount = $desc->value;
-                                $arrDiscount['monto'] = $desc->raw_value;
+                                $arrDiscount['monto'] = $desc->value;
                                 $arrDiscount['tipo'] = 'MONTO';
 
                             }
