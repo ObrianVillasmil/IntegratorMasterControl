@@ -125,7 +125,7 @@ class RappiWebhookcontroller extends Controller
                                 'monto' => 0,
                                 'porcentaje' => 0,
                                 'condicion_aplicable'=> 0,
-                                'producto' => $dataItem[3].'_'.$dataItem[2]
+                                'producto' => $dataItem[3].'_'.$dataItem[4]
                             ];
 
                             if($desc->value_type === 'percentage'){
