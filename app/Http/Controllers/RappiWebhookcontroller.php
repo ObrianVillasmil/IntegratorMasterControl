@@ -228,7 +228,10 @@ class RappiWebhookcontroller extends Controller
                     return !$arr->sku && $arr->type !== 'free_shipping';
                 });
 
+                $dt = 0;
                 foreach ($dsctosTotal as $desc) {
+
+                    $dt+= $desc->value;
 
                     $discountsTotal['nombre'] .= ($desc->title." | $".$desc->value." ");
 
@@ -254,7 +257,7 @@ class RappiWebhookcontroller extends Controller
                 'customer_email' => $customerEmail,
                 'customer_phone' => $customerPhone,
                 'app_deliverys' => true,
-                'total' => $request->order_detail->totals->total_products_with_discount - (isset($discountsTotal) ? $discountsTotal['monto'] : 0),
+                'total' => $request->order_detail->totals->total_products_with_discount - $dt,
                 'payment_type_id' => $store->id_tipo_pago_rappi,
                 'sale_type_id' => $store->id_tipo_venta_rappi,
                 'items' => json_encode($items,JSON_NUMERIC_CHECK|JSON_PRESERVE_ZERO_FRACTION),
