@@ -117,21 +117,36 @@ class RappiWebhookcontroller extends Controller
 
                         foreach ($prodsDesc as $desc) {
 
-                            $discount = $desc->value;
-
-                            $jsonDiscount = json_encode([
+                            $arrDiscount = [
                                 'id_descuento' => '-1',
                                 'nombre' => $desc->title,
-                                'tipo' => $desc->value_type ==='percentage' ? 'PORCENTAJE' : 'MONTO',
+                                'tipo' => '',
                                 'aplicacion' => 'ITEM',
-                                'monto' => $discount,
-                                'porcentaje' => null,
-                                'condicion_aplicable'=> 0,
-                                'producto' => $dataItem[2].'_'.$dataItem[3]
-                            ]);
+                                'monto' => 0,
+                                'porcentaje' => 0,
+                                'condicion_aplicable'=> 1,
+                                'cantidad_aplicable' => 99,
+                                'producto' => $dataItem[3].'_'.$dataItem[2]
+                            ];
 
-                            if($discount > $subTotal)
-                                $discount = $subTotal;
+                            if($desc->value_type === 'percentage'){
+
+                                $discount = $desc->raw_value;
+                                $arrDiscount['porcentaje'] = $desc->raw_value;
+                                $arrDiscount['tipo'] = 'PORCENTAJE';
+
+                            }else{
+
+                                $discount = $desc->value;
+                                $arrDiscount['monto'] = $desc->raw_value;
+                                $arrDiscount['tipo'] = 'MONTO';
+
+                            }
+
+                            $jsonDiscount = json_encode($arrDiscount);
+
+                            /* if($discount > $subTotal)
+                                $discount = $subTotal; */
 
                         }
 
