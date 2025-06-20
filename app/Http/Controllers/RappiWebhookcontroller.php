@@ -177,7 +177,7 @@ class RappiWebhookcontroller extends Controller
                             ->select('pcp.id_producto','imp.valor', 'pcp.tabla')->first();
 
                             $subTotal = number_format(($subItem->price/(1+($pcpRes->valor/100))),3,'.','');
-                            $subtotalNet+= $subTotal*$subItem->quantity;
+                            $subtotalNet+= $subTotal*$subItem->quantity*$item->quantity;
 
                             $items[] = [
                                 'type' => $pcpRes->tabla === 'receta' ? 'R' : 'I',
