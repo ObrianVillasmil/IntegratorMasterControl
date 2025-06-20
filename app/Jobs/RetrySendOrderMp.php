@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Http\Controllers\ContificoIntegrationController;
 use App\Http\Controllers\Controller;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
@@ -43,6 +44,11 @@ class RetrySendOrderMp implements ShouldQueue
             $connection = DB::connection($this->conexion);
 
             try {
+
+                $existPreAccount = $connection->table('precuenta')->where('default_name',$this->data['order_id'])->first();
+
+                if($existPreAccount)
+                    throw new \Exception("Ya existe una orden con el mismo identificador {$this->data['order_id']} en la conexion {$this->conexion} ");
 
                 $connection->beginTransaction();
 
@@ -198,6 +204,34 @@ class RetrySendOrderMp implements ShouldQueue
                 info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
 
                 $connection->rollBack();
+
+                ContificoIntegrationController::sendMail([
+                    'subject' => "Error en envío de pedido {$this->data['order_id']} a la conexión {$this->conexion}",
+                    'sucursal' => strtoupper($this->conexion),
+                    'ccEmail' => env('MAIL_NOTIFICATION'),
+                    'html' => "<html>
+                        <head>
+                            <style>
+                                .alert {
+                                    padding: 15px;
+                                    margin-bottom: 20px;
+                                    border: 1px solid transparent;
+                                    border-radius: 4px;
+                                }
+                                .alert-danger {
+                                    color: #155724;
+                                    background-color: #d4edda;
+                                    border-color: #c3e6cb;
+                                }
+                            </style>
+                        </head>
+                        <body>
+                            <div class='alert alert-danger' role='alert'>
+                                <p> Error createMpAccount: {$e->getMessage()} {$e->getLine()} {$e->getFile()}</p>
+                            </div>
+                        </body>
+                    </html>"
+                ]);
 
             }
 
