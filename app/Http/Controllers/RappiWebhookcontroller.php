@@ -130,7 +130,7 @@ class RappiWebhookcontroller extends Controller
 
                             if($desc->value_type === 'percentage'){
 
-                                $discount = $desc->raw_value;
+                                $discount = $desc->value;
                                 $arrDiscount['porcentaje'] = $desc->raw_value;
                                 $arrDiscount['tipo'] = 'PORCENTAJE';
 
