@@ -55,6 +55,9 @@ class RetryUpdateOrderMp implements ShouldQueue
                     case 'PEDIDOS_YA':
                         $logo = 'pedidosya.png';
                         break;
+                    case 'RAPPI':
+                        $logo = 'rappi.webp';
+                        break;
                     default:
                         $logo = 'appdelivery.webp';
                 }
@@ -73,11 +76,14 @@ class RetryUpdateOrderMp implements ShouldQueue
                     'tiempo_preparacion' => $this->data['tiempo_preparacion']
                 ]);
 
+                if(in_array($this->data['status'],['CANCELLED','ORDER_CANCELLED']))
+                    $connection->table('precuenta')->where('id_precuenta', $order->id_precuenta)->update(['procesado' => true]);
+
                 $connection->commit();
 
             } catch (\Exception $e) {
 
-                info('Error updateMpOrder: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile().' '.$e->getTraceAsString());
+                info('Error updateMpOrder: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
 
                 $connection->rollBack();
 
