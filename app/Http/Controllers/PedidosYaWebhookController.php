@@ -354,14 +354,25 @@ class PedidosYaWebhookController extends Controller
             if(isset($request->message))
                 $cuerpo->canceled_message = $request->message;
 
-            $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
-                'order_id' => $cuerpo->token,
-                'status' => $request->status,
-                'ordering_platform' => $cuerpo->localInfo->platform,
-                'body' => json_encode($cuerpo),
-                'connect' => base64_encode($cuerpo->connect),
-                'tiempo_preparacion' => $precAppDelivery->tiempo_preparacion
-            ]));
+            if($request->status === 'ORDER_CANCELLED'){
+
+                $updateOrder = MpFunctionController::cancelMpOrderAppDelivery(new Request([
+                    'order_id' => $cuerpo->token,
+                    'connect' => base64_encode($cuerpo->connect),
+                ]));
+
+            }else{
+
+                $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
+                    'order_id' => $cuerpo->token,
+                    'status' => $request->status,
+                    'ordering_platform' => $cuerpo->localInfo->platform,
+                    'body' => json_encode($cuerpo),
+                    'connect' => base64_encode($cuerpo->connect),
+                    'tiempo_preparacion' => $precAppDelivery->tiempo_preparacion
+                ]));
+
+            }
 
             $updateOrder = $updateOrder->getData(true);
 

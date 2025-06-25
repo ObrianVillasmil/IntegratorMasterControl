@@ -641,7 +641,7 @@ class MpFunctionController extends Controller
 
             return response()->json([
                 'success' => true,
-                'msg' => 'Se eliminado el pedido con éxito'
+                'msg' => 'Se cancelado el pedido con éxito'
             ],200);
 
         } else {

@@ -64,7 +64,8 @@ class RetryUpdateOrderMp implements ShouldQueue
 
                 $connection->table('precuenta_app_delivery')
                 ->where( 'id_sucursal', $order->id_sucursal)
-                ->where('id_precuenta', $order->id_precuenta)->update(['estado' => false]);
+                ->where('id_precuenta', $order->id_precuenta)
+                ->update(['estado' => false]);
 
                 $connection->table('precuenta_app_delivery')->insert([
                     'id_precuenta' => $order->id_precuenta,
@@ -75,10 +76,7 @@ class RetryUpdateOrderMp implements ShouldQueue
                     'logo' => $logo,
                     'tiempo_preparacion' => $this->data['tiempo_preparacion']
                 ]);
-
-                if(in_array($this->data['status'],['CANCELLED','ORDER_CANCELLED']))
-                    $connection->table('precuenta')->where('id_precuenta', $order->id_precuenta)->update(['procesado' => true]);
-
+                
                 $connection->commit();
 
             } catch (\Exception $e) {

@@ -63,7 +63,11 @@ class RetryCancelOrderMp implements ShouldQueue
                     ->where('estado',true)
                     ->update(['estado' => false]);
 
-                    $cuerpo->order->state = 'CANCELLED';
+                    if(isset($cuerpo->order)){
+                        $cuerpo->order->state = 'CANCELLED';
+                    }else{
+                        $cuerpo->current_status = 'CANCELLED';
+                    }
 
                     $connection->table('precuenta_app_delivery')->insert([
                         'id_precuenta' => $precuenta->id_precuenta,
