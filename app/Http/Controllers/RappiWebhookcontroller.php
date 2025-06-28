@@ -135,7 +135,6 @@ class RappiWebhookcontroller extends Controller
                                 $arrDiscount['tipo'] = 'PORCENTAJE';
 
                                 $subtotalNet-= ($subtotalProd*($desc->raw_value/100));
-                                //$percentage = ($desc->value*100)/$request->order_detail->totals->total_products_with_discount;
 
                             }else{
 
@@ -179,17 +178,26 @@ class RappiWebhookcontroller extends Controller
                             ->where('id_pos_configuracion_producto',$dataSubItem[3])
                             ->select('pcp.id_producto','imp.valor', 'pcp.tabla')->first();
 
+                            $subTotal = number_format(($subItem->price/(1+($pcpRes->valor/100))),3,'.','');
+                            $quantitySi = $item->quantity*$subItem->quantity;
+                            $subtotalProd = $subTotal*$quantitySi;
+                            $subtotalNet+= $subTotal*$quantitySi;
+
                             if($subItem->price > 0 && isset($prodsDesc) && count($prodsDesc) && $prodsDesc[0]->includes_toppings){
 
                                 $arrDiscount['producto'] = ($pcpRes->tabla === 'receta' ? 'R' : 'I').'_'.$pcpRes->id_producto;
                                 $jsonDiscount = json_encode($arrDiscount);
 
+                                if($prodsDesc[0]->value_type === 'percentage'){
+
+                                    $subtotalNet-= ($subtotalProd*($prodsDesc[0]->raw_value/100));
+
+                                }else{
+
+                                    $subtotalNet-= $prodsDesc[0]->value;
+                                }
+
                             }
-
-                            $quantitySi = $item->quantity*$subItem->quantity;
-
-                            $subTotal = number_format(($subItem->price/(1+($pcpRes->valor/100))),3,'.','');
-                            $subtotalNet+= $subTotal*$quantitySi;
 
                             $items[] = [
                                 'type' => $pcpRes->tabla === 'receta' ? 'R' : 'I',
