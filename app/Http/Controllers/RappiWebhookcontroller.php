@@ -141,7 +141,9 @@ class RappiWebhookcontroller extends Controller
                             }
 
                             $descTotalProd = ($totalProd*($desc->raw_value/100));
-
+info('$totalProd '.$totalProd);
+info('$descTotalProd '.$descTotalProd);
+info('$desc->value '.$desc->value);
                             if(number_format($descTotalProd,2) == number_format($desc->value,2)){
 
                                 //if($desc->value_type === 'percentage'){
