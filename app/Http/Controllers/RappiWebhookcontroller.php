@@ -99,6 +99,7 @@ class RappiWebhookcontroller extends Controller
                     ->where('pcp.id_pos_configuracion_producto', $dataItem[2])
                     ->select('i.valor')->first();
 
+                    $totalProd = $item->price;
                     $subTotal = number_format(($item->price/(1+($imp->valor/100))),3,'.','');
                     $subtotalProd = $subTotal*$item->quantity;
                     $subtotalNet+= $subtotalProd;
@@ -110,44 +111,62 @@ class RappiWebhookcontroller extends Controller
                     // EXISTEN DESCUENTOS
                     if(isset($request->order_detail->discounts) && is_array($request->order_detail->discounts)){
 
+                        $arrDiscount = [
+                            'id_descuento' => '-1',
+                            'nombre' =>'',
+                            'tipo' => '',
+                            'aplicacion' => 'ITEM',
+                            'monto' => 0,
+                            'porcentaje' => 0,
+                            'condicion_aplicable'=> 0,
+                            'producto' => $dataItem[3].'_'.$dataItem[4]
+                        ];
+
+
                         //HAY PRODUCTOS CON DESCUENTOS
                         $prodsDesc = array_filter($request->order_detail->discounts, function($arr) use($item){
                             return $arr->type === 'offer_by_product' && $item->sku === $arr->sku;
                         });
 
+                        $x = 0;
+
+                        if(isset($item->subitems) && is_array($item->subitems))
+                            $totalProd = $item->price + array_sum(array_column($item->subitems,'price'));
+
                         foreach ($prodsDesc as $desc) {
 
-                            $arrDiscount = [
-                                'id_descuento' => '-1',
-                                'nombre' => $desc->title,
-                                'tipo' => '',
-                                'aplicacion' => 'ITEM',
-                                'monto' => 0,
-                                'porcentaje' => 0,
-                                'condicion_aplicable'=> 0,
-                                'producto' => $dataItem[3].'_'.$dataItem[4]
-                            ];
+                            if($x == $desc->discount_product_units){
+                                unset($prodsDesc);
+                                break;
+                            }
 
-                            if($desc->value_type === 'percentage'){
+                            $descTotalProd = ($totalProd*($desc->raw_value/100));
 
-                                $discount = $desc->value;
-                                $arrDiscount['porcentaje'] = $desc->raw_value;
+                            if(number_format($descTotalProd,2) == number_format($desc->value,2)){
+
+                                //if($desc->value_type === 'percentage'){
+
+                                $discount+= $desc->value;
+                                $arrDiscount['nombre'].= ($desc->title." | $".$desc->value." ");
+                                $arrDiscount['porcentaje']+= $desc->raw_value;
                                 $arrDiscount['tipo'] = 'PORCENTAJE';
+                                $subtotalNet-=($subtotalProd*($desc->raw_value/100));
+                                $x++;
 
-                                $subtotalNet-= ($subtotalProd*($desc->raw_value/100));
+                                /*} else{
 
-                            }else{
+                                    $discount = $desc->value;
+                                    $arrDiscount['monto']+= $desc->value;
+                                    $arrDiscount['tipo'] = 'MONTO';
+                                    $subtotalNet-= $desc->value;
 
-                                $discount = $desc->value;
-                                $arrDiscount['monto'] = $desc->value;
-                                $arrDiscount['tipo'] = 'MONTO';
-                                $subtotalNet-= $desc->value;
+                                } */
 
                             }
 
-                            $jsonDiscount = json_encode($arrDiscount);
-
                         }
+
+                        $jsonDiscount = json_encode($arrDiscount);
 
                     }
 
