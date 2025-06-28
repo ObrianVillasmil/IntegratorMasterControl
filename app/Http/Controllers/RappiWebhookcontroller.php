@@ -144,9 +144,6 @@ class RappiWebhookcontroller extends Controller
 
                             $jsonDiscount = json_encode($arrDiscount);
 
-                            /* if($discount > $subTotal)
-                                $discount = $subTotal; */
-
                         }
 
                     }
@@ -167,6 +164,8 @@ class RappiWebhookcontroller extends Controller
 
                     if(isset($item->subitems) && is_array($item->subitems)){
 
+                        $jsonDiscount = null;
+
                         foreach ($item->subitems as $subItem) {
 
                             $dataSubItem = explode('-',$subItem->sku);
@@ -176,8 +175,17 @@ class RappiWebhookcontroller extends Controller
                             ->where('id_pos_configuracion_producto',$dataSubItem[3])
                             ->select('pcp.id_producto','imp.valor', 'pcp.tabla')->first();
 
+                            if(isset($prodsDesc) && $prodsDesc[0]->includes_toppings){
+
+                                $arrDiscount['producto'] = ($pcpRes->tabla === 'receta' ? 'R' : 'I').'_'.$pcpRes->id_producto;
+                                $jsonDiscount = json_encode($arrDiscount);
+
+                            }
+
+                            $quantitySi = $item->quantity*$subItem->quantity;
+
                             $subTotal = number_format(($subItem->price/(1+($pcpRes->valor/100))),3,'.','');
-                            $subtotalNet+= $subTotal*$subItem->quantity*$item->quantity;
+                            $subtotalNet+= $subTotal*$quantitySi;
 
                             $items[] = [
                                 'type' => $pcpRes->tabla === 'receta' ? 'R' : 'I',
@@ -185,12 +193,12 @@ class RappiWebhookcontroller extends Controller
                                 'name' => $subItem->name,
                                 'ingredient' => 1,
                                 'tax' => $pcpRes->valor,
-                                'quantity' => $item->quantity*$subItem->quantity,
+                                'quantity' => $quantitySi,
                                 'id_pcpp' => $dataSubItem[7],
                                 'sub_total_price' => $subTotal,
                                 'discount' => 0,
                                 'comment' => '',
-                                'json_discount' =>null ,
+                                'json_discount' => $jsonDiscount
                             ];
 
                         }
