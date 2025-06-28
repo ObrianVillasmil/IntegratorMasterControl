@@ -130,8 +130,12 @@ class RappiWebhookcontroller extends Controller
 
                         $x = 0;
 
-                        if(isset($item->subitems) && is_array($item->subitems))
-                            $totalProd = $item->price + array_sum(array_column($item->subitems,'price')) * $item->quantity;
+                        if(isset($item->subitems) && is_array($item->subitems)){
+
+                            $ttSt = array_reduce($item->subitems, function($sum, $si){ return $sum + $si->price; }, 0);
+                            $totalProd = ($item->price + $ttSt) * $item->quantity;
+
+                        }
 
                         foreach ($prodsDesc as $desc) {
 
