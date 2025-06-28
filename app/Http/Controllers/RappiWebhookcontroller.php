@@ -175,7 +175,7 @@ class RappiWebhookcontroller extends Controller
                             ->where('id_pos_configuracion_producto',$dataSubItem[3])
                             ->select('pcp.id_producto','imp.valor', 'pcp.tabla')->first();
 
-                            if(isset($prodsDesc) && $prodsDesc[0]->includes_toppings){
+                            if($subItem->price > 0 && isset($prodsDesc) && count($prodsDesc) && $prodsDesc[0]->includes_toppings){
 
                                 $arrDiscount['producto'] = ($pcpRes->tabla === 'receta' ? 'R' : 'I').'_'.$pcpRes->id_producto;
                                 $jsonDiscount = json_encode($arrDiscount);
