@@ -134,7 +134,7 @@ class RappiWebhookcontroller extends Controller
                                 $arrDiscount['porcentaje'] = $desc->raw_value;
                                 $arrDiscount['tipo'] = 'PORCENTAJE';
 
-                                $subtotalNet-=  $subtotalProd - ($subtotalProd*($desc->raw_value/100));
+                                $subtotalNet-= ($subtotalProd*($desc->raw_value/100));
                                 //$percentage = ($desc->value*100)/$request->order_detail->totals->total_products_with_discount;
 
                             }else{
