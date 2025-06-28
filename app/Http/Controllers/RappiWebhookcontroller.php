@@ -145,9 +145,7 @@ class RappiWebhookcontroller extends Controller
                             }
 
                             $descTotalProd = ($totalProd*($desc->raw_value/100));
-info('$totalProd '.$totalProd);
-info('$descTotalProd '.$descTotalProd);
-info('$desc->value '.$desc->value);
+
                             if(number_format($descTotalProd,2) == number_format($desc->value,2)){
 
                                 //if($desc->value_type === 'percentage'){
@@ -344,6 +342,67 @@ info('$desc->value '.$desc->value);
     {
         info('orderEventCancel RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
+
+         try {
+
+            $request->query->add(['event' => 'ORDER_EVENT_CANCEL']);
+
+            /* $validSign = self::validateSignature($request);
+
+            if(!$validSign['success']){
+
+                info("Unauthorized: \n {$validSign['msg']}");
+                return response("Unauthorized: {$validSign['msg']}",401);
+
+            } */
+
+            /* {
+                "event": "canceled_with_charge",
+                "order_id": "106",
+                "store_id": "900109448"
+            } */
+
+            WebhookRappi::create(['order' => $request->getContent()]);
+            $request = json_decode($request->getContent());
+
+            $company = Company::where('token',$request->store_id)->first();
+
+            $connection = DB::connection($company->connect);
+            $connection->beginTransaction();
+
+            $updateOrder = MpFunctionController::cancelMpOrderAppDelivery(new Request([
+                'order_id' => $request->order_id,
+                'status' => $request->event,
+                'connect' => base64_encode($company->connect),
+            ]));
+
+            $updateOrder = $updateOrder->getData(true);
+
+            if(!$updateOrder['success']){
+
+                info('Error updateOrder RAPPI: ');
+                info($updateOrder['msg']);
+                $msg = $updateOrder['msg'];
+                $success = false;
+
+            }
+
+            $connection->commit();
+
+        } catch (\Exception $e) {
+
+            $connection->rollBack();
+            $success = false;
+            $msg = $e->getMessage().' '.$e->getLine().' '.$e->getFile();
+            info('Error orderEventCancel RAPPI: ');
+            info($msg);
+        }
+
+        return [
+            'success' => $success,
+            'msg' => $msg
+        ];
+
 
         return response("",200);
     }
