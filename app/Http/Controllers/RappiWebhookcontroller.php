@@ -100,8 +100,8 @@ class RappiWebhookcontroller extends Controller
                     ->select('i.valor')->first();
 
                     $subTotal = number_format(($item->price/(1+($imp->valor/100))),3,'.','');
-
-                    $subtotalNet+= $subTotal*$item->quantity;
+                    $subtotalProd = $subTotal*$item->quantity;
+                    $subtotalNet+= $subtotalProd;
                     $jsonDiscount = null;
 
                     if(isset($product['comment']))
@@ -112,7 +112,7 @@ class RappiWebhookcontroller extends Controller
 
                         //HAY PRODUCTOS CON DESCUENTOS
                         $prodsDesc = array_filter($request->order_detail->discounts, function($arr) use($item){
-                            return $arr->type ==='offer_by_product' && $item->sku === $arr->sku;
+                            return $arr->type === 'offer_by_product' && $item->sku === $arr->sku;
                         });
 
                         foreach ($prodsDesc as $desc) {
@@ -134,11 +134,15 @@ class RappiWebhookcontroller extends Controller
                                 $arrDiscount['porcentaje'] = $desc->raw_value;
                                 $arrDiscount['tipo'] = 'PORCENTAJE';
 
+                                $subtotalNet-=  $subtotalProd - ($subtotalProd*($desc->raw_value/100));
+                                //$percentage = ($desc->value*100)/$request->order_detail->totals->total_products_with_discount;
+
                             }else{
 
                                 $discount = $desc->value;
                                 $arrDiscount['monto'] = $desc->value;
                                 $arrDiscount['tipo'] = 'MONTO';
+                                $subtotalNet-= $desc->value;
 
                             }
 
@@ -247,6 +251,7 @@ class RappiWebhookcontroller extends Controller
                     $percentage = ($desc->value*100)/$request->order_detail->totals->total_products_with_discount;
 
                     //CALCULA EL PORCENTAJE DE DESCUENTO AL SUB TOTAL
+                    info('$subtotalNet '.$subtotalNet);
                     $discountsTotal['monto'] += number_format(($subtotalNet*$percentage)/100,2,'.','');
 
                 }
