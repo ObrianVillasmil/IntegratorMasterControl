@@ -577,6 +577,54 @@ class RappiWebhookcontroller extends Controller
         info('storeConnectvity RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
 
+        $request->query->add(['event' => 'STORE_CONNECTIVITY']);
+
+        /* $validSign = self::validateSignature($request);
+
+        if(!$validSign['success']){
+
+            info("Unauthorized: \n {$validSign['msg']}");
+            return response("Unauthorized: {$validSign['msg']}",401);
+
+        } */
+
+        $request = json_decode($request->getContent());
+
+        if(!$request->enabled){
+
+            $company = Company::where('token',$request->external_store_id)->first();
+
+            ContificoIntegrationController::sendMail([
+                'subject' => "La tienda {$company->error_email} está apagada en la aplicación de usuarios de RAPPI",
+                'sucursal' => strtoupper($company->connect),
+                'ccEmail' => env('MAIL_NOTIFICATION'),
+                'html' => "<html>
+                    <head>
+                        <style>
+                            .alert {
+                                padding: 15px;
+                                margin-bottom: 20px;
+                                border: 1px solid transparent;
+                                border-radius: 4px;
+                            }
+                            .alert-danger {
+                                color: #155724;
+                                background-color: #d4edda;
+                                border-color: #c3e6cb;
+                            }
+                        </style>
+                    </head>
+                    <body>
+                        <div class='alert alert-danger' role='alert'>
+                            <p> Error cancelMpAccount: {$request->message}</p>
+                        </div>
+                    </body>
+                </html>"
+            ]);
+
+
+        }
+
         return response("",200);
     }
 
