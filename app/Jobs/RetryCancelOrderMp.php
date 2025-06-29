@@ -50,7 +50,7 @@ info($this->data);
                 $precuenta = $connection->table('precuenta')->where('default_name',$this->data['order_id'])->first();
 
                 $precuentaAppDelivery = $connection->table('precuenta_app_delivery')
-                ->where('cuerpo->order->id',$this->data['order_id'])
+                ->where('id_precuenta',$precuenta->id_precuenta)
                 ->where('estado',true)->first();
 info('$precuentaAppDelivery: ');
 info($precuentaAppDelivery);
@@ -61,7 +61,7 @@ info($precuentaAppDelivery);
                     $connection->table('precuenta')->where('default_name',$this->data['order_id'])->update(['procesado' => true]);
 
                     $connection->table('precuenta_app_delivery')
-                    ->where('cuerpo->order->id',$this->data['order_id'])
+                    ->where('id_precuenta',$precuenta->id_precuenta)
                     ->where('estado',true)
                     ->update(['estado' => false]);
 
