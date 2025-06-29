@@ -595,7 +595,7 @@ class RappiWebhookcontroller extends Controller
             $company = Company::where('token',$request->external_store_id)->first();
 
             ContificoIntegrationController::sendMail([
-                'subject' => "La tienda {$company->error_email} está apagada en la aplicación de usuarios de RAPPI",
+                'subject' => "TIENDA DE RAPPI APAGADA",
                 'sucursal' => strtoupper($company->connect),
                 'ccEmail' => env('MAIL_NOTIFICATION'),
                 'html' => "<html>
@@ -616,7 +616,8 @@ class RappiWebhookcontroller extends Controller
                     </head>
                     <body>
                         <div class='alert alert-danger' role='alert'>
-                            <p> Error cancelMpAccount: {$request->message}</p>
+                            <p> La tienda {$company->error_email} está apagada en la aplicación de usuarios de RAPPI</p>
+                            <p> Mensaje: {$request->message}</p>
                         </div>
                     </body>
                 </html>"
