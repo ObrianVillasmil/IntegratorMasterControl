@@ -12,8 +12,8 @@ class RappiWebhookcontroller extends Controller
 {
     public function newOrder(Request $request)
     {
-        info("newOrder RAPPI");
-        info("Info recibida: \n\n ".$request->__toString());
+        info("WEBHOOK RECEPCION DE PEDIDO RAPPI:\n");
+        info($request->__toString()."\n");
 
         $success = true;
         $msg = 'Se ha gurado la orden con éxito';
@@ -341,7 +341,7 @@ class RappiWebhookcontroller extends Controller
     public function orderEventCancel(Request $request)
     {
         info('orderEventCancel RAPPI');
-        info("Info recibida: \n\n ".$request->__toString());
+        info("\n ".$request->__toString());
 
          try {
 
@@ -399,7 +399,7 @@ class RappiWebhookcontroller extends Controller
     public function orderOtherEvent(Request $request)
     {
         info('orderOtherEvent RAPPI');
-        info("Info recibida: \n\n ".$request->__toString());
+        info("\n ".$request->__toString());
 
         try {
 
@@ -474,7 +474,7 @@ class RappiWebhookcontroller extends Controller
     public function orderRtTracking(Request $request)
     {
         info('orderRtTracking RAPPI');
-        info("Info recibida: \n\n ".$request->__toString());
+        info("\n ".$request->__toString());
 
         return response("",200);
     }
@@ -482,7 +482,7 @@ class RappiWebhookcontroller extends Controller
     public function menuApproved(Request $request)
     {
         info('menuApproved RAPPI');
-        info("Info recibida: \n\n ".$request->__toString());
+        info("\n ".$request->__toString());
 
         $request->query->add(['event' => 'MENU_APPROVED']);
 
@@ -501,7 +501,7 @@ class RappiWebhookcontroller extends Controller
     public function menuRejected(Request $request)
     {
         info('menuRejected RAPPI');
-        info("Info recibida: \n\n ".$request->__toString());
+        info("\n ".$request->__toString());
 
         $request->query->add(['event' => 'MENU_REJECTED']);
 
@@ -520,7 +520,7 @@ class RappiWebhookcontroller extends Controller
     public function pingRappi(Request $request)
     {
         info('pingRappi RAPPI');
-        info("Info recibida: \n\n ".$request->__toString());
+        info("\n ".$request->__toString());
 
         try {
 
@@ -535,13 +535,13 @@ class RappiWebhookcontroller extends Controller
 
             }
 
-            //WebhookRappi::create(['order' => $request->getContent()]);
-
             $request = json_decode($request->getContent());
 
             $company = Company::where('token',$request->store_id)->first();
 
             if(self::pingMp($company->connect)){
+
+                info('PING RAPPI: OK');
 
                 return response()->json([
                     "status"=> "OK",
@@ -549,6 +549,8 @@ class RappiWebhookcontroller extends Controller
                 ],200);
 
             }else{
+
+                info('PING RAPPI: KO');
 
                  return response()->json([
                      "status"=> "KO",
@@ -575,18 +577,18 @@ class RappiWebhookcontroller extends Controller
     public function storeConnectvity(Request $request)
     {
         info('storeConnectvity RAPPI');
-        info("Info recibida: \n\n ".$request->__toString());
+        info("\n ".$request->__toString());
 
         $request->query->add(['event' => 'STORE_CONNECTIVITY']);
 
-        /* $validSign = self::validateSignature($request);
+        $validSign = self::validateSignature($request);
 
         if(!$validSign['success']){
 
             info("Unauthorized: \n {$validSign['msg']}");
             return response("Unauthorized: {$validSign['msg']}",401);
 
-        } */
+        }
 
         $request = json_decode($request->getContent());
 
@@ -622,7 +624,6 @@ class RappiWebhookcontroller extends Controller
                     </body>
                 </html>"
             ]);
-
 
         }
 
