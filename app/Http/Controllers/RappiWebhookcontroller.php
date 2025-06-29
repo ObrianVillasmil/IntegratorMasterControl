@@ -421,7 +421,7 @@ class RappiWebhookcontroller extends Controller
 
             $precuenta = DB::connection($company->connect)->table('precuenta')->where('default_name',$request->order_id)->first();
 
-            $precAppDelivery = DB::connection($request->connect)->table('precuenta_app_delivery')
+            $precAppDelivery = DB::connection($company->connect)->table('precuenta_app_delivery')
             ->where('id_precuenta',$precuenta->id_precuenta)
             ->where('estado',true)->first();
 
