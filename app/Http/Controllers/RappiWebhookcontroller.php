@@ -526,21 +526,22 @@ class RappiWebhookcontroller extends Controller
 
             $request->query->add(['event' => 'PING']);
 
-            /* $validSign = self::validateSignature($request);
+            $validSign = self::validateSignature($request);
 
             if(!$validSign['success']){
 
                 info("Unauthorized: \n {$validSign['msg']}");
                 return response("Unauthorized: {$validSign['msg']}",401);
 
-            } */
+            }
 
             //WebhookRappi::create(['order' => $request->getContent()]);
+
             $request = json_decode($request->getContent());
 
             $company = Company::where('token',$request->store_id)->first();
 
-            if(!self::pingMp($company->connect)){
+            if(self::pingMp($company->connect)){
 
                 return response()->json([
                     "status"=> "OK",
@@ -555,7 +556,6 @@ class RappiWebhookcontroller extends Controller
                 ],500);
 
             }
-
 
         } catch (\Exception $e) {
 
