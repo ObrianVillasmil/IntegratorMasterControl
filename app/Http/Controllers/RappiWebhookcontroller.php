@@ -390,7 +390,7 @@ class RappiWebhookcontroller extends Controller
             $connection->commit();
             $success =true;
             $msg = 'Se ha cancelado el pedido con éxito';
-
+            info($msg);
         } catch (\Exception $e) {
 
             $connection->rollBack();
