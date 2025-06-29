@@ -401,18 +401,18 @@ class RappiWebhookcontroller extends Controller
         info('orderOtherEvent RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
 
-         try {
+        try {
 
             $request->query->add(['event' => 'ORDER_OTHER_EVENT']);
 
-            /* $validSign = self::validateSignature($request);
+            $validSign = self::validateSignature($request);
 
             if(!$validSign['success']){
 
                 info("Unauthorized: \n {$validSign['msg']}");
                 return response("Unauthorized: {$validSign['msg']}",401);
 
-            } */
+            }
 
             WebhookRappi::create(['order' => $request->getContent()]);
             $request = json_decode($request->getContent());
@@ -522,7 +522,54 @@ class RappiWebhookcontroller extends Controller
         info('pingRappi RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
 
-        return response("",200);
+        try {
+
+            $request->query->add(['event' => 'PING']);
+
+            /* $validSign = self::validateSignature($request);
+
+            if(!$validSign['success']){
+
+                info("Unauthorized: \n {$validSign['msg']}");
+                return response("Unauthorized: {$validSign['msg']}",401);
+
+            } */
+
+            //WebhookRappi::create(['order' => $request->getContent()]);
+            $request = json_decode($request->getContent());
+
+            $company = Company::where('token',$request->store_id)->first();
+
+            if(self::pingMp($company->connect)){
+
+                return response()->json([
+                    "status"=> "OK",
+                    "description"=> "Tienda prendida"
+                ],200);
+
+            }else{
+
+                 return response()->json([
+                     "status"=> "KO",
+                    "description"=> "Tienda apagada"
+                ],200);
+
+            }
+
+
+        } catch (\Exception $e) {
+
+            $success = false;
+            $msg = $e->getMessage().' '.$e->getLine().' '.$e->getFile();
+            info('Error orderEventCancel RAPPI: ');
+            info($msg);
+        }
+
+        return [
+            'success' => $success,
+            'msg' => $msg
+        ];
+
     }
 
     public function storeConnectvity(Request $request)
