@@ -196,8 +196,20 @@ class RetrySendOrderMp implements ShouldQueue
 
                 }
 
-                $connection->commit();
+                $sucursal = $connection->table('sucursal')->where('estatus',true)->first();
 
+                if($sucursal->monitor){
+
+                    $connection->table('monitor')->insert([
+                        'id_precuenta' => $precuentaId,
+                        'usuario' => 'Master',
+                        'inicio' => now()->toDateTimeString(),
+                        'sonido' => false
+                    ]);
+
+                }
+
+                $connection->commit();
 
             } catch (\Exception $e) {
 
