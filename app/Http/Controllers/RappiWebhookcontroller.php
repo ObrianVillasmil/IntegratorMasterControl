@@ -377,7 +377,8 @@ class RappiWebhookcontroller extends Controller
             ]));
 
             $updateOrder = $updateOrder->getData(true);
-
+info('$updateOrder');
+info($updateOrder);
             if(!$updateOrder['success']){
 
                 info('Error updateOrder RAPPI: ');
