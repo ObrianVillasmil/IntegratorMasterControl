@@ -540,7 +540,7 @@ class RappiWebhookcontroller extends Controller
 
             $company = Company::where('token',$request->store_id)->first();
 
-            if(self::pingMp($company->connect)){
+            if(!self::pingMp($company->connect)){
 
                 return response()->json([
                     "status"=> "OK",
@@ -552,7 +552,7 @@ class RappiWebhookcontroller extends Controller
                  return response()->json([
                      "status"=> "KO",
                     "description"=> "Tienda apagada"
-                ],200);
+                ],500);
 
             }
 
