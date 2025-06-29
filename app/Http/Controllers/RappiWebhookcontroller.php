@@ -347,20 +347,14 @@ class RappiWebhookcontroller extends Controller
 
             $request->query->add(['event' => 'ORDER_EVENT_CANCEL']);
 
-            /* $validSign = self::validateSignature($request);
+            $validSign = self::validateSignature($request);
 
             if(!$validSign['success']){
 
                 info("Unauthorized: \n {$validSign['msg']}");
                 return response("Unauthorized: {$validSign['msg']}",401);
 
-            } */
-
-            /* {
-                "event": "canceled_with_charge",
-                "order_id": "106",
-                "store_id": "900109448"
-            } */
+            }
 
             WebhookRappi::create(['order' => $request->getContent()]);
             $request = json_decode($request->getContent());
@@ -374,13 +368,10 @@ class RappiWebhookcontroller extends Controller
             ]));
 
             $updateOrder = $updateOrder->getData(true);
-info('$request->order_id '.$request->order_id);
-info('$request->even '.$request->event);
-info('$updateOrder1');
-info($updateOrder);
+
             if(!$updateOrder['success']){
 
-                info('Error updateOrder RAPPI: ');
+                info('Error cancelOrder RAPPI: ');
                 info($updateOrder['msg']);
                 $msg = $updateOrder['msg'];
                 $success = false;
@@ -403,14 +394,79 @@ info($updateOrder);
             'msg' => $msg
         ];
 
-
-        return response("",200);
     }
 
     public function orderOtherEvent(Request $request)
     {
         info('orderOtherEvent RAPPI');
         info("Info recibida: \n\n ".$request->__toString());
+
+         try {
+
+            $request->query->add(['event' => 'ORDER_OTHER_EVENT']);
+
+            /* $validSign = self::validateSignature($request);
+
+            if(!$validSign['success']){
+
+                info("Unauthorized: \n {$validSign['msg']}");
+                return response("Unauthorized: {$validSign['msg']}",401);
+
+            } */
+
+            WebhookRappi::create(['order' => $request->getContent()]);
+            $request = json_decode($request->getContent());
+
+            $company = Company::where('token',$request->store_id)->first();
+
+            $precuenta = DB::connection($company->connect)->table('precuenta')->where('default_name',$request->order_id)->first();
+
+            $precAppDelivery = DB::connection($request->connect)->table('precuenta_app_delivery')
+            ->where('id_precuenta',$precuenta->id_precuenta)
+            ->where('estado',true)->first();
+
+            $cuerpo = json_decode($precAppDelivery->cuerpo);
+
+            $cuerpo->current_status = $request->event;
+
+            $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
+                'order_id' => $request->order_id,
+                'status' => $request->event,
+                'ordering_platform' => 'RAPPI',
+                'body' => json_encode($cuerpo),
+                'connect' => base64_encode($company->connect),
+                'tiempo_preparacion' => $precAppDelivery->tiempo_preparacion
+            ]));
+
+            $updateOrder = $updateOrder->getData(true);
+
+            if(!$updateOrder['success']){
+
+                info('Error updateOrder RAPPI: ');
+                info($updateOrder['msg']);
+                $msg = $updateOrder['msg'];
+                $success = false;
+
+            }
+
+            $success =true;
+            $msg = $updateOrder['msg'];
+            info($msg);
+        } catch (\Exception $e) {
+
+            $success = false;
+            $msg = $e->getMessage().' '.$e->getLine().' '.$e->getFile();
+            info('Error updateOrder RAPPI: ');
+            info($msg);
+        }
+
+        return [
+            'success' => $success,
+            'msg' => $msg
+        ];
+
+
+        return response("",200);
 
         return response("",200);
     }

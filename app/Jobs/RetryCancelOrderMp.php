@@ -39,8 +39,7 @@ class RetryCancelOrderMp implements ShouldQueue
         $ping = Controller::pingMp($this->conexion);
 
         if($ping){
-info('$this->data');
-info($this->data);
+
             try {
 
                 $connection = DB::connection($this->conexion);
