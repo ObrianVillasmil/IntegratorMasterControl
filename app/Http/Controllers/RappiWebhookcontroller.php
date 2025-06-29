@@ -367,9 +367,6 @@ class RappiWebhookcontroller extends Controller
 
             $company = Company::where('token',$request->store_id)->first();
 
-            $connection = DB::connection($company->connect);
-            //$connection->beginTransaction();
-
             $updateOrder = MpFunctionController::cancelMpOrderAppDelivery(new Request([
                 'order_id' => $request->order_id,
                 'status' => $request->event,
@@ -377,6 +374,8 @@ class RappiWebhookcontroller extends Controller
             ]));
 
             $updateOrder = $updateOrder->getData(true);
+info('$request->order_id '.$request->order_id);
+info('$request->even '.$request->event);
 info('$updateOrder1');
 info($updateOrder);
             if(!$updateOrder['success']){
@@ -388,13 +387,11 @@ info($updateOrder);
 
             }
 
-            //$connection->commit();
             $success =true;
             $msg = $updateOrder['msg'];
             info($msg);
         } catch (\Exception $e) {
 
-            //$connection->rollBack();
             $success = false;
             $msg = $e->getMessage().' '.$e->getLine().' '.$e->getFile();
             info('Error orderEventCancel RAPPI: ');
