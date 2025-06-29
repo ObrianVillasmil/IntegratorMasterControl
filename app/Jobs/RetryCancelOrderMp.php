@@ -51,7 +51,8 @@ class RetryCancelOrderMp implements ShouldQueue
                 $precuentaAppDelivery = $connection->table('precuenta_app_delivery')
                 ->where('cuerpo->order->id',$this->data['order_id'])
                 ->where('estado',true)->first();
-
+info('$precuentaAppDelivery: ');
+info($precuentaAppDelivery);
                 if(isset($precuentaAppDelivery)){
 
                     $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
