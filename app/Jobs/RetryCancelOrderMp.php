@@ -37,7 +37,7 @@ class RetryCancelOrderMp implements ShouldQueue
     public function handle()
     {
         $ping = Controller::pingMp($this->conexion);
-
+        info('$ping '.$ping);
         if($ping){
 
             try {
@@ -51,8 +51,7 @@ class RetryCancelOrderMp implements ShouldQueue
                 $precuentaAppDelivery = $connection->table('precuenta_app_delivery')
                 ->where('cuerpo->order->id',$this->data['order_id'])
                 ->where('estado',true)->first();
-info('$precuentaAppDelivery: ');
-info($precuentaAppDelivery);
+
                 if(isset($precuentaAppDelivery)){
 
                     $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
