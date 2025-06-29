@@ -52,8 +52,7 @@ info($this->data);
                 $precuentaAppDelivery = $connection->table('precuenta_app_delivery')
                 ->where('id_precuenta',$precuenta->id_precuenta)
                 ->where('estado',true)->first();
-info('$precuentaAppDelivery: ');
-info($precuentaAppDelivery);
+
                 if(isset($precuentaAppDelivery)){
 
                     $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
