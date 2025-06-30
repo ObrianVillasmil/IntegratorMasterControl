@@ -203,7 +203,7 @@ class RetrySendOrderMp implements ShouldQueue
                     $connection->table('monitor')->insert([
                         'id_precuenta' => $precuentaId,
                         'usuario' => 'Master',
-                        'inicio' => now()->toDateTimeString(),
+                        'incio' => now()->toDateTimeString(),
                         'sonido' => false
                     ]);
 
