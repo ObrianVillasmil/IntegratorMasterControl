@@ -71,6 +71,9 @@ class RetryCancelOrderMp implements ShouldQueue
                         $cuerpo->current_status = $status;
                     }
 
+                    if(isset($this->data['canceled_message']))
+                        $cuerpo->canceled_message = $this->data['canceled_message'];
+
                     $connection->table('precuenta_app_delivery')->insert([
                         'id_precuenta' => $precuenta->id_precuenta,
                         'id_sucursal' => $precuenta->id_sucursal,
