@@ -537,7 +537,7 @@ class ContificoIntegrationController extends Controller
                         sleep(2);
 
                         //SE CREAN LOS ASIENTOS DE LA NOTA DE CREDITO
-                        $dataAsientoNc = [
+                        /* $dataAsientoNc = [
                             "fecha" => Carbon::parse((string)$cn->date_doc)->format('d/m/Y'),
                             "glosa" => "NOTA DE CREDITO ".$dataNc['documento']." - Factura ".$cn->mofied_doc_num,
                             "gasto_no_deducible"=> 0,
@@ -570,7 +570,7 @@ class ContificoIntegrationController extends Controller
                                 "tipo"=> "D",
                             ];
 
-                        }
+                        } */
 
                         //$resAsientoFact = self::curlStoreTransaction($dataAsientoNc,$header,env('CREAR_ASIENTO_CONTIFICO'));
 
