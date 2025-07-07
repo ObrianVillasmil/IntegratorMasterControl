@@ -340,7 +340,7 @@ class PedidosYaWebhookController extends Controller
 
             $precAppDelivery = DB::connection($request->connect)->table('precuenta_app_delivery')
             ->where('cuerpo->remoteOrderId',$remoteOrderId)
-            ->whereIn('estado_app',['ACCEPTED','OFFERED'])
+            //->whereIn('estado_app',['ACCEPTED','OFFERED','ORDER_PICKED_UP'])
             ->where('estado',true)->first();
 
             if(!$precAppDelivery)
@@ -350,7 +350,7 @@ class PedidosYaWebhookController extends Controller
 
             if(isset($request->status))
                 $cuerpo->current_status = $request->status;
-            
+
             if($request->status === 'ORDER_CANCELLED'){
 
                 $updateOrder = MpFunctionController::cancelMpOrderAppDelivery(new Request([
