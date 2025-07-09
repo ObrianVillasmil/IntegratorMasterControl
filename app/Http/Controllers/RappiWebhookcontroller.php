@@ -48,7 +48,7 @@ class RappiWebhookcontroller extends Controller
             $items = [];
             $subtotalNet = 0;
 
-            if($request->customer && is_object($request->customer)){
+            if($request->customer){
 
                 if(isset($request->customer->document_number))
                     $customerIdentification = $request->customer->document_number;
@@ -67,7 +67,7 @@ class RappiWebhookcontroller extends Controller
 
             }
 
-            if(isset($request->order_detail->billing_information) && is_object($request->order_detail->billing_information)){
+            if(isset($request->order_detail->billing_information)){
 
                 if(isset($request->order_detail->billing_information->document_number))
                     $customerIdentification = $request->order_detail->billing_information->document_number;
