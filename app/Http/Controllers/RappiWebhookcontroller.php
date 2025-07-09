@@ -67,22 +67,22 @@ class RappiWebhookcontroller extends Controller
 
             }
 
-            if(isset($request->billing_information) && is_object($request->billing_information)){
+            if(isset($request->order_detail->billing_information) && is_object($request->order_detail->billing_information)){
 
-                if(isset($request->billing_information->document_number))
-                    $customerIdentification = $request->billing_information->document_number;
+                if(isset($request->order_detail->billing_information->document_number))
+                    $customerIdentification = $request->order_detail->billing_information->document_number;
 
-                if(isset($request->billing_information->email))
-                    $customerEmail = $request->billing_information->email;
+                if(isset($request->order_detail->billing_information->email))
+                    $customerEmail = $request->order_detail->billing_information->email;
 
-                if(isset($request->billing_information->name))
-                    $customer = $request->billing_information->name;
+                if(isset($request->order_detail->billing_information->name))
+                    $customer = $request->order_detail->billing_information->name;
 
-                if(isset($request->billing_information->phone))
-                    $customerPhone = $request->billing_information->phone;
+                if(isset($request->order_detail->billing_information->phone))
+                    $customerPhone = $request->order_detail->billing_information->phone;
 
-                if(isset($request->billing_information->address))
-                    $customerAddress = $request->billing_information->address;
+                if(isset($request->order_detail->billing_information->address))
+                    $customerAddress = $request->order_detail->billing_information->address;
 
             }
 
