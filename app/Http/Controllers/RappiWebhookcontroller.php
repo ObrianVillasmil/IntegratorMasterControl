@@ -403,12 +403,10 @@ class RappiWebhookcontroller extends Controller
 
         try {
 
-            //$request->query->add(['event' => 'ORDER_OTHER_EVENT']);
-            $r1 = $request->all();
-            $r1['event'] = 'ORDER_OTHER_EVENT';
-            $r2= new Request($r1);
-info($r2);
-            $validSign = self::validateSignature($r2);
+            $event = $request->event;
+            $request->query->set('event','ORDER_OTHER_EVENT');
+
+            $validSign = self::validateSignature($request);
 
             if(!$validSign['success']){
 
@@ -430,11 +428,11 @@ info($r2);
 
             $cuerpo = json_decode($precAppDelivery->cuerpo);
 
-            $cuerpo->current_status = $request->event;
+            $cuerpo->current_status = $event;
 
             $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
                 'order_id' => $request->order_id,
-                'status' => $request->event,
+                'status' => $event,
                 'ordering_platform' => 'RAPPI',
                 'body' => json_encode($cuerpo),
                 'connect' => base64_encode($company->connect),
@@ -635,6 +633,8 @@ info($r2);
 
     private static function validateSignature(Request $request)
     {
+        info('validateSignature RAPPI');
+        info($request->all());
         try {
 
             if(!$request->event)
