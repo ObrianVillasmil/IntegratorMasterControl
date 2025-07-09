@@ -406,14 +406,14 @@ class RappiWebhookcontroller extends Controller
             $event = $request->event;
             $request->query->set('event','ORDER_OTHER_EVENT');
 
-            $validSign = self::validateSignature($request);
+            /* $validSign = self::validateSignature($request);
 
             if(!$validSign['success']){
 
                 info("Unauthorized: \n {$validSign['msg']}");
                 return response("Unauthorized: {$validSign['msg']}",401);
 
-            }
+            } */
 
             WebhookRappi::create(['order' => $request->getContent()]);
             $request = json_decode($request->getContent());
