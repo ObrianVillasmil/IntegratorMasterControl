@@ -66,7 +66,7 @@ class RappiWebhookcontroller extends Controller
                     $customerPhone = $request->customer->phone_number;
 
             }
-
+info((array)$request->order_detail->billing_information);
             if(isset($request->order_detail->billing_information)){
 
                 if(isset($request->order_detail->billing_information->document_number))
