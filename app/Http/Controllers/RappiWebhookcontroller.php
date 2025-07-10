@@ -430,7 +430,25 @@ class RappiWebhookcontroller extends Controller
 
             $cuerpo = json_decode($precAppDelivery->cuerpo);
 
+            //AGREGAR EL STATUS DEL PEDIDO AL JSON
             $cuerpo->current_status = $request->event;
+
+            //AGREGA EL CODIGO DE ENTREGA AL JSON
+            if($request->event === 'taken_visible_order'){
+
+                $sucursal = DB::connection($company->connect)->table('sucursal')
+                ->join('empresa as e','e.id_empresa','sucursal.id_empresa')
+                ->join('sucursal_tienda_rappi as st','st.id_sucursal','sucursal.id_sucursal')
+                ->where('sucursal.id_sucursal',$precuenta->id_sucursal)
+                ->select('e.url_rappi','st.token','st.store_id')->first();
+
+                $res = self::clientRappiCurl("{$sucursal->url_rappi}/restaurants/orders/v1/stores/{$sucursal->store_id}/orders/{$request->order_id}/handoff",[
+                    'token' => $sucursal->token,
+                ],'GET');
+
+                $cuerpo->product_confirmation_code = $res['response']->product_confirmation_code;
+
+            }
 
             $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
                 'order_id' => $request->order_id,
@@ -640,7 +658,6 @@ class RappiWebhookcontroller extends Controller
 
     private static function validateSignature(Request $request, $secret)
     {
-        info((array)$secret);
         try {
 
             if(!$request->event)
@@ -716,6 +733,53 @@ class RappiWebhookcontroller extends Controller
 
         }
 
+    }
+
+    private static function clientRappiCurl(String $url, Array $data, String $metodo = 'POST')
+    {
+        $header = [
+            "Content-Type: application/json",
+            'x-authorization: Bearer '.$data['token'],
+            'Accept: application/json',
+        ];
+
+        unset($data['token']);
+
+        $cliente = curl_init();
+
+        if(!isset($data[0])){
+
+            $params = json_encode($data);
+
+        }else{
+
+            $params = json_encode($data[0]);
+
+        }
+        //dd($url,$params);
+        if(count($data))
+            curl_setopt($cliente, CURLOPT_POSTFIELDS, $params);
+
+        curl_setopt($cliente, CURLOPT_URL, $url);
+
+        curl_setopt($cliente, CURLOPT_HTTPHEADER, $header);
+        curl_setopt($cliente, CURLOPT_CUSTOMREQUEST, $metodo);
+        curl_setopt($cliente, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($cliente, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($cliente, CURLOPT_CONNECTTIMEOUT, 15);
+
+        $response = curl_exec($cliente);
+
+        $codigoHttp = curl_getinfo($cliente, CURLINFO_HTTP_CODE);
+
+        curl_close($cliente);
+
+        $response = json_decode($response);
+
+        return [
+            'code' => $codigoHttp,
+            'response' => $response
+        ];
     }
 
 }
