@@ -76,7 +76,7 @@ class RetryUpdateOrderMp implements ShouldQueue
                     'logo' => $logo,
                     'tiempo_preparacion' => $this->data['tiempo_preparacion']
                 ]);
-                
+
                 $connection->commit();
 
             } catch (\Exception $e) {

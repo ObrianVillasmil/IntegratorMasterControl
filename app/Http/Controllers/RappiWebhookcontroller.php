@@ -12,7 +12,7 @@ class RappiWebhookcontroller extends Controller
 {
     public function newOrder(Request $request)
     {
-        info("WEBHOOK RECEPCION DE PEDIDO RAPPI:\n");
+        info("WEBHOOK RECEPCION DE PEDIDO RAPPI:");
         info($request->__toString()."\n");
 
         $success = true;
@@ -22,11 +22,13 @@ class RappiWebhookcontroller extends Controller
 
             $request->query->add(['event' => 'NEW_ORDER']);
 
-            $validSign = self::validateSignature($request);
+            $secret = SecretWebHookRappi::where('event','ORDER_OTHER_EVENT')->first();
+
+            $validSign = self::validateSignature($request,$secret);
 
             if(!$validSign['success']){
 
-                info("Unauthorized: \n {$validSign['msg']}");
+                info("Unauthorized: {$validSign['msg']}");
                 return response("Unauthorized: {$validSign['msg']}",401);
 
             }
@@ -121,7 +123,6 @@ class RappiWebhookcontroller extends Controller
                             'condicion_aplicable'=> 0,
                             'producto' => $dataItem[3].'_'.$dataItem[4]
                         ];
-
 
                         //HAY PRODUCTOS CON DESCUENTOS
                         $prodsDesc = array_filter($request->order_detail->discounts, function($arr) use($item){
@@ -347,7 +348,9 @@ class RappiWebhookcontroller extends Controller
 
             $request->query->add(['event' => 'ORDER_EVENT_CANCEL']);
 
-            $validSign = self::validateSignature($request);
+            $secret = SecretWebHookRappi::where('event','ORDER_EVENT_CANCEL')->first();
+
+            $validSign = self::validateSignature($request,$secret);
 
             if(!$validSign['success']){
 
@@ -403,17 +406,16 @@ class RappiWebhookcontroller extends Controller
 
         try {
 
-            $event = $request->event;
-            $request->query->set('event','ORDER_OTHER_EVENT');
+            $secret = SecretWebHookRappi::where('event','ORDER_OTHER_EVENT')->first();
 
-            /* $validSign = self::validateSignature($request);
+            $validSign = self::validateSignature($request, $secret);
 
             if(!$validSign['success']){
 
                 info("Unauthorized: \n {$validSign['msg']}");
                 return response("Unauthorized: {$validSign['msg']}",401);
 
-            } */
+            }
 
             WebhookRappi::create(['order' => $request->getContent()]);
             $request = json_decode($request->getContent());
@@ -428,11 +430,11 @@ class RappiWebhookcontroller extends Controller
 
             $cuerpo = json_decode($precAppDelivery->cuerpo);
 
-            $cuerpo->current_status = $event;
+            $cuerpo->current_status = $request->event;
 
             $updateOrder = MpFunctionController::updateMpOrderAppDelivery(new Request([
                 'order_id' => $request->order_id,
-                'status' => $event,
+                'status' => $request->event,
                 'ordering_platform' => 'RAPPI',
                 'body' => json_encode($cuerpo),
                 'connect' => base64_encode($company->connect),
@@ -487,7 +489,9 @@ class RappiWebhookcontroller extends Controller
 
         $request->query->add(['event' => 'MENU_APPROVED']);
 
-        $validSign = self::validateSignature($request);
+        $secret = SecretWebHookRappi::where('event','MENU_APPROVED')->first();
+
+        $validSign = self::validateSignature($request, $secret);
 
         if(!$validSign['success']){
 
@@ -506,7 +510,9 @@ class RappiWebhookcontroller extends Controller
 
         $request->query->add(['event' => 'MENU_REJECTED']);
 
-        $validSign = self::validateSignature($request);
+        $secret = SecretWebHookRappi::where('event','MENU_REJECTED')->first();
+
+        $validSign = self::validateSignature($request,$secret);
 
         if(!$validSign['success']){
 
@@ -520,18 +526,17 @@ class RappiWebhookcontroller extends Controller
 
     public function pingRappi(Request $request)
     {
-        info('pingRappi RAPPI');
-        info("\n ".$request->__toString());
-
         try {
 
             $request->query->add(['event' => 'PING']);
 
-            $validSign = self::validateSignature($request);
+            $secret = SecretWebHookRappi::where('event','PING')->first();
+
+            $validSign = self::validateSignature($request ,$secret);
 
             if(!$validSign['success']){
 
-                info("Unauthorized: \n {$validSign['msg']}");
+                info("Unauthorized: {$validSign['msg']}");
                 return response("Unauthorized: {$validSign['msg']}",401);
 
             }
@@ -542,7 +547,7 @@ class RappiWebhookcontroller extends Controller
 
             if(self::pingMp($company->connect)){
 
-                info('PING RAPPI: OK');
+                info("PING RAPPI: OK {$company->error_email}");
 
                 return response()->json([
                     "status"=> "OK",
@@ -551,7 +556,7 @@ class RappiWebhookcontroller extends Controller
 
             }else{
 
-                info('PING RAPPI: KO');
+                info("PING RAPPI: KO {$company->error_email}");
 
                  return response()->json([
                      "status"=> "KO",
@@ -582,7 +587,9 @@ class RappiWebhookcontroller extends Controller
 
         $request->query->add(['event' => 'STORE_CONNECTIVITY']);
 
-        $validSign = self::validateSignature($request);
+        $secret = SecretWebHookRappi::where('event','STORE_CONNECTIVITY')->first();
+
+        $validSign = self::validateSignature($request, $secret);
 
         if(!$validSign['success']){
 
@@ -631,18 +638,15 @@ class RappiWebhookcontroller extends Controller
         return response("",200);
     }
 
-    private static function validateSignature(Request $request)
+    private static function validateSignature(Request $request, $secret)
     {
-        info('validateSignature RAPPI');
-        info($request->all());
+        info((array)$secret);
         try {
 
             if(!$request->event)
                 throw new \Exception("No obtuvo el evento");
 
             $signature = $request->header('Rappi-Signature');
-
-            $secret = SecretWebHookRappi::where('event',$request->event)->first();
 
             if(!isset($secret))
                 throw new \Exception("No se ha configurado el secret del evento {$request->event}");
