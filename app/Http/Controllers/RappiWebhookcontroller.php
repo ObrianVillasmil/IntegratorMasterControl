@@ -476,8 +476,8 @@ class RappiWebhookcontroller extends Controller
 
     public function orderRtTracking(Request $request)
     {
-        info('orderRtTracking RAPPI');
-        info("\n ".$request->__toString());
+        /* info('orderRtTracking RAPPI');
+        info("\n ".$request->__toString()); */
 
         return response("",200);
     }
