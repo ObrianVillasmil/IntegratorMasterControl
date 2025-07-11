@@ -37,6 +37,7 @@ class RetrySendOrderMp implements ShouldQueue
      */
     public function handle()
     {
+        info('ENTRO UN NUEVO PEDIDO '.now()->toDateTimeString());
         sleep(rand(2,10));
 
         $ping = Controller::pingMp($this->conexion);
@@ -267,6 +268,8 @@ class RetrySendOrderMp implements ShouldQueue
                 ]);
 
             }
+
+            info('TERMINO EL NUEVO PEDIDO '.now()->toDateTimeString());
 
         }else{
 
