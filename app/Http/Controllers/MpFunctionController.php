@@ -185,8 +185,6 @@ class MpFunctionController extends Controller
 
             try{
 
-                sleep(rand(2,10));
-
                 if(self::pingMp($conexion)){
 
                     RetrySendOrderMp::dispatchNow($request->all(),$conexion);
