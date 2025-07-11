@@ -22,7 +22,7 @@ class RappiWebhookcontroller extends Controller
 
             $request->query->add(['event' => 'NEW_ORDER']);
 
-            $secret = SecretWebHookRappi::where('event','ORDER_OTHER_EVENT')->first();
+            $secret = SecretWebHookRappi::where('event','NEW_ORDER')->first();
 
             $validSign = self::validateSignature($request,$secret);
 
