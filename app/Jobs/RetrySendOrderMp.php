@@ -217,6 +217,9 @@ class RetrySendOrderMp implements ShouldQueue
 
                 $connection->rollBack();
 
+                if(strpos($e->getMessage(), 'precuenta_pk') !== false)
+                    $this->fail('Id de precuenta en uso, reintentado con job '.$this->data['order_id'].' en la conexión '.$this->conexion);
+
                 ContificoIntegrationController::sendMail([
                     'subject' => "Error en envío de pedido {$this->data['order_id']} a la conexión {$this->conexion}",
                     'sucursal' => strtoupper($this->conexion),
