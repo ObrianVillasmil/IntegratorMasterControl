@@ -37,6 +37,9 @@ class RetrySendOrderMp implements ShouldQueue
      */
     public function handle()
     {
+        info('ENTRO UN NUEVO PEDIDO '.now()->toDateTimeString());
+        sleep(rand(2,10));
+
         $ping = Controller::pingMp($this->conexion);
 
         if($ping){
@@ -74,7 +77,7 @@ class RetrySendOrderMp implements ShouldQueue
                     $dataCustomer = [
                         'nombre' => $this->data['customer'],
                         'identificacion' => $this->data['customer_identification'],
-                        'correo' => isset($this->data['customer_email']) ? $this->data['customer_email'] : null,
+                        'correo' => isset($this->data['customer_email']) ? $this->data['customer_email'] : 'a@gmail.com',
                         'telefono' => isset($this->data['customer_phone']) ? $this->data['customer_phone'] : null,
                         'direccion' => isset($this->data['customer_address']) ? $this->data['customer_address'] : null,
                         'id_tipo_identificacion' => $idType,
@@ -90,7 +93,16 @@ class RetrySendOrderMp implements ShouldQueue
 
                     }else{
 
-                        $customerId = $connection->table('comprador')->orderBy('id_comprador','desc')->first()->id_comprador+1;
+                        $ObjCustomer = $connection->table('comprador')->orderBy('id_comprador','desc')->first();
+
+                        if(isset($ObjCustomer)){
+
+                            $customerId = $ObjCustomer->id_comprador+1;
+
+                        }else{
+
+                            $customerId = 1;
+                        }
 
                         $dataCustomer['id_comprador'] = $customerId;
 
@@ -103,6 +115,13 @@ class RetrySendOrderMp implements ShouldQueue
                 $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
 
                 $precuentaId = !isset($prec) ? 1 : ($prec->id_precuenta+1);
+
+                while ($connection->table('precuenta')->where('id_precuenta', $precuentaId)->exists()){
+
+                    $precuentaId++;
+                    sleep(1);
+
+                }
 
                 $connection->table('precuenta')->insert([
                     'id_precuenta' => $precuentaId,
@@ -172,6 +191,9 @@ class RetrySendOrderMp implements ShouldQueue
                     $detPrec = $connection->table('detalle_precuenta')->orderBy('id_detalle_precuenta', 'desc')->first();
 
                     $detPrecuentaId = !isset($detPrec) ? 1 : ($detPrec->id_detalle_precuenta+1);
+
+                    while ($connection->table('detalle_precuenta')->where('id_detalle_precuenta', $detPrecuentaId)->exists())
+                        $detPrecuentaId++;
 
                     $connection->table('detalle_precuenta')->insert([
                         'id_detalle_precuenta' => $detPrecuentaId,
@@ -249,6 +271,8 @@ class RetrySendOrderMp implements ShouldQueue
                 ]);
 
             }
+
+            info('TERMINO EL NUEVO PEDIDO '.now()->toDateTimeString());
 
         }else{
 
