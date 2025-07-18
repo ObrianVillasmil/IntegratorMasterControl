@@ -353,7 +353,9 @@ class MpFunctionController extends Controller
 
             try{
 
-                if(self::pingMp($conexion)){
+                RetryUpdateOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-update-order-mp');
+
+                /* if(self::pingMp($conexion)){
 
                     RetryUpdateOrderMp::dispatchNow($request->all(),$conexion);
 
@@ -391,7 +393,7 @@ class MpFunctionController extends Controller
                         </html>"
                     ]);
 
-                }
+                } */
 
             }catch(\Exception $e){
 
@@ -560,7 +562,8 @@ class MpFunctionController extends Controller
 
             try{
 
-                if(self::pingMp($conexion)){
+                RetryCancelOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-cancel-order-mp');
+                /* if(self::pingMp($conexion)){
 
                     RetryCancelOrderMp::dispatchNow($request->all(),$conexion);
 
@@ -598,7 +601,7 @@ class MpFunctionController extends Controller
                         </html>"
                     ]);
 
-                }
+                } */
 
             }catch(\Exception $e){
 
