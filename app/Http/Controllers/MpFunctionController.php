@@ -185,7 +185,9 @@ class MpFunctionController extends Controller
 
             try{
 
-                if(self::pingMp($conexion)){
+                RetrySendOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-send-order-mp');
+
+                /* if(self::pingMp($conexion)){
 
                     RetrySendOrderMp::dispatchNow($request->all(),$conexion);
 
@@ -223,16 +225,16 @@ class MpFunctionController extends Controller
                         </html>"
                     ]);
 
-                }
+                } */
 
                 return response()->json([
                     'success' => true,
-                    'msg' => 'Se ha creado el pedido con éxito'
+                    'msg' => 'Se ha procesado el pedido con éxito, espere el envío a la tienda'
                 ],200);
 
             }catch(\Exception $e){
 
-                info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+                info('Error createMpAccount1: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
 
                 ContificoIntegrationController::sendMail([
                     'subject' => "Error en envío de pedido {$request->name} a la conexión {$conexion}",

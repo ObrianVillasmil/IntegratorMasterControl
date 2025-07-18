@@ -37,8 +37,6 @@ class RetrySendOrderMp implements ShouldQueue
      */
     public function handle()
     {
-        info('ENTRO UN NUEVO PEDIDO '.now()->toDateTimeString());
-        sleep(rand(2,10));
 
         $ping = Controller::pingMp($this->conexion);
 
@@ -115,13 +113,6 @@ class RetrySendOrderMp implements ShouldQueue
                 $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
 
                 $precuentaId = !isset($prec) ? 1 : ($prec->id_precuenta+1);
-
-                while ($connection->table('precuenta')->where('id_precuenta', $precuentaId)->exists()){
-
-                    $precuentaId++;
-                    sleep(1);
-
-                }
 
                 $connection->table('precuenta')->insert([
                     'id_precuenta' => $precuentaId,
@@ -235,12 +226,12 @@ class RetrySendOrderMp implements ShouldQueue
 
             } catch (\Exception $e) {
 
-                info('Error createMpAccount: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
+                info('Error createMpAccount2: '. $e->getMessage().' '.$e->getLine().' '.$e->getFile());
 
                 $connection->rollBack();
 
                 if(strpos($e->getMessage(), 'precuenta_pk') !== false)
-                    $this->fail('Id de precuenta en uso, reintentado con job '.$this->data['order_id'].' en la conexión '.$this->conexion);
+                    $this->fail('Id de precuenta '.$precuentaId.' en uso en la conexion, reintentado con job '.$this->data['order_id'].' en la conexión '.$this->conexion);
 
                 ContificoIntegrationController::sendMail([
                     'subject' => "Error en envío de pedido {$this->data['order_id']} a la conexión {$this->conexion}",
@@ -271,8 +262,6 @@ class RetrySendOrderMp implements ShouldQueue
                 ]);
 
             }
-
-            info('TERMINO EL NUEVO PEDIDO '.now()->toDateTimeString());
 
         }else{
 
