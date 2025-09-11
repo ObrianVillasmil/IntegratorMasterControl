@@ -11,6 +11,7 @@ class SecretWebHookRappi extends Model
 
     protected $fillable = [
         'event',
-        'secret'
+        'secret',
+        'type'
     ];
 }

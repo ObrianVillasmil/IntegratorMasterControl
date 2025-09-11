@@ -22,7 +22,10 @@ class RappiWebhookcontroller extends Controller
 
             $request->query->add(['event' => 'NEW_ORDER']);
 
-            $secret = SecretWebHookRappi::where('event','NEW_ORDER')->first();
+            $secret = SecretWebHookRappi::where([
+                ['event','NEW_ORDER'],
+                ['type', $request->store->internal_id === env('DEVELOPMENT_RAPPI_STORE_ID','900163592') ? 'DEVELOPMENT' : 'PRODUCTION']
+            ])->first();
 
             $validSign = self::validateSignature($request,$secret);
 
@@ -406,7 +409,10 @@ class RappiWebhookcontroller extends Controller
 
         try {
 
-            $secret = SecretWebHookRappi::where('event','ORDER_OTHER_EVENT')->first();
+            $secret = SecretWebHookRappi::where([
+                ['event','ORDER_OTHER_EVENT'],
+                ['type', $request->store_id === env('DEVELOPMENT_RAPPI_STORE_ID','900163592') ? 'DEVELOPMENT' : 'PRODUCTION']
+            ])->first();
 
             $validSign = self::validateSignature($request, $secret);
 
@@ -548,7 +554,10 @@ class RappiWebhookcontroller extends Controller
 
             $request->query->add(['event' => 'PING']);
 
-            $secret = SecretWebHookRappi::where('event','PING')->first();
+            $secret = SecretWebHookRappi::where([
+                ['event','PING'],
+                ['type', $request->store_id === env('DEVELOPMENT_RAPPI_STORE_ID','900163592') ? 'DEVELOPMENT' : 'PRODUCTION']
+            ])->first();
 
             $validSign = self::validateSignature($request ,$secret);
 

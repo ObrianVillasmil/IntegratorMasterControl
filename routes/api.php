@@ -45,7 +45,6 @@ Route::middleware('api')->post('/integracion-peya/{catalogImportCallback}', func
 
 });
 
-
 Route::middleware('api')->post('/integracion-rappi/new-order', [RappiWebhookcontroller::class,'newOrder']);
 Route::middleware('api')->post('/integracion-rappi/order-event-cancel', [RappiWebhookcontroller::class,'orderEventCancel']);
 Route::middleware('api')->post('/integracion-rappi/order-other-event', [RappiWebhookcontroller::class,'orderOtherEvent']);
@@ -54,7 +53,6 @@ Route::middleware('api')->post('/integracion-rappi/menu-approved', [RappiWebhook
 Route::middleware('api')->post('/integracion-rappi/menu-rejected', [RappiWebhookcontroller::class,'menuRejected']);
 Route::middleware('api')->post('/integracion-rappi/ping', [RappiWebhookcontroller::class,'pingRappi']);
 Route::middleware('api')->post('/integracion-rappi/store-connectvity', [RappiWebhookcontroller::class,'storeConnectvity']);
-
 
 Route::group([
 
