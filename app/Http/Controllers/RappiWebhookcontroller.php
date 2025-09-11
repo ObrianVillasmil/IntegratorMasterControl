@@ -20,13 +20,12 @@ class RappiWebhookcontroller extends Controller
 
         try {
 
+            $r = json_decode($request->getContent());
             $request->query->add(['event' => 'NEW_ORDER']);
-            WebhookRappi::create(['order' => $request->getContent()]);
-            $request = json_decode($request->getContent());
 
             $secret = SecretWebHookRappi::where([
                 ['event','NEW_ORDER'],
-                ['type', $request->store->internal_id === env('DEVELOPMENT_RAPPI_STORE_ID','900163592') ? 'DEVELOPMENT' : 'PRODUCTION']
+                ['type', $r->store->internal_id === env('DEVELOPMENT_RAPPI_STORE_ID','900163592') ? 'DEVELOPMENT' : 'PRODUCTION']
             ])->first();
 
             $validSign = self::validateSignature($request,$secret);
@@ -37,6 +36,9 @@ class RappiWebhookcontroller extends Controller
                 return response("Unauthorized: {$validSign['msg']}",401);
 
             }
+
+            WebhookRappi::create(['order' => $request->getContent()]);
+            $request = $r;
 
             $company = Company::where('token',$request->store->internal_id)->first();
 
