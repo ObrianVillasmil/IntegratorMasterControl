@@ -21,6 +21,8 @@ class RappiWebhookcontroller extends Controller
         try {
 
             $request->query->add(['event' => 'NEW_ORDER']);
+            WebhookRappi::create(['order' => $request->getContent()]);
+            $request = json_decode($request->getContent());
 
             $secret = SecretWebHookRappi::where([
                 ['event','NEW_ORDER'],
@@ -35,9 +37,6 @@ class RappiWebhookcontroller extends Controller
                 return response("Unauthorized: {$validSign['msg']}",401);
 
             }
-
-            WebhookRappi::create(['order' => $request->getContent()]);
-            $request = json_decode($request->getContent());
 
             $company = Company::where('token',$request->store->internal_id)->first();
 
