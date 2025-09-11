@@ -351,7 +351,10 @@ class RappiWebhookcontroller extends Controller
 
             $request->query->add(['event' => 'ORDER_EVENT_CANCEL']);
 
-            $secret = SecretWebHookRappi::where('event','ORDER_EVENT_CANCEL')->first();
+            $secret = SecretWebHookRappi::where([
+                ['event','ORDER_EVENT_CANCEL'],
+                ['type', 'PRODUCTION']
+            ])->first();
 
             $validSign = self::validateSignature($request,$secret);
 
@@ -513,7 +516,10 @@ class RappiWebhookcontroller extends Controller
 
         $request->query->add(['event' => 'MENU_APPROVED']);
 
-        $secret = SecretWebHookRappi::where('event','MENU_APPROVED')->first();
+        $secret = SecretWebHookRappi::where([
+            ['event','MENU_APPROVED'],
+            ['type', $request->store_id === env('DEVELOPMENT_RAPPI_STORE_ID','900163592') ? 'DEVELOPMENT' : 'PRODUCTION']
+        ])->first();
 
         $validSign = self::validateSignature($request, $secret);
 
@@ -534,7 +540,10 @@ class RappiWebhookcontroller extends Controller
 
         $request->query->add(['event' => 'MENU_REJECTED']);
 
-        $secret = SecretWebHookRappi::where('event','MENU_REJECTED')->first();
+        $secret = SecretWebHookRappi::where([
+            ['event','MENU_REJECTED'],
+            ['type', $request->store_id === env('DEVELOPMENT_RAPPI_STORE_ID','900163592') ? 'DEVELOPMENT' : 'PRODUCTION']
+        ])->first();
 
         $validSign = self::validateSignature($request,$secret);
 
@@ -614,7 +623,10 @@ class RappiWebhookcontroller extends Controller
 
         $request->query->add(['event' => 'STORE_CONNECTIVITY']);
 
-        $secret = SecretWebHookRappi::where('event','STORE_CONNECTIVITY')->first();
+        $secret = SecretWebHookRappi::where([
+            ['event','STORE_CONNECTIVITY'],
+            ['type', 'PRODUCTION']
+        ])->first();
 
         $validSign = self::validateSignature($request, $secret);
 
