@@ -187,46 +187,6 @@ class MpFunctionController extends Controller
 
                 RetrySendOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-send-order-mp');
 
-                /* if(self::pingMp($conexion)){
-
-                    RetrySendOrderMp::dispatchNow($request->all(),$conexion);
-
-                }else{
-
-                    RetrySendOrderMp::dispatch($request->all(),$conexion)->onQueue('retry-send-order-mp');
-
-                    $ip = config("database.connections.$conexion.host");
-
-                    ContificoIntegrationController::sendMail([
-                        'subject' => "Error en envío de pedido {$request->name} a la conexión {$conexion}",
-                        'sucursal' => strtoupper($conexion),
-                        'ccEmail' => env('MAIL_NOTIFICATION'),
-                        'html' => "<html>
-                            <head>
-                                <style>
-                                    .alert {
-                                        padding: 15px;
-                                        margin-bottom: 20px;
-                                        border: 1px solid transparent;
-                                        border-radius: 4px;
-                                    }
-                                    .alert-danger {
-                                        color: #155724;
-                                        background-color: #d4edda;
-                                        border-color: #c3e6cb;
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                <div class='alert alert-danger' role='alert'>
-                                    <p> No se pudo enviar el pedido {$request->name} a la conexion {$conexion}, no se pudo hacer ping a la ip {$ip} desde el sistema Integrador, el proceso se reintentará en 2 minutos con un job</p>
-                                </div>
-                            </body>
-                        </html>"
-                    ]);
-
-                } */
-
                 return response()->json([
                     'success' => true,
                     'msg' => 'Se ha procesado el pedido con éxito, espere el envío a la tienda'
