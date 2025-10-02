@@ -68,7 +68,7 @@ class PedidosYaWebhookController extends Controller
             $hJwt = JWT::decode($token, new Key($company->secret_key_pedidosya, $p1->alg));
 
             if((!isset($p2->iss) || !isset($p2->service) || !isset($hJwt->iss) || !isset($hJwt->service)) || ($hJwt->iss != $p2->iss) || ($hJwt->service != $p2->service))
-                throw new \Exception("El token de autorización de PedidosYa no no coincide con la decodificación");
+                throw new \Exception("El token de autorización de PedidosYa no coincide con la decodificación");
 
             $random = strtoupper(str_replace('.','',uniqid('',true)));
             $remoteOrderId = "PREC-{$random}";

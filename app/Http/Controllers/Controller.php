@@ -16,7 +16,8 @@ class Controller extends BaseController
     {
         $comando = "ping -c 1 ".config("database.connections.$conexion.host");
         $output = shell_exec($comando);
-        return strpos($output,'1 received');
+        info($output);
+        return strpos($output,'1 received') !== false;
 
     }
 
