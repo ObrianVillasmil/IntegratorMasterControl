@@ -569,7 +569,7 @@ class RappiWebhookcontroller extends Controller
                 ['type', $request->store_id === env('DEVELOPMENT_RAPPI_STORE_ID','900163592') ? 'DEVELOPMENT' : 'PRODUCTION']
             ])->first();
 
-            $validSign = self::validateSignature($request ,$secret);
+            $validSign = self::validateSignature($request, $secret);
 
             if(!$validSign['success']){
 
