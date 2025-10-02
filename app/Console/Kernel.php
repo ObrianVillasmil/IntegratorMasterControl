@@ -26,6 +26,7 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         $schedule->command('queue:retry',['id'=>'all'])->everyTwoMinutes();
+        //$schedule->command('reinciar:jobs')->everyTwoMinutes();
     }
 
     /**

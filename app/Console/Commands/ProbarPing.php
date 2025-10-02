@@ -42,7 +42,7 @@ class ProbarPing extends Command
 
         //while para obtener el valor de la conexión
         while(!config("database.connections.$conexion"))
-            $conexion = $this->ask("No existe la conexión $conexion, ingrese la conexión que desea disponible ".implode(',',array_keys(config("database.connections"))));
+            $conexion = $this->ask("No existe la conexión $conexion, ingrese una conexión disponible de las siguientes: ".implode(',',array_keys(config("database.connections"))));
 
 
         $this->info("Probando el ping de la conexión $conexion \n");
