@@ -288,7 +288,7 @@ class PedidosYaWebhookController extends Controller
                 'id_branch_office' => $store->id_sucursal,
                 'order_id' => $request->token,
                 'connect' => base64_encode($request->connect),
-                'name' => $request->localInfo['platform'].' '.$request->code.' ('.substr($request->code,-4).')',
+                'name' => $request->localInfo['platform'].' '.($request->code.' ('.substr($request->code,-4).')'),
                 'ordering_platform' => $request->localInfo['platform'],
                 'customer' => $customer,
                 'customer_identification' => $customerIdentification,
