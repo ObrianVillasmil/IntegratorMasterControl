@@ -431,7 +431,9 @@ class BonesIntegrationController extends Controller
                     "FECHA"=> $c->fecha_factura,
                     "FECHA_CADUCIDAD" => $c->fecha_expiracion_factura,
                     "NUMERO"=> !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : substr($c->autorizacion,24,15),
-                    'AUTORIZACION' => !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $c->autorizacion,
+                    "AUTORIZACION" => !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $c->autorizacion,
+                    "ID_TIPO_VENTA"=>"*",
+                    "CUENTA"=>"*",
                     "SUBTOTAL"=> $c->sub_total,
                     "IVA"=> $c->iva_total,
                     "SERVICIO"=> '*',
@@ -445,11 +447,12 @@ class BonesIntegrationController extends Controller
                     "TIPO"=> "FC",
                     "RUC"=> $c->ruc_proveedor,
                     "NOMBRE"=> strtoupper($c->nombre_proveedor),
-                    "DIRECCION"=> !isset($supplier->direccion) || $supplier->direccion =='' ? '*' : $supplier->direccion,
-                    "TELEFONO"=> !isset($c->telefono_proveedor) || $c->telefono_proveedor =='' ? '*' : $c->telefono_proveedor,
-                    "EMAIL"=> !isset($c->correo_proveedor) || $c->correo_proveedor =='' ? '*' : $c->correo_proveedor,
+                    "DIRECCION"=> $supplier->direccion  ?? '*',
+                    "TELEFONO"=> $c->telefono_proveedor ?? '*',
+                    "EMAIL"=> $c->correo_proveedor ?? '*',
                     "TIPO_DOCUMENTO"=> $tipoIdentificacion,
-                    "DETALLE" => []
+                    "DETALLE" => [],
+                    "FORMA_PAGO" => []
                 ];
 
                 $detalles = $connection->table('detalle_factura')
@@ -471,9 +474,20 @@ class BonesIntegrationController extends Controller
                         "NOMBRE"=> $item->nombre,
                         "CTA_CONTABLE" => $item->cc_general,
                         "COD_CTA_CONTABLE" =>  $item->cc_general_nombre,
+                        'COD_RET_FTE' => $item->cc_general_cod_retencion,
+                        'COD_RET_IVA' => $item->cc_general_cod_retencion_iva,
                     ];
 
                 }
+
+                //EN ESPERA DE LA CONFIRMACION DE BONES PARA AGREGAR FORMA DE PAGO
+                /* $data->FORMA_PAGO[] = [
+                    "DOC_ID"=>"2-2047",
+                    "CODIGO"=>"3",
+                    "MONTO"=>"26.00",
+                    "NOMBRE"=>"Visa",
+                    "LOTE"=>"001077"
+                ]; */
 
                 return $data;
 
@@ -547,8 +561,10 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> $det->total,
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
-                        "CTA_CONTABLE" => "x.x.xx.x.x",
-                        "COD_CTA_CONTABLE" => "x.x.xx.x.x",
+                        "CTA_CONTABLE" => $item->cc_general,
+                        "COD_CTA_CONTABLE" =>  $item->cc_general_nombre,
+                        'COD_RET_FTE' => $item->cc_general_cod_retencion,
+                        'COD_RET_IVA' => $item->cc_general_cod_retencion_iva,
                     ];
 
                 }
