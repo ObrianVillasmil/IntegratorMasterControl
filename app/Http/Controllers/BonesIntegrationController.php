@@ -407,7 +407,7 @@ class BonesIntegrationController extends Controller
             ->whereBetween('fecha_factura',[$request->from,$request->to])
             ->whereRaw("NOT EXISTS(SELECT * FROM detalle_factura AS df where df.id_factura = c.id_factura AND df.id_sucursal = c.id_sucursal AND df.cantidad < 0)",[])
             ->orderBy('id_factura','asc')
-            ->get()->map(function($c) use($connection){
+            ->get()->take(2)->map(function($c) use($connection){
 
                 switch(strlen(trim($c->ruc_proveedor))){
 
@@ -472,22 +472,22 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> number_format($det->total,2,'.',''),
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
-                        "CTA_CONTABLE" => $item->cc_general,
-                        "COD_CTA_CONTABLE" =>  $item->cc_general_nombre,
-                        'COD_RET_FTE' => $item->cc_general_cod_retencion,
-                        'COD_RET_IVA' => $item->cc_general_cod_retencion_iva,
+                        "CTA_CONTABLE" => 'BAR',//$item->cc_general,
+                        "COD_CTA_CONTABLE" => '41020107',// $item->cc_general_nombre,
+                        'COD_RET_FTE' => '313' ,//$item->cc_general_cod_retencion,
+                        'COD_RET_IVA' => '731',//$item->cc_general_cod_retencion_iva,
                     ];
 
                 }
 
-                //EN ESPERA DE LA CONFIRMACION DE BONES PARA AGREGAR FORMA DE PAGO
-                /* $data->FORMA_PAGO[] = [
-                    "DOC_ID"=>"2-2047",
-                    "CODIGO"=>"3",
-                    "MONTO"=>"26.00",
-                    "NOMBRE"=>"Visa",
-                    "LOTE"=>"001077"
-                ]; */
+                //TOTAL PARA CREA LA CUENTA POR PAGAR
+                $data->FORMA_PAGO[] = [
+                    "DOC_ID"=> $idPurchase,
+                    "CODIGO"=>"*",
+                    "MONTO"=> $c->total,
+                    "NOMBRE"=>"*",
+                    "LOTE"=>"*"
+                ];
 
                 return $data;
 
