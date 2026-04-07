@@ -31,7 +31,7 @@ class ValidateRequestCosteos extends FormRequest
         return [
             'from' =>'required|date',
             'to' =>'required|date',
-            'company' => ['required','numeric:min:1',function($attribute,$value,$failure) use($user, $request){
+            'company' => ['required','numeric:min:1','exists:companies,id',function($attribute,$value,$failure) use($user, $request){
 
                 if(!isset($user)){
 
@@ -64,8 +64,7 @@ class ValidateRequestCosteos extends FormRequest
 
                 }
 
-            },
-            'exists:companies,id']
+            }]
         ];
     }
 

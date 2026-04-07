@@ -407,7 +407,7 @@ class BonesIntegrationController extends Controller
             ->whereBetween('fecha_factura',[$request->from,$request->to])
             ->whereRaw("NOT EXISTS(SELECT * FROM detalle_factura AS df where df.id_factura = c.id_factura AND df.id_sucursal = c.id_sucursal AND df.cantidad < 0)",[])
             ->orderBy('id_factura','asc')
-            ->get()->map(function($c) use($connection){
+            ->get()->take(2)->map(function($c) use($connection){
 
                 switch(strlen(trim($c->ruc_proveedor))){
 
@@ -431,7 +431,9 @@ class BonesIntegrationController extends Controller
                     "FECHA"=> $c->fecha_factura,
                     "FECHA_CADUCIDAD" => $c->fecha_expiracion_factura,
                     "NUMERO"=> !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : substr($c->autorizacion,24,15),
-                    'AUTORIZACION' => !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $c->autorizacion,
+                    "AUTORIZACION" => !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $c->autorizacion,
+                    "ID_TIPO_VENTA"=>"*",
+                    "CUENTA"=>"*",
                     "SUBTOTAL"=> $c->sub_total,
                     "IVA"=> $c->iva_total,
                     "SERVICIO"=> '*',
@@ -445,11 +447,12 @@ class BonesIntegrationController extends Controller
                     "TIPO"=> "FC",
                     "RUC"=> $c->ruc_proveedor,
                     "NOMBRE"=> strtoupper($c->nombre_proveedor),
-                    "DIRECCION"=> !isset($supplier->direccion) || $supplier->direccion =='' ? '*' : $supplier->direccion,
-                    "TELEFONO"=> !isset($c->telefono_proveedor) || $c->telefono_proveedor =='' ? '*' : $c->telefono_proveedor,
-                    "EMAIL"=> !isset($c->correo_proveedor) || $c->correo_proveedor =='' ? '*' : $c->correo_proveedor,
+                    "DIRECCION"=> $supplier->direccion  ?? '*',
+                    "TELEFONO"=> $c->telefono_proveedor ?? '*',
+                    "EMAIL"=> $c->correo_proveedor ?? '*',
                     "TIPO_DOCUMENTO"=> $tipoIdentificacion,
-                    "DETALLE" => []
+                    "DETALLE" => [],
+                    "FORMA_PAGO" => []
                 ];
 
                 $detalles = $connection->table('detalle_factura')
@@ -469,11 +472,22 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> number_format($det->total,2,'.',''),
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
-                        "CTA_CONTABLE" => $item->cc_general,
-                        "COD_CTA_CONTABLE" => $item->cc_general_nombre,
+                        "CTA_CONTABLE" => 'BAR',//$item->cc_general,
+                        "COD_CTA_CONTABLE" => '41020107',// $item->cc_general_nombre,
+                        'COD_RET_FTE' => '313' ,//$item->cc_general_cod_retencion,
+                        'COD_RET_IVA' => '731',//$item->cc_general_cod_retencion_iva,
                     ];
 
                 }
+
+                //TOTAL PARA CREA LA CUENTA POR PAGAR
+                $data->FORMA_PAGO[] = [
+                    "DOC_ID"=> $idPurchase,
+                    "CODIGO"=>"*",
+                    "MONTO"=> $c->total,
+                    "NOMBRE"=>"*",
+                    "LOTE"=>"*"
+                ];
 
                 return $data;
 
@@ -547,8 +561,10 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> $det->total,
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
-                        "CTA_CONTABLE" => "x.x.xx.x.x",
-                        "COD_CTA_CONTABLE" => "x.x.xx.x.x",
+                        "CTA_CONTABLE" => 'BAR',//$item->cc_general,
+                        "COD_CTA_CONTABLE" => '11030101',// $item->cc_general_nombre,
+                        'COD_RET_FTE' => '313' ,//$item->cc_general_cod_retencion,
+                        'COD_RET_IVA' => '731',//$item->cc_general_cod_retencion_iva,
                     ];
 
                 }
