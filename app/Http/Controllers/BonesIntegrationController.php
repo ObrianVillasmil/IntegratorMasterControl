@@ -473,7 +473,7 @@ class BonesIntegrationController extends Controller
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
                         "CTA_CONTABLE" => 'BAR',//$item->cc_general,
-                        "COD_CTA_CONTABLE" => '41020107',// $item->cc_general_nombre,
+                        "COD_CTA_CONTABLE" => '11030101',// $item->cc_general_nombre,
                         'COD_RET_FTE' => '313' ,//$item->cc_general_cod_retencion,
                         'COD_RET_IVA' => '731',//$item->cc_general_cod_retencion_iva,
                     ];
