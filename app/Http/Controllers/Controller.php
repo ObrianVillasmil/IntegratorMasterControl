@@ -17,7 +17,7 @@ class Controller extends BaseController
 
         $startTime = microtime(true);
         $host = config("database.connections.$conexion.host");
-        $port = 80;
+        $port = 5432;
         $fp = @fsockopen($host, $port, $errno, $errstr, 5);
         $endTime = microtime(true);
 
