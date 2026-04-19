@@ -14,7 +14,6 @@ class Controller extends BaseController
 
     public static function pingMp($conexion)
     {
-
         $startTime = microtime(true);
         $host = config("database.connections.$conexion.host");
         $port = 5432;

@@ -399,6 +399,8 @@ class BonesIntegrationController extends Controller
 
             })->select('s.id_sucursal')->get()->pluck('id_sucursal')->toArray();
 
+            $tipoVenta = DB::table('cliente')->where('default',true)->first();
+
             $purchases = $connection->table('factura as c')
             ->where('forma','1') //FACTURAS
             ->where('estado',true)
@@ -407,7 +409,7 @@ class BonesIntegrationController extends Controller
             ->whereBetween('fecha_factura',[$request->from,$request->to])
             ->whereRaw("NOT EXISTS(SELECT * FROM detalle_factura AS df where df.id_factura = c.id_factura AND df.id_sucursal = c.id_sucursal AND df.cantidad < 0)",[])
             ->orderBy('id_factura','asc')
-            ->get()->take(2)->map(function($c) use($connection){
+            ->get()->map(function($c) use($connection, $tipoVenta){
 
                 switch(strlen(trim($c->ruc_proveedor))){
 
@@ -432,7 +434,7 @@ class BonesIntegrationController extends Controller
                     "FECHA_CADUCIDAD" => $c->fecha_expiracion_factura,
                     "NUMERO"=> !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : substr($c->autorizacion,24,15),
                     "AUTORIZACION" => !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $c->autorizacion,
-                    "ID_TIPO_VENTA"=>"*",
+                    "ID_TIPO_VENTA"=> $tipoVenta->id_cliente ?? '*',
                     "CUENTA"=>"*",
                     "SUBTOTAL"=> $c->sub_total,
                     "IVA"=> $c->iva_total,
@@ -472,10 +474,10 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> number_format($det->total,2,'.',''),
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
-                        "CTA_CONTABLE" => 'BAR',//$item->cc_general,
-                        "COD_CTA_CONTABLE" => '11030101',// $item->cc_general_nombre,
-                        'COD_RET_FTE' => '313' ,//$item->cc_general_cod_retencion,
-                        'COD_RET_IVA' => '731',//$item->cc_general_cod_retencion_iva,
+                        "CTA_CONTABLE" => $item->cc_general,
+                        "COD_CTA_CONTABLE" => $item->cc_general_nombre,
+                        'COD_RET_FTE' => $item->cc_general_cod_retencion,
+                        'COD_RET_IVA' => $item->cc_general_cod_retencion_iva,
                     ];
 
                 }
@@ -501,7 +503,7 @@ class BonesIntegrationController extends Controller
             ->whereBetween('fecha_factura',[$request->from,$request->to])
             ->whereRaw("EXISTS(SELECT * FROM detalle_factura AS df where df.id_factura = c.id_factura AND df.id_sucursal = c.id_sucursal AND df.cantidad < 0)",[])
             ->orderBy('id_factura','asc')
-            ->get()->map(function($c) use($connection){
+            ->get()->map(function($c) use($connection, $tipoVenta){
 
                 switch(strlen(trim($c->ruc_proveedor))){
                     case 13:
@@ -523,6 +525,7 @@ class BonesIntegrationController extends Controller
                     "FECHA"=> $c->fecha_factura,
                     "NUMERO"=> !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : substr($c->autorizacion,24,15),
                     'AUTORIZACION' => !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $c->autorizacion,
+                    "ID_TIPO_VENTA" => $tipoVenta->id_cliente ?? '*',
                     "SUBTOTAL"=> $c->sub_total,
                     "IVA"=> $c->iva_total,
                     "SERVICIO"=> '*',
@@ -561,10 +564,10 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> $det->total,
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
-                        "CTA_CONTABLE" => 'BAR',//$item->cc_general,
-                        "COD_CTA_CONTABLE" => '11030101',// $item->cc_general_nombre,
-                        'COD_RET_FTE' => '313' ,//$item->cc_general_cod_retencion,
-                        'COD_RET_IVA' => '731',//$item->cc_general_cod_retencion_iva,
+                        "CTA_CONTABLE" => $item->cc_general,
+                        "COD_CTA_CONTABLE" => $item->cc_general_nombre,
+                        'COD_RET_FTE' => $item->cc_general_cod_retencion,
+                        'COD_RET_IVA' => $item->cc_general_cod_retencion_iva,
                     ];
 
                 }
