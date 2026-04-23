@@ -71,7 +71,7 @@ class ValidateReceptionPurchase extends FormRequest
                         $prurchase =  $conection->table('factura')->where('id_sucursal', $branchOfficeId)->where('id_factura',$id)->exists();
 
                         if(!$prurchase)
-                            $failure('No existe una venta con el ID '.$saleId);
+                            $failure('No existe una compra con el ID '.$saleId);
 
                     }
 

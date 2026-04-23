@@ -27,7 +27,7 @@ class Controller extends BaseController
             info("\n Comando: ".$comando);
             info("\n".$output);
             return false;
-            
+
         }
 
     }

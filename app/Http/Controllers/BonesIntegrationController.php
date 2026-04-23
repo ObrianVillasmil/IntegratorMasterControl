@@ -407,7 +407,7 @@ class BonesIntegrationController extends Controller
             ->whereBetween('fecha_factura',[$request->from,$request->to])
             ->whereRaw("NOT EXISTS(SELECT * FROM detalle_factura AS df where df.id_factura = c.id_factura AND df.id_sucursal = c.id_sucursal AND df.cantidad < 0)",[])
             ->orderBy('id_factura','asc')
-            ->get()->take(2)->map(function($c) use($connection){
+            ->get()->map(function($c) use($connection){
 
                 switch(strlen(trim($c->ruc_proveedor))){
 
