@@ -10,5 +10,6 @@ class WebhookUber extends Model
     use HasFactory;
 
     protected $fillable = ['data'];
+    
 
 }
