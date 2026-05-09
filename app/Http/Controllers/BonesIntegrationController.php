@@ -428,7 +428,6 @@ class BonesIntegrationController extends Controller
                 $idPurchase = $c->id_sucursal.'-'.$c->id_factura;
                 $supplier = $connection->table('proveedor')->where('id_proveedor',$c->id_proveedor)->first();
 
-                
                 $data = (object)[
                     "DOC_ID"=> $idPurchase,
                     "FECHA"=> $c->fecha_factura,
