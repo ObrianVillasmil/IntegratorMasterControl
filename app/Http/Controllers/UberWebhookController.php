@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Company;
-use App\Models\WebHookUber;
+use App\Models\WebhookUber;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 
@@ -42,7 +42,7 @@ class UberWebhookController extends Controller
                     if(!isset($data->meta->order_id))
                         return response('',403);
 
-                    $whkNotifcation = json_decode(WebHookUber::where('data->meta->resource_id',$data->meta->order_id)->first()->data);
+                    $whkNotifcation = json_decode(WebhookUber::where('data->meta->resource_id',$data->meta->order_id)->first()->data);
 
                     $storeId = $whkNotifcation->meta->user_id;
 
@@ -59,7 +59,7 @@ class UberWebhookController extends Controller
 
                 if(hash_equals($signature,$hmac)){
 
-                    $whu= WebHookUber::create(['data' => json_encode($data)]);
+                    $whu= WebhookUber::create(['data' => json_encode($data)]);
 
                     $data->webook_uber_id = $whu->id;
                     $data->store_id = $storeId;
