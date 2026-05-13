@@ -399,7 +399,7 @@ class BonesIntegrationController extends Controller
 
             })->select('s.id_sucursal')->get()->pluck('id_sucursal')->toArray();
 
-            $tipoVenta = DB::table('cliente')->where('default',true)->first();
+            $tipoVenta = $connection->table('cliente')->where('default',true)->first();
 
             $purchases = $connection->table('factura as c')
             ->where('forma','1') //FACTURAS
