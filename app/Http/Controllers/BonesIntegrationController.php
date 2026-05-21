@@ -474,8 +474,8 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> number_format($det->total,2,'.',''),
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
-                        "CTA_CONTABLE" => $item->cc_general,
-                        "COD_CTA_CONTABLE" => $item->cc_general_nombre,
+                        "CTA_CONTABLE" => $item->cc_general_nombre,
+                        "COD_CTA_CONTABLE" => $item->cc_general,
                         'COD_RET_FTE' => $supplier->retencion_c_externo ? $item->cc_general_cod_retencion : '',
                         'COD_RET_IVA' => $supplier->retencion_c_externo ? $item->cc_general_cod_retencion_iva : '',
                     ];
@@ -564,8 +564,8 @@ class BonesIntegrationController extends Controller
                         "TOTAL"=> $det->total,
                         "DESCUENTO"=> 0,
                         "NOMBRE"=> $item->nombre,
-                        "CTA_CONTABLE" => $item->cc_general,
-                        "COD_CTA_CONTABLE" => $item->cc_general_nombre,
+                        "CTA_CONTABLE" => $item->cc_general_nombre,
+                        "COD_CTA_CONTABLE" => $item->cc_general,
                         'COD_RET_FTE' => $supplier->retencion_c_externo ? $item->cc_general_cod_retencion : '',
                         'COD_RET_IVA' => $supplier->retencion_c_externo ? $item->cc_general_cod_retencion_iva : '',
                     ];

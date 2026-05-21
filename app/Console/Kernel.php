@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
-        $schedule->command('queue:retry',['id'=>'all'])->everyTwoMinutes();
+        $schedule->command('queue:retry',['id'=>'all'])->everyMinute()->withoutOverlapping();
         //$schedule->command('reinciar:jobs')->everyTwoMinutes();
     }
 

@@ -16,8 +16,8 @@ class Controller extends BaseController
     {
         $startTime = microtime(true);
         $host = config("database.connections.$conexion.host");
-        $port = 5432;
-        $fp = @fsockopen($host, $port, $errno, $errstr, 5);
+        $port = config("database.connections.$conexion.port", 5432);
+        $fp = @fsockopen($host, $port, $errno, $errstr, 10);
         $endTime = microtime(true);
 
         if (!$fp) {
@@ -30,21 +30,6 @@ class Controller extends BaseController
 
         fclose($fp);
         return true;
-        /* $comando = "ping -c 1 ".config("database.connections.$conexion.host");
-        $output = shell_exec($comando);
-
-        if(strpos($output,'1 received') !== false){
-
-            return true;
-
-        }else{
-
-            info("Ping a la conexión $conexion fallida");
-            info("\n Comando: ".$comando);
-            info("\n".$output);
-            return false;
-
-        } */
 
     }
 
