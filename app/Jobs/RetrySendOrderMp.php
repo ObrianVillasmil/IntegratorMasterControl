@@ -202,7 +202,6 @@ class RetrySendOrderMp implements ShouldQueue
                         'precio' => $item->sub_total_price,
                         'id_pos_configuracion_producto_pregunta' => $item->id_pcpp,
                         'id_cajero'=> '1000',
-                        'id_sucursal' => $this->data['id_branch_office'],
                         'monto_descuento' => $item->discount,
                         'json_descuento' => isset($item->json_discount) ? $item->json_discount : null
                     ]);
