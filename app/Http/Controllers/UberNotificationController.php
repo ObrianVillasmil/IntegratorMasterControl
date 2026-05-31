@@ -43,7 +43,7 @@ class UberNotificationController extends Controller
             $response = json_decode($response);
 
             info('$codigoHttp '.$codigoHttp);
-            info('$data->event_type: ' .$data->event_type);
+            info('$data->event_type: ' .$data->event_type." ". $store->nombre);
 
             if(isset($response->order)){
 
@@ -142,13 +142,10 @@ class UberNotificationController extends Controller
                                     $commnet = $item->customer_request->special_instructions;
 
                                 //EXISTEN PROMOCIONES EN EL ITEM
-                                info('$promoItem');
-                                info($promoItem);
-                                info('$item->id '. $item->id);
                                 if(count($promoItem) && $data->connect === 'pos_master'){
 
                                     $indexPromo = array_search($item->id, array_column($promoItem, 'external_id'));
-                                    info('$indexPromo '. $indexPromo);
+
                                     if($indexPromo !== false && isset($promoItem[$indexPromo]) && $promoItem[$indexPromo]['discounted_quantity'] > 0){
 
                                         $discount = $promoItem[$indexPromo]['discount_amount_applied'];
