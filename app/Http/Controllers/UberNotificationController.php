@@ -142,10 +142,13 @@ class UberNotificationController extends Controller
                                     $commnet = $item->customer_request->special_instructions;
 
                                 //EXISTEN PROMOCIONES EN EL ITEM
+                                info('$promoItem');
+                                info($promoItem);
+                                info('$item->id '. $item->id);
                                 if(count($promoItem) && $data->connect === 'pos_master'){
 
                                     $indexPromo = array_search($item->id, $promoItem);
-
+                                    info('$indexPromo '. $indexPromo);
                                     if($indexPromo !== false && isset($promoItem[$indexPromo]) && $promoItem[$indexPromo]['discounted_quantity'] > 0){
 
                                         $discount = $promoItem[$indexPromo]['discount_amount_applied'];
