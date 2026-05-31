@@ -294,7 +294,6 @@ class MpFunctionController extends Controller
             'ordering_platform.required' => 'No se obtuvo el nombre de la plataforma que origina la orden',
             'ordering_platform.string' => 'El nombre de la plataforma que origina la orden debe ser una cadena de carcaracteres',
             'ordering_platform.min' => 'El nombre de la plataforma que origina la orden debe tener al menos 3 caracteres',
-            'connect.required' => 'No se obtuvo el nombre de la sucursal',
             'connect.required' => 'El acceso de la conexion es obligatorio',
             'connect.string' => 'El acceso de la conexion debe ser una cadena de carcaracteres',
             'connect.min' => 'El acceso de la conexion debe tener al menos 3 caracteres',
@@ -434,7 +433,6 @@ class MpFunctionController extends Controller
             'order_id.required' => 'No se obtuvo el identificador de la orden',
             'order_id.string' => 'El identificador de la orden debe ser una cadena de carcaracteres',
             'order_id.min' => 'El identificador de la orden debe tener al menos 3 caracteres',
-            'connect.required' => 'No se obtuvo el nombre de la sucursal',
             'connect.required' => 'El acceso de la conexion es obligatorio',
             'connect.string' => 'El acceso de la conexion debe ser una cadena de carcaracteres',
             'connect.min' => 'El acceso de la conexion debe tener al menos 3 caracteres',
@@ -450,10 +448,14 @@ class MpFunctionController extends Controller
 
                 $precuenta =  $connection->table('precuenta')->where('default_name',$request->order_id)->first();
 
-                $connection->table('detalle_precuenta')->where('id_precuenta',$precuenta->id_precuenta)->delete();
-                $connection->table('precuenta_base_impuesto')->where('id_precuenta',$precuenta->id_precuenta)->delete();
-                $connection->table('precuenta_app_delivery')->where('cuerpo->order->id',$request->order_id)->delete();
-                $connection->table('precuenta')->where('default_name',$request->order_id)->delete();
+                if($precuenta){
+
+                    $connection->table('detalle_precuenta')->where('id_precuenta',$precuenta->id_precuenta)->delete();
+                    $connection->table('precuenta_base_impuesto')->where('id_precuenta',$precuenta->id_precuenta)->delete();
+                    $connection->table('precuenta_app_delivery')->where('cuerpo->order->id',$request->order_id)->delete();
+                    $connection->table('precuenta')->where('default_name',$request->order_id)->delete();
+
+                }
 
                 $connection->commit();
 
@@ -511,7 +513,6 @@ class MpFunctionController extends Controller
             'order_id.string' => 'El identificador de la orden debe ser una cadena de carcaracteres',
             'order_id.min' => 'El identificador de la orden debe tener al menos 3 caracteres',
             'connect.required' => 'No se obtuvo el nombre de la sucursal',
-            'connect.required' => 'El acceso de la conexion es obligatorio',
             'connect.string' => 'El acceso de la conexion debe ser una cadena de carcaracteres',
             'connect.min' => 'El acceso de la conexion debe tener al menos 3 caracteres',
         ]);

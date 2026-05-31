@@ -48,47 +48,50 @@ class RetryCancelOrderMp implements ShouldQueue
 
                 $precuenta = $connection->table('precuenta')->where('default_name',$this->data['order_id'])->first();
 
-                $precuentaAppDelivery = $connection->table('precuenta_app_delivery')
-                ->where('id_precuenta',$precuenta->id_precuenta)
-                ->where('estado',true)->first();
+                if(isset($precuenta)){
 
-                if(isset($precuentaAppDelivery)){
-
-                    $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
-
-                    $connection->table('precuenta')->where('default_name',$this->data['order_id'])->update(['procesado' => true]);
-
-                    $connection->table('precuenta_app_delivery')
+                    $precuentaAppDelivery = $connection->table('precuenta_app_delivery')
                     ->where('id_precuenta',$precuenta->id_precuenta)
-                    ->where('estado',true)
-                    ->update(['estado' => false]);
+                    ->where('estado',true)->first();
 
-                    $status = isset($this->data['status']) ? $this->data['status'] : 'CANCELLED';
+                    if(isset($precuentaAppDelivery)){
 
-                    if(isset($cuerpo->order)){
-                        $cuerpo->order->state = $status;
-                    }else{
-                        $cuerpo->current_status = $status;
+                        $cuerpo = json_decode($precuentaAppDelivery->cuerpo);
+
+                        $connection->table('precuenta')->where('default_name',$this->data['order_id'])->update(['procesado' => true]);
+
+                        $connection->table('precuenta_app_delivery')
+                        ->where('id_precuenta',$precuenta->id_precuenta)
+                        ->where('estado',true)
+                        ->update(['estado' => false]);
+
+                        $status = isset($this->data['status']) ? $this->data['status'] : 'CANCELLED';
+
+                        if(isset($cuerpo->order)){
+                            $cuerpo->order->state = $status;
+                        }else{
+                            $cuerpo->current_status = $status;
+                        }
+
+                        if(isset($this->data['canceled_message']))
+                            $cuerpo->canceled_message = $this->data['canceled_message'];
+
+                        if(isset($this->data['message']))
+                            $cuerpo->canceled_message = $this->data['message'];
+
+                        $connection->table('precuenta_app_delivery')->insert([
+                            'id_precuenta' => $precuenta->id_precuenta,
+                            'id_sucursal' => $precuenta->id_sucursal,
+                            'estado_app' => $status,
+                            'cuerpo' => json_encode($cuerpo),
+                            'logo' => $precuentaAppDelivery->logo,
+                            'canal' => $precuentaAppDelivery->canal,
+                            'tiempo_preparacion' => $precuentaAppDelivery->tiempo_preparacion,
+                            'estado' => true,
+                            'fecha_registro' => now()->toDateTimeString()
+                        ]);
+
                     }
-
-                    if(isset($this->data['canceled_message']))
-                        $cuerpo->canceled_message = $this->data['canceled_message'];
-
-                    if(isset($this->data['message']))
-                        $cuerpo->canceled_message = $this->data['message'];
-
-                    $connection->table('precuenta_app_delivery')->insert([
-                        'id_precuenta' => $precuenta->id_precuenta,
-                        'id_sucursal' => $precuenta->id_sucursal,
-                        'estado_app' => $status,
-                        'cuerpo' => json_encode($cuerpo),
-                        'logo' => $precuentaAppDelivery->logo,
-                        'canal' => $precuentaAppDelivery->canal,
-                        'tiempo_preparacion' => $precuentaAppDelivery->tiempo_preparacion,
-                        'estado' => true,
-                        'fecha_registro' => now()->toDateTimeString()
-                    ]);
-
                 }
 
                 $connection->commit();
