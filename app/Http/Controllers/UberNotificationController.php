@@ -106,7 +106,7 @@ class UberNotificationController extends Controller
 
                                         $promoItem[] = [
                                             'external_promotion_id' => $itemPromo->external_promotion_id,
-                                            'type' => $item->type,
+                                            'type' => $itemPromo->type,
                                             'discounted_quantity' => $itemPromo->discounted_quantity,
                                             'discount_amount_applied' => number_format((($itemPromo->discount_amount_applied * -1) / 100),2,'.',''),
                                         ];
