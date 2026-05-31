@@ -38,6 +38,10 @@ class RetryUpdateOrderMp implements ShouldQueue
     {
         $ping = Controller::pingMp($this->conexion);
 
+        info('$this->data:');
+        info((array)$this->data);
+        info('$ping: '.$ping);
+
         if($ping){
 
             try {
@@ -50,8 +54,7 @@ class RetryUpdateOrderMp implements ShouldQueue
 
                 info('RetryUpdateOrderMp: ');
                 info((array)$order);
-                info('$this->data:');
-                info((array)$this->data);
+
 
                 switch($this->data['ordering_platform']){
                     case 'UBER_EATS':

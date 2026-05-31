@@ -37,13 +37,12 @@ class RetrySendOrderMp implements ShouldQueue
      */
     public function handle()
     {
-
+        info('$this->conexion RetrySendorder: ' . $this->conexion);
         $ping = Controller::pingMp($this->conexion);
 
         if($ping){
 
             $connection = DB::connection($this->conexion);
-            info('$this->conexion RetrySendorder: '. $this->conexion);
 
             try {
 
@@ -114,7 +113,10 @@ class RetrySendOrderMp implements ShouldQueue
                 $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
 
                 $precuentaId = !isset($prec) ? 1 : ($prec->id_precuenta+1);
-
+                info('$precuentaId '. $precuentaId);
+                info('id_branch_office '. $this->data['id_branch_office']);
+                info('$prec');
+                info((array)$prec);
                 $connection->table('precuenta')->insert([
                     'id_precuenta' => $precuentaId,
                     'id_sucursal' => $this->data['id_branch_office'],
@@ -237,7 +239,8 @@ class RetrySendOrderMp implements ShouldQueue
                     $message = strtolower($e->getMessage());
 
                     if(strpos($message, $error) !== false){
-                        $this->fail('Id de precuenta '.$precuentaId.' en uso en la conexion, reintentado con job '.$this->data['order_id'].' en la conexión '.$this->conexion);
+                        info('Id de precuenta '.$precuentaId.' en uso en la conexion, reintentado con job orderId '.$this->data['order_id'].' en la conexión '.$this->conexion);
+                        $this->fail('Id de precuenta '.$precuentaId.' en uso en la conexion, reintentado con job orderId '.$this->data['order_id'].' en la conexión '.$this->conexion);
                         break;
                     }
 
@@ -275,6 +278,7 @@ class RetrySendOrderMp implements ShouldQueue
 
         }else{
 
+            info('No se le pudo hacer ping a la conexión '.$this->conexion.' al crear el pedido '.$this->data['name']);
             $this->fail('No se le pudo hacer ping a la conexión '.$this->conexion.' al crear el pedido '.$this->data['name']);
 
         }

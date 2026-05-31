@@ -307,42 +307,6 @@ class UberNotificationController extends Controller
 
                         }
 
-                        /* $detallesPromociones= $response->order->payment->payment_detail->promotions->details;
-
-                        if(isset($detallesPromociones) && is_array($detallesPromociones) && $data->connect === 'pos_master'){
-
-                            //FILTRAR SOLO CIERTO TIPOS DE DESCUENTOS QUE NO VAN AL ITEM
-                            $promosSubtotal = array_filter($detallesPromociones, function($promo){ return in_array($promo->type, ['FLAT']); });
-
-                            $nombreDescuento = implode(' - ', array_column($promosSubtotal, 'external_promotion_id'));
-                            $valsDescuento =  array_column($promosSubtotal, 'discount_value');
-
-                            $montoDescuento = array_reduce($valsDescuento, function($carry, $item){
-                                return $carry + (($item * -1) / 100);
-                            });
-
-                            $discountsSubTotal = [
-                                'id_descuento' => "descuento_" . strtoupper(str_replace('.', '', uniqid('', true))),
-                                'nombre' => $nombreDescuento,
-                                'tipo' => "MONTO",
-                                'porcentaje' => "",
-                                'monto' => $montoDescuento,
-                                'id_rol' => "",
-                                'cantidad_aplicable' => "0",
-                                'id_producto_x' => "",
-                                'cant_producto_x' => "",
-                                'id_producto_y' => "",
-                                'cant_producto_y' => "",
-                                'n_producto' => "",
-                                'monto_consumir' => "",
-                                'tipo_producto_x' => "",
-                                'tipo_producto_y' => "",
-                                'condicion_aplicable' => "1",
-                                'productos' => []
-                            ];
-
-                        } */
-
                         $createOrder = MpFunctionController::createMpOrder(new Request([
                             'id_branch_office' => $store->id_sucursal,
                             'order_id' => $response->order->id,
