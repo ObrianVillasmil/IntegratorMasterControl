@@ -224,7 +224,7 @@ class UberNotificationController extends Controller
                         if(isset($detallesPromociones) && is_array($detallesPromociones) && $data->connect === 'pos_master'){
 
                             //FILTRAR SOLO CIERTO TIPOS DE DESCUENTOS QUE NO VAN AL ITEM
-                            $promosSubtotal = array_filter($detallesPromociones, function($promo){ return in_array(['FLAT'], $promo->type); });
+                            $promosSubtotal = array_filter($detallesPromociones, function($promo){ return in_array($promo->type, ['FLAT']); });
 
                             $nombreDescuento = implode(' - ', array_column($promosSubtotal, 'external_promotion_id'));
                             $valsDescuento =  array_column($promosSubtotal, 'discount_value');
