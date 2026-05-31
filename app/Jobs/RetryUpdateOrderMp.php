@@ -94,6 +94,7 @@ class RetryUpdateOrderMp implements ShouldQueue
 
         }else{
 
+            info('No se le pudo hacer ping a la conexión '.$this->conexion.' al actualizar el estado el pedido '.$this->data['order_id']);
             $this->fail('No se le pudo hacer ping a la conexión '.$this->conexion.' al actualizar el estado el pedido '.$this->data['order_id']);
 
         }
