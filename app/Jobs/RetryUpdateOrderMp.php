@@ -38,15 +38,11 @@ class RetryUpdateOrderMp implements ShouldQueue
     {
         $ping = Controller::pingMp($this->conexion);
 
-        info('$this->data:');
-        info((array)$this->data);
-        info('$ping: '.$ping);
-
         if($ping){
 
-            try {
+            $connection = DB::connection($this->conexion);
 
-                $connection = DB::connection($this->conexion);
+            try {
 
                 $order = $connection->table('precuenta as p')
                 ->join('precuenta_app_delivery as app','p.id_precuenta','app.id_precuenta')
