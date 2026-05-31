@@ -48,6 +48,9 @@ class RetryUpdateOrderMp implements ShouldQueue
                 ->join('precuenta_app_delivery as app','p.id_precuenta','app.id_precuenta')
                 ->where('p.default_name',$this->data['order_id'])->first();
 
+                info('RetryUpdateOrderMp: ');
+                info((array)$order);
+
                 switch($this->data['ordering_platform']){
                     case 'UBER_EATS':
                         $logo = 'ubereats.webp';
