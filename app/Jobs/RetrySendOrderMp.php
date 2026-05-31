@@ -43,6 +43,7 @@ class RetrySendOrderMp implements ShouldQueue
         if($ping){
 
             $connection = DB::connection($this->conexion);
+            info('$this->conexion RetrySendorder: '. $this->conexion);
 
             try {
 
