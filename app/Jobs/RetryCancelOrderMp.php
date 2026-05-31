@@ -92,6 +92,7 @@ class RetryCancelOrderMp implements ShouldQueue
                         ]);
 
                     }
+                    
                 }
 
                 $connection->commit();

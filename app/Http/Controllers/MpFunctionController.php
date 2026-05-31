@@ -448,7 +448,7 @@ class MpFunctionController extends Controller
 
                 $precuenta =  $connection->table('precuenta')->where('default_name',$request->order_id)->first();
 
-                if($precuenta){
+                if(isset($precuenta)){
 
                     $connection->table('detalle_precuenta')->where('id_precuenta',$precuenta->id_precuenta)->delete();
                     $connection->table('precuenta_base_impuesto')->where('id_precuenta',$precuenta->id_precuenta)->delete();
