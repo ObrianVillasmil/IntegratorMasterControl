@@ -94,7 +94,7 @@ class UberNotificationController extends Controller
                             $customerPhone = $response->order->customers[0]->contact->phone->number;
 
                         //BUSCA Y ORGANIZA PROMOCIONES
-                        if (isset($response->order->payment->payment_detail->promotions->details) && count($response->order->payment->payment_detail->promotions->details) && $data->connect === 'pos_master') {
+                        if (isset($response->order->payment->payment_detail->promotions->details) && count($response->order->payment->payment_detail->promotions->details)) {
 
                             $arrItemsPromo = $response->order->payment->payment_detail->promotions->details;
 
@@ -142,7 +142,7 @@ class UberNotificationController extends Controller
                                     $commnet = $item->customer_request->special_instructions;
 
                                 //EXISTEN PROMOCIONES EN EL ITEM
-                                if(count($promoItem) && $data->connect === 'pos_master'){
+                                if(count($promoItem)){
 
                                     $indexPromo = array_search($item->id, array_column($promoItem, 'external_id'));
 
@@ -168,34 +168,6 @@ class UberNotificationController extends Controller
                                     }
 
                                 }
-
-                                /* if(isset($response->order->payment->tax_reporting->breakdown->promotions)){
-
-                                    $arrItemsPromo = array_filter($response->order->payment->tax_reporting->breakdown->promotions, function($itemPromo) use ($item){
-                                        return $item->cart_item_id === $itemPromo->instance_id && $itemPromo->description === 'ITEM_PROMOTION';
-                                    });
-
-                                    foreach($arrItemsPromo as $itemPromo){
-
-                                        $discount = number_format(($itemPromo->net_amount->amount_e5/100000)*-1,2,'.','');
-
-                                        $jsonDiscount = json_encode([
-                                            'id_descuento' => '-1',
-                                            'nombre' => 'PROMO_UBER',
-                                            'tipo' => 'MONTO',
-                                            'aplicacion' => 'ITEM',
-                                            'monto' => $discount,
-                                            'porcentaje' => null,
-                                            'condicion_aplicable'=> 0,
-                                            'producto' => $dataItem[0].'_'.$dataItem[1]
-                                        ]);
-
-                                        if($discount > $subTotal)
-                                            $discount = $subTotal;
-
-                                    }
-
-                                } */
 
                                 $items[] = [
                                     'type' => $dataItem[0],
@@ -283,7 +255,7 @@ class UberNotificationController extends Controller
                         }
 
                         //DESCUENTOS AL SUBTOTAL
-                        if (count($promoSubTotal) && $data->connect === 'pos_master') {
+                        if (count($promoSubTotal)) {
 
                             $discountsSubTotal = [
                                 'id_descuento' => "descuento_" . strtoupper(str_replace('.', '', uniqid('', true))),
