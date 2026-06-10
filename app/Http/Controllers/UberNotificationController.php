@@ -105,7 +105,7 @@ class UberNotificationController extends Controller
                                     foreach ($itemPromo->discount_items as $item) {
 
                                         $promoItem[] = [
-                                            'external_promotion_id' => $itemPromo->external_promotion_id,
+                                            'external_promotion_id' => $itemPromo->external_id,
                                             'type' => $itemPromo->type,
                                             "external_id" => $item->external_id,
                                             'discounted_quantity' => $item->discounted_quantity,
@@ -117,7 +117,7 @@ class UberNotificationController extends Controller
                                }else{ //PROMOCION SUB TOTAL
 
                                     $promoSubTotal[] = [
-                                        'external_promotion_id' => $itemPromo->external_promotion_id,
+                                        'external_promotion_id' => $itemPromo->external_id,
                                         'type' => $itemPromo->type,
                                         'discount_value' => number_format((($itemPromo->discount_value * -1) / 100),2,'.',''),
                                     ];
