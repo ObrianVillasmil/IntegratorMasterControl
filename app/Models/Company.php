@@ -13,7 +13,8 @@ class Company extends Model
     protected $fillable = [
         'name',
         'connect',
-        'error_emails'
+        'error_emails',
+        'discount_type'
     ];
 
 }

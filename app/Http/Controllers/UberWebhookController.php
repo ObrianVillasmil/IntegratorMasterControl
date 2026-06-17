@@ -63,6 +63,7 @@ class UberWebhookController extends Controller
 
                     $data->webook_uber_id = $whu->id;
                     $data->store_id = $storeId;
+                    $data->discount_type = $company->discount_type;
 
                     if(in_array($data->event_type,self::ORDER_NOTIFICATION_TYPES)){
 

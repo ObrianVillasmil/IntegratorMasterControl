@@ -1,0 +1,768 @@
+{
+    "order": {
+        "id": "37c84f5e-bdb0-457e-be92-ede5ec861d73",
+        "display_id": "61D73",
+        "state": "OFFERED",
+        "ordering_platform": "UBER_EATS",
+        "store": {
+            "id": "141ac86c-b473-416a-ab93-86307c0f7d9b",
+            "name": "Lai Lai (Paseo del R\u00edo)",
+            "timezone": "America\/Guayaquil",
+            "partner_identifiers": [
+                {
+                    "value": "s0mzSAz7R_R-ecNJVERpzMyIfj9jz2mh",
+                    "type": "ORDER_MANAGER_CLIENT_ID"
+                },
+                {
+                    "value": "MP-UBER-LAILAI-RIOCOCA",
+                    "type": "INTEGRATOR_BRAND_ID"
+                }
+            ],
+            "uber_merchant_type": {
+                "type": "MERCHANT_TYPE_RESTAURANT"
+            }
+        },
+        "customers": [
+            {
+                "id": "1850d755-dee7-5139-bf99-0f8210324784",
+                "name": {
+                    "display_name": "Ricardo S.",
+                    "first_name": "Ricardo",
+                    "last_name": "S."
+                },
+                "order_history": {
+                    "past_order_count": 10
+                },
+                "is_primary_customer": true,
+                "tax_profiles": [
+                    {
+                        "tax_id": "1803924149",
+                        "tax_id_type": "ecu-tin",
+                        "profile_type": "PERSONAL",
+                        "email": "rikrs@hotmail.com",
+                        "legal_entity_name": "Ricardo Silva",
+                        "billing_address": "El Batan",
+                        "country": "EC"
+                    }
+                ],
+                "contact": {
+                    "phone": {
+                        "country_iso2": "EC",
+                        "number": "+593 2-342-0160",
+                        "pin_code": "483 70 842"
+                    }
+                },
+                "can_respond_to_fulfillment_issues": true
+            }
+        ],
+        "deliveries": [
+            {
+                "id": "4f6fd204-04e9-4eb3-bf62-eec4ddc8c1ce",
+                "status": "SCHEDULED",
+                "estimated_pick_up_time": "2026-06-16T18:32:25-05:00",
+                "interaction_type": "CURBSIDE",
+                "estimated_drop_off_time": "2026-06-16T18:58:00-05:00"
+            }
+        ],
+        "carts": [
+            {
+                "id": "7f450749-a6bc-464e-a423-96a11abe2a0c",
+                "revision_id": "d0d1e5d9-b120-5cfd-97c7-d25433255c39",
+                "items": [
+                    {
+                        "id": "ITEM-PCP-333",
+                        "cart_item_id": "2e3e83f2-87e1-4a59-bc18-023119d32b12",
+                        "customer_id": "1850d755-dee7-5139-bf99-0f8210324784",
+                        "external_data": "R-333-PCP-333-IMP-15-STU-2005",
+                        "title": "COMBO HINCHADA UBER",
+                        "quantity": {
+                            "amount": 1,
+                            "unit": "PIECE"
+                        },
+                        "selected_modifier_groups": [
+                            {
+                                "id": "MOD-GROUP-PP_37-PCPP609-m9xrw314qu",
+                                "title": "Cambio Limonada Frutos Rojos Fam (x1)",
+                                "external_data": "PP-37-PCPP-609-OPC_SELECT-1-CMR-1-PER_MULT-false-OMV-0",
+                                "selected_items": [
+                                    {
+                                        "id": "MOD-PCP-337-67fhhe51y0",
+                                        "cart_item_id": "20bb2452-6064-49be-b370-5998e58b4a42",
+                                        "external_data": "R-333-ID_PCP-337-ID_PPPR-10436-IMP-15-STU-0",
+                                        "title": "LIMONADA FRUTOS ROJOS FAMILIAR (LL)",
+                                        "quantity": {
+                                            "amount": 1,
+                                            "unit": "PIECE"
+                                        },
+                                        "default_quantity": {
+                                            "amount": 0,
+                                            "unit": "PIECE"
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "picture_url": "https:\/\/tb-static.uber.com\/prod\/image-proc\/processed_images\/8800bddc1f268065cbddda1a629633c9\/d03e52b3c8af19d8fa8222e23efd9cfa.jpeg"
+                    },
+                    {
+                        "id": "ITEM-PCP-153",
+                        "cart_item_id": "8b5d78cf-ba6a-4ea4-835d-44a8407de008",
+                        "customer_id": "1850d755-dee7-5139-bf99-0f8210324784",
+                        "external_data": "R-153-PCP-153-IMP-15-STU-283",
+                        "title": "Gyozas de Cerdo y Camar\u00f3n",
+                        "quantity": {
+                            "amount": 2,
+                            "unit": "PIECE"
+                        },
+                        "picture_url": "https:\/\/tb-static.uber.com\/prod\/image-proc\/processed_images\/c76d4601bf628e0cf6a6a029e7ec3c9c\/d03e52b3c8af19d8fa8222e23efd9cfa.jpeg"
+                    }
+                ],
+                "include_single_use_items": false,
+                "restricted_items": {
+                    "alcohol": {
+                        "contain_alcoholic_item": false
+                    }
+                }
+            }
+        ],
+        "payment": {
+            "payment_detail": {
+                "order_total": {
+                    "net": {
+                        "amount_e5": 1872000,
+                        "currency_code": "USD",
+                        "formatted": "$18,72"
+                    },
+                    "tax": {
+                        "amount_e5": 225000,
+                        "currency_code": "USD",
+                        "formatted": "$2,25"
+                    },
+                    "gross": {
+                        "amount_e5": 2097000,
+                        "currency_code": "USD",
+                        "formatted": "$20,97"
+                    },
+                    "display_amount": "$20,97",
+                    "is_tax_inclusive": true
+                },
+                "item_charges": {
+                    "total": {
+                        "net": {
+                            "amount_e5": 2639000,
+                            "currency_code": "USD",
+                            "formatted": "$26,39"
+                        },
+                        "tax": {
+                            "amount_e5": 317000,
+                            "currency_code": "USD",
+                            "formatted": "$3,17"
+                        },
+                        "gross": {
+                            "amount_e5": 2956000,
+                            "currency_code": "USD",
+                            "formatted": "$29,56"
+                        },
+                        "display_amount": "$29,56",
+                        "is_tax_inclusive": true
+                    },
+                    "price_breakdown": [
+                        {
+                            "cart_item_id": "20bb2452-6064-49be-b370-5998e58b4a42",
+                            "price_type": "OPTION",
+                            "quantity": {
+                                "amount": 1,
+                                "unit": "PIECE"
+                            },
+                            "total": {
+                                "gross": {
+                                    "amount_e5": 0,
+                                    "currency_code": "USD",
+                                    "formatted": "$0,00"
+                                },
+                                "display_amount": "$0,00"
+                            },
+                            "unit": {
+                                "gross": {
+                                    "amount_e5": 0,
+                                    "currency_code": "USD",
+                                    "formatted": "$0,00"
+                                },
+                                "display_amount": "$0,00"
+                            }
+                        },
+                        {
+                            "cart_item_id": "2e3e83f2-87e1-4a59-bc18-023119d32b12",
+                            "price_type": "ITEM",
+                            "quantity": {
+                                "amount": 1,
+                                "unit": "PIECE"
+                            },
+                            "total": {
+                                "gross": {
+                                    "amount_e5": 2306000,
+                                    "currency_code": "USD",
+                                    "formatted": "$23,06"
+                                },
+                                "display_amount": "$23,06"
+                            },
+                            "discount": {
+                                "total": {
+                                    "gross": {
+                                        "amount_e5": 1499000,
+                                        "currency_code": "USD",
+                                        "formatted": "$14,99"
+                                    },
+                                    "display_amount": "$14,99"
+                                },
+                                "quantity": {
+                                    "amount": 1,
+                                    "unit": "PIECE"
+                                }
+                            },
+                            "unit": {
+                                "gross": {
+                                    "amount_e5": 2306000,
+                                    "currency_code": "USD",
+                                    "formatted": "$23,06"
+                                },
+                                "display_amount": "$23,06"
+                            }
+                        },
+                        {
+                            "cart_item_id": "8b5d78cf-ba6a-4ea4-835d-44a8407de008",
+                            "price_type": "ITEM",
+                            "quantity": {
+                                "amount": 2,
+                                "unit": "PIECE"
+                            },
+                            "total": {
+                                "gross": {
+                                    "amount_e5": 650000,
+                                    "currency_code": "USD",
+                                    "formatted": "$6,50"
+                                },
+                                "display_amount": "$6,50"
+                            },
+                            "discount": {
+                                "total": {
+                                    "gross": {
+                                        "amount_e5": 598000,
+                                        "currency_code": "USD",
+                                        "formatted": "$5,98"
+                                    },
+                                    "display_amount": "$5,98"
+                                },
+                                "quantity": {
+                                    "amount": 2,
+                                    "unit": "PIECE"
+                                }
+                            },
+                            "unit": {
+                                "gross": {
+                                    "amount_e5": 325000,
+                                    "currency_code": "USD",
+                                    "formatted": "$3,25"
+                                },
+                                "display_amount": "$3,25"
+                            }
+                        },
+                        {
+                            "cart_item_id": "9681a569-940c-4bc0-b0a2-dccb77f9d352",
+                            "price_type": "CUSTOMIZATION",
+                            "quantity": {
+                                "amount": 1,
+                                "unit": "PIECE"
+                            },
+                            "total": {
+                                "gross": {
+                                    "amount_e5": 0,
+                                    "currency_code": "USD",
+                                    "formatted": "$0,00"
+                                },
+                                "display_amount": "$0,00"
+                            }
+                        }
+                    ],
+                    "subtotal_including_promos": {
+                        "net": {
+                            "amount_e5": 1872000,
+                            "currency_code": "USD",
+                            "formatted": "$18.72"
+                        },
+                        "tax": {
+                            "amount_e5": 225000,
+                            "currency_code": "USD",
+                            "formatted": "$2.25"
+                        },
+                        "gross": {
+                            "amount_e5": 2097000,
+                            "currency_code": "USD",
+                            "formatted": "$20.97"
+                        },
+                        "display_amount": "$20.97",
+                        "is_tax_inclusive": true
+                    }
+                },
+                "fees": {
+                    "total": {
+                        "net": {
+                            "amount_e5": 0,
+                            "currency_code": "USD",
+                            "formatted": "$0,00"
+                        },
+                        "tax": {
+                            "amount_e5": 0,
+                            "currency_code": "USD",
+                            "formatted": "$0,00"
+                        },
+                        "gross": {
+                            "amount_e5": 0,
+                            "currency_code": "USD",
+                            "formatted": "$0,00"
+                        },
+                        "display_amount": "$0,00",
+                        "is_tax_inclusive": true
+                    }
+                },
+                "promotions": {
+                    "total": {
+                        "net": {
+                            "amount_e5": -767000,
+                            "currency_code": "USD",
+                            "formatted": "-$7.67"
+                        },
+                        "tax": {
+                            "amount_e5": -92000,
+                            "currency_code": "USD",
+                            "formatted": "$-0,92"
+                        },
+                        "gross": {
+                            "amount_e5": -859000,
+                            "currency_code": "USD",
+                            "formatted": "-$8.59"
+                        },
+                        "display_amount": "-$8.59",
+                        "is_tax_inclusive": true
+                    },
+                    "details": [
+                        {
+                            "type": "DISCOUNTED_ITEM",
+                            "discount_value": "-52",
+                            "discount_percentage": "0",
+                            "discount_items": [
+                                {
+                                    "external_id": "ITEM-PCP-153",
+                                    "discounted_quantity": 2,
+                                    "discount_amount_applied": -52
+                                }
+                            ],
+                            "promotion_uuid": "226c0b34-4524-4bc4-bb9b-587df96a4482",
+                            "promo_funding_splits": [
+                                {
+                                    "funding_source": "ORGANIZATION",
+                                    "amount_paid": {
+                                        "net": {
+                                            "amount_e5": -52000,
+                                            "currency_code": "USD",
+                                            "formatted": "$-0,52"
+                                        }
+                                    }
+                                },
+                                {
+                                    "funding_source": "UBER",
+                                    "amount_paid": {
+                                        "net": {
+                                            "amount_e5": 0,
+                                            "currency_code": "USD",
+                                            "formatted": "$0,00"
+                                        }
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "type": "DISCOUNTED_ITEM",
+                            "discount_value": "-807",
+                            "discount_percentage": "0",
+                            "discount_items": [
+                                {
+                                    "external_id": "ITEM-PCP-333",
+                                    "discounted_quantity": 1,
+                                    "discount_amount_applied": -807
+                                }
+                            ],
+                            "promotion_uuid": "21364304-7912-468f-b654-988d2c0049c7",
+                            "promo_funding_splits": [
+                                {
+                                    "funding_source": "ORGANIZATION",
+                                    "amount_paid": {
+                                        "net": {
+                                            "amount_e5": -807000,
+                                            "currency_code": "USD",
+                                            "formatted": "$-8,07"
+                                        }
+                                    }
+                                },
+                                {
+                                    "funding_source": "UBER",
+                                    "amount_paid": {
+                                        "net": {
+                                            "amount_e5": 0,
+                                            "currency_code": "USD",
+                                            "formatted": "$0,00"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "order_total_excluding_promos": {
+                        "net": {
+                            "amount_e5": 2639000,
+                            "currency_code": "USD",
+                            "formatted": "$26,39"
+                        },
+                        "tax": {
+                            "amount_e5": 317000,
+                            "currency_code": "USD",
+                            "formatted": "$3,17"
+                        },
+                        "gross": {
+                            "amount_e5": 2956000,
+                            "currency_code": "USD",
+                            "formatted": "$29,56"
+                        },
+                        "display_amount": "$29,56",
+                        "is_tax_inclusive": true
+                    }
+                },
+                "currency_code": "USD",
+                "marketplace_fee_due_to_uber": {
+                    "net": {
+                        "amount_e5": 0,
+                        "currency_code": "USD",
+                        "formatted": "$0,00"
+                    },
+                    "tax": {
+                        "amount_e5": 0,
+                        "currency_code": "USD",
+                        "formatted": "$0,00"
+                    },
+                    "gross": {
+                        "amount_e5": 0,
+                        "currency_code": "USD",
+                        "formatted": "$0,00"
+                    },
+                    "display_amount": "$0,00",
+                    "is_tax_inclusive": true
+                }
+            },
+            "tax_reporting": {
+                "breakdown": {
+                    "items": [
+                        {
+                            "instance_id": "2e3e83f2-87e1-4a59-bc18-023119d32b12",
+                            "description": "ITEM",
+                            "gross_amount": {
+                                "amount_e5": 2306000,
+                                "currency_code": "USD",
+                                "formatted": "$23,06"
+                            },
+                            "net_amount": {
+                                "amount_e5": 2058928,
+                                "currency_code": "USD",
+                                "formatted": "$20,59"
+                            },
+                            "total_tax": {
+                                "amount_e5": 247071,
+                                "currency_code": "USD",
+                                "formatted": "$2,47"
+                            },
+                            "taxes": [
+                                {
+                                    "is_inclusive": true,
+                                    "rate": "0.12",
+                                    "calculated_tax": {
+                                        "amount_e5": 247071,
+                                        "currency_code": "USD",
+                                        "formatted": "$2,47"
+                                    },
+                                    "taxable_amount": {
+                                        "amount_e5": 2306000,
+                                        "currency_code": "USD",
+                                        "formatted": "$23,06"
+                                    },
+                                    "tax_remittance": "MERCHANT"
+                                }
+                            ]
+                        },
+                        {
+                            "instance_id": "8b5d78cf-ba6a-4ea4-835d-44a8407de008",
+                            "description": "ITEM",
+                            "gross_amount": {
+                                "amount_e5": 650000,
+                                "currency_code": "USD",
+                                "formatted": "$6,50"
+                            },
+                            "net_amount": {
+                                "amount_e5": 580357,
+                                "currency_code": "USD",
+                                "formatted": "$5,80"
+                            },
+                            "total_tax": {
+                                "amount_e5": 69642,
+                                "currency_code": "USD",
+                                "formatted": "$0,70"
+                            },
+                            "taxes": [
+                                {
+                                    "is_inclusive": true,
+                                    "rate": "0.12",
+                                    "calculated_tax": {
+                                        "amount_e5": 69642,
+                                        "currency_code": "USD",
+                                        "formatted": "$0,70"
+                                    },
+                                    "taxable_amount": {
+                                        "amount_e5": 650000,
+                                        "currency_code": "USD",
+                                        "formatted": "$6,50"
+                                    },
+                                    "tax_remittance": "MERCHANT"
+                                }
+                            ]
+                        }
+                    ],
+                    "fees": [
+                        {
+                            "instance_id": "2e3e83f2-87e1-4a59-bc18-023119d32b12",
+                            "description": "SERVICE_FEE",
+                            "gross_amount": {
+                                "amount_e5": 126520,
+                                "currency_code": "USD",
+                                "formatted": "$1,27"
+                            },
+                            "net_amount": {
+                                "amount_e5": 110020,
+                                "currency_code": "USD",
+                                "formatted": "$1,10"
+                            },
+                            "total_tax": {
+                                "amount_e5": 16500,
+                                "currency_code": "USD",
+                                "formatted": "$0,16"
+                            },
+                            "taxes": [
+                                {
+                                    "is_inclusive": true,
+                                    "rate": "0.15",
+                                    "calculated_tax": {
+                                        "amount_e5": 16500,
+                                        "currency_code": "USD",
+                                        "formatted": "$0,16"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "instance_id": "2e3e83f2-87e1-4a59-bc18-023119d32b12",
+                            "description": "DELIVERY_FEE",
+                            "gross_amount": {
+                                "amount_e5": 42170,
+                                "currency_code": "USD",
+                                "formatted": "$0,42"
+                            },
+                            "net_amount": {
+                                "amount_e5": 36670,
+                                "currency_code": "USD",
+                                "formatted": "$0,37"
+                            },
+                            "total_tax": {
+                                "amount_e5": 5500,
+                                "currency_code": "USD",
+                                "formatted": "$0,06"
+                            },
+                            "taxes": [
+                                {
+                                    "is_inclusive": true,
+                                    "rate": "0.15",
+                                    "calculated_tax": {
+                                        "amount_e5": 5500,
+                                        "currency_code": "USD",
+                                        "formatted": "$0,06"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "instance_id": "8b5d78cf-ba6a-4ea4-835d-44a8407de008",
+                            "description": "SERVICE_FEE",
+                            "gross_amount": {
+                                "amount_e5": 50470,
+                                "currency_code": "USD",
+                                "formatted": "$0,50"
+                            },
+                            "net_amount": {
+                                "amount_e5": 43890,
+                                "currency_code": "USD",
+                                "formatted": "$0,44"
+                            },
+                            "total_tax": {
+                                "amount_e5": 6580,
+                                "currency_code": "USD",
+                                "formatted": "$0,07"
+                            },
+                            "taxes": [
+                                {
+                                    "is_inclusive": true,
+                                    "rate": "0.15",
+                                    "calculated_tax": {
+                                        "amount_e5": 6580,
+                                        "currency_code": "USD",
+                                        "formatted": "$0,07"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "instance_id": "8b5d78cf-ba6a-4ea4-835d-44a8407de008",
+                            "description": "DELIVERY_FEE",
+                            "gross_amount": {
+                                "amount_e5": 16820,
+                                "currency_code": "USD",
+                                "formatted": "$0,17"
+                            },
+                            "net_amount": {
+                                "amount_e5": 14630,
+                                "currency_code": "USD",
+                                "formatted": "$0,15"
+                            },
+                            "total_tax": {
+                                "amount_e5": 2190,
+                                "currency_code": "USD",
+                                "formatted": "$0,02"
+                            },
+                            "taxes": [
+                                {
+                                    "is_inclusive": true,
+                                    "rate": "0.15",
+                                    "calculated_tax": {
+                                        "amount_e5": 2190,
+                                        "currency_code": "USD",
+                                        "formatted": "$0,02"
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "promotions": [
+                        {
+                            "instance_id": "2e3e83f2-87e1-4a59-bc18-023119d32b12",
+                            "description": "ITEM_PROMOTION",
+                            "gross_amount": {
+                                "amount_e5": -807000,
+                                "currency_code": "USD",
+                                "formatted": "$-8,07"
+                            },
+                            "net_amount": {
+                                "amount_e5": -720535,
+                                "currency_code": "USD",
+                                "formatted": "$-7,21"
+                            },
+                            "total_tax": {
+                                "amount_e5": -86464,
+                                "currency_code": "USD",
+                                "formatted": "$-0,86"
+                            },
+                            "taxes": [
+                                {
+                                    "is_inclusive": true,
+                                    "rate": "0.12",
+                                    "calculated_tax": {
+                                        "amount_e5": -86464,
+                                        "currency_code": "USD",
+                                        "formatted": "$-0,86"
+                                    },
+                                    "taxable_amount": {
+                                        "amount_e5": -807000,
+                                        "currency_code": "USD",
+                                        "formatted": "$-8,07"
+                                    },
+                                    "tax_remittance": "MERCHANT"
+                                }
+                            ]
+                        },
+                        {
+                            "instance_id": "8b5d78cf-ba6a-4ea4-835d-44a8407de008",
+                            "description": "ITEM_PROMOTION",
+                            "gross_amount": {
+                                "amount_e5": -52000,
+                                "currency_code": "USD",
+                                "formatted": "$-0,52"
+                            },
+                            "net_amount": {
+                                "amount_e5": -46428,
+                                "currency_code": "USD",
+                                "formatted": "$-0,46"
+                            },
+                            "total_tax": {
+                                "amount_e5": -5571,
+                                "currency_code": "USD",
+                                "formatted": "$-0,06"
+                            },
+                            "taxes": [
+                                {
+                                    "is_inclusive": true,
+                                    "rate": "0.12",
+                                    "calculated_tax": {
+                                        "amount_e5": -5571,
+                                        "currency_code": "USD",
+                                        "formatted": "$-0,06"
+                                    },
+                                    "taxable_amount": {
+                                        "amount_e5": -52000,
+                                        "currency_code": "USD",
+                                        "formatted": "$-0,52"
+                                    },
+                                    "tax_remittance": "MERCHANT"
+                                }
+                            ]
+                        }
+                    ]
+                }
+            },
+            "tender_types": null
+        },
+        "status": "ACTIVE",
+        "estimated_unfulfilled_at": "2026-06-16T18:41:26-05:00",
+        "is_order_accuracy_risk": false,
+        "store_instructions": "  | Tax ID: 1803924149  | Legal Entity Name: Ricardo Silva  | Email: rikrs@hotmail.com  | Address: El Batan",
+        "preparation_time": {
+            "ready_for_pickup_time_secs": 150,
+            "source": "PREDICTED_BY_UBER",
+            "ready_for_pickup_time": "2026-06-16T18:32:25-05:00"
+        },
+        "action_eligibility": {
+            "adjust_ready_for_pickup_time": {
+                "is_eligible": true,
+                "reason": "ORDER_VALID_STATE"
+            },
+            "mark_out_of_item": {
+                "is_eligible": true,
+                "reason": "ORDER_VALID_STATE"
+            },
+            "cancel": {
+                "is_eligible": false,
+                "reason": "ORDER_NOT_ACCEPTED"
+            },
+            "mark_cannot_fulfill": {
+                "is_eligible": true,
+                "reason": "ORDER_VALID_STATE"
+            }
+        },
+        "fulfillment_type": "DELIVERY_BY_UBER",
+        "created_time": "2026-06-16T18:29:56-05:00",
+        "has_membership_pass": false
+    }
+}

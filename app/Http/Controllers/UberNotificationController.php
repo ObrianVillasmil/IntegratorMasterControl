@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Company;
 use App\Models\WebhookUber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -70,6 +71,20 @@ class UberNotificationController extends Controller
 
                             }
 
+                        }
+
+                        $useUberDiscountCalc = $data->discount_type === 'UBER_CREATED';
+
+                        $priceBreakdownMap = [];
+                        if ($useUberDiscountCalc && isset($response->order->payment->payment_detail->item_charges->price_breakdown)) {
+                            foreach ($response->order->payment->payment_detail->item_charges->price_breakdown as $pb) {
+                                if (isset($pb->discount->total->gross->amount_e5)) {
+                                    $priceBreakdownMap[$pb->cart_item_id] = [
+                                        'discount_gross' => $pb->discount->total->gross->amount_e5 / 100000,
+                                        'quantity' => $pb->quantity->amount,
+                                    ];
+                                }
+                            }
                         }
 
                         $customerIdentification = null;
@@ -142,28 +157,55 @@ class UberNotificationController extends Controller
                                     $commnet = $item->customer_request->special_instructions;
 
                                 //EXISTEN PROMOCIONES EN EL ITEM
-                                if(count($promoItem)){
+                                if ($useUberDiscountCalc) {
 
-                                    $indexPromo = array_search($item->id, array_column($promoItem, 'external_id'));
+                                    if (isset($priceBreakdownMap[$item->cart_item_id])) {
+                                        $pb = $priceBreakdownMap[$item->cart_item_id];
+                                        $totalDeseado = $pb['discount_gross'] / $pb['quantity'];
+                                        $ivaRate = $dataItem[5] / 100;
+                                        $discount = $subTotal - ($totalDeseado / (1 + $ivaRate));
+                                        $discount = max(0, min($discount, $subTotal));
 
-                                    if($indexPromo !== false && isset($promoItem[$indexPromo]) && $promoItem[$indexPromo]['discounted_quantity'] > 0){
+                                        if ($discount > 0) {
+                                            $jsonDiscount = json_encode([
+                                                'id_descuento' => '-1',
+                                                'nombre' => 'PROMO_UBER',
+                                                'tipo' => 'MONTO',
+                                                'aplicacion' => 'ITEM',
+                                                'monto' => number_format($discount, 4, '.', ''),
+                                                'porcentaje' => null,
+                                                'condicion_aplicable' => 0,
+                                                'producto' => $dataItem[0] . '_' . $dataItem[1]
+                                            ]);
+                                        }
+                                    }
 
-                                        $discount = $promoItem[$indexPromo]['discount_amount_applied'];
+                                } else {
 
-                                        $jsonDiscount = json_encode([
-                                            'id_descuento' => '-1',
-                                            'nombre' => $promoItem[$indexPromo]['external_promotion_id'],
-                                            'tipo' => 'MONTO',
-                                            'aplicacion' => 'ITEM',
-                                            'monto' => $discount,
-                                            'porcentaje' => null,
-                                            'condicion_aplicable' => 0,
-                                            'producto' => $dataItem[0] . '_' . $dataItem[1]
-                                        ]);
+                                    if(count($promoItem)){
 
-                                        if ($discount > $subTotal) $discount = $subTotal;
+                                        $indexPromo = array_search($item->id, array_column($promoItem, 'external_id'));
 
-                                        $promoItem[$indexPromo]['discounted_quantity'] -= 1;
+                                        if($indexPromo !== false && isset($promoItem[$indexPromo]) && $promoItem[$indexPromo]['discounted_quantity'] > 0){
+
+                                            $discount = $promoItem[$indexPromo]['discount_amount_applied'];
+
+                                            $jsonDiscount = json_encode([
+                                                'id_descuento' => '-1',
+                                                'nombre' => $promoItem[$indexPromo]['external_promotion_id'],
+                                                'tipo' => 'MONTO',
+                                                'aplicacion' => 'ITEM',
+                                                'monto' => $discount,
+                                                'porcentaje' => null,
+                                                'condicion_aplicable' => 0,
+                                                'producto' => $dataItem[0] . '_' . $dataItem[1]
+                                            ]);
+
+                                            if ($discount > $subTotal) $discount = $subTotal;
+
+                                            $promoItem[$indexPromo]['discounted_quantity'] -= 1;
+
+                                        }
 
                                     }
 
@@ -200,31 +242,58 @@ class UberNotificationController extends Controller
                                                 $pcpRes = DB::connection($data->connect)->table('pos_configuracion_producto')->where('id_pos_configuracion_producto',$dataResponse[3])->first();
 
                                                 //EXISTEN PROMOCIONES EN LA RESPUESTA
-                                                if(isset($response->order->payment->tax_reporting->breakdown->promotions)){
+                                                if ($useUberDiscountCalc) {
 
-                                                    $arrItemsPromo = array_filter($response->order->payment->tax_reporting->breakdown->promotions, function($itemPromo) use ($res){
-                                                        return  $res->cart_item_id === $itemPromo->instance_id && $itemPromo->description === 'ITEM_PROMOTION';
-                                                    });
+                                                    if (isset($priceBreakdownMap[$res->cart_item_id])) {
+                                                        $pb = $priceBreakdownMap[$res->cart_item_id];
+                                                        $totalDeseado = $pb['discount_gross'] / $pb['quantity'];
+                                                        $ivaRate = $dataResponse[7] / 100;
+                                                        $discount = $subTotal - ($totalDeseado / (1 + $ivaRate));
+                                                        $discount = max(0, min($discount, $subTotal));
 
-                                                    foreach($arrItemsPromo as $itemPromo){
-
-                                                        $discount = number_format(($itemPromo->net_amount->amount_e5/100000)*-1,2,'.','');
-
-                                                        $jsonDiscount = json_encode([
-                                                            'id_descuento' => '-1',
-                                                            'nombre' => 'PROMO_UBER',
-                                                            'tipo' => 'MONTO',
-                                                            'aplicacion' => 'ITEM',
-                                                            'monto' => $discount,
-                                                            'porcentaje' => null,
-                                                            'condicion_aplicable'=> 0,
-                                                            'producto' => $dataResponse[0].'_'.$dataResponse[1]
-                                                        ]);
-
+                                                        if ($discount > 0) {
+                                                            $jsonDiscount = json_encode([
+                                                                'id_descuento' => '-1',
+                                                                'nombre' => 'PROMO_UBER',
+                                                                'tipo' => 'MONTO',
+                                                                'aplicacion' => 'ITEM',
+                                                                'monto' => number_format($discount, 4, '.', ''),
+                                                                'porcentaje' => null,
+                                                                'condicion_aplicable' => 0,
+                                                                'producto' => $dataResponse[0].'_'.$dataResponse[1]
+                                                            ]);
+                                                        }
                                                     }
 
-                                                    if($discount > $subTotal)
-                                                        $discount = $subTotal;
+                                                } else {
+
+                                                    if(isset($response->order->payment->tax_reporting->breakdown->promotions)){
+
+                                                        $arrItemsPromo = array_filter($response->order->payment->tax_reporting->breakdown->promotions, function($itemPromo) use ($res){
+                                                            return  $res->cart_item_id === $itemPromo->instance_id && $itemPromo->description === 'ITEM_PROMOTION';
+                                                        });
+
+                                                        foreach($arrItemsPromo as $itemPromo){
+
+                                                            $discount = number_format(($itemPromo->net_amount->amount_e5/100000)*-1,2,'.','');
+
+                                                            $jsonDiscount = json_encode([
+                                                                'id_descuento' => '-1',
+                                                                'nombre' => 'PROMO_UBER',
+                                                                'tipo' => 'MONTO',
+                                                                'aplicacion' => 'ITEM',
+                                                                'monto' => $discount,
+                                                                'porcentaje' => null,
+                                                                'condicion_aplicable'=> 0,
+                                                                'producto' => $dataResponse[0].'_'.$dataResponse[1]
+                                                            ]);
+
+                                                        }
+
+                                                        if($discount > $subTotal)
+                                                            $discount = $subTotal;
+
+                                                    }
 
                                                 }
 
