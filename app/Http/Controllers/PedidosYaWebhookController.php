@@ -128,7 +128,7 @@ class PedidosYaWebhookController extends Controller
             ->where('stpeya.posvendorid',$request->vendorid)->first();
 
             $customerIdentification = null;
-            $customerEmail = 'a@gmail.com';
+            $customerEmail = '';
             $customer = $request->customer['firstName'].' '.$request->customer['lastName'];
             $customerAddress = null;
             $customerPhone = null;

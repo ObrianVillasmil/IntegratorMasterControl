@@ -59,7 +59,23 @@ class UberWebhookController extends Controller
 
                 if(hash_equals($signature,$hmac)){
 
-                    $whu= WebhookUber::create(['data' => json_encode($data)]);
+                    if($data->event_type === 'orders.notification'){
+
+                        //SI ES UN PEDIDO ENTRANDTE Y YA EXISTE EL EVENT_ID DE ESE PEDIDO RETORNA UN 200 PARA NO OCASIONAR PROBLEMAS EN UBER
+                        $existEventOrder = WebhookUber::where('data->event_id', $data->event_id)
+                        ->where(function($q) use($data){
+
+                            if(isset($data->meta->resource_id))
+                                $q->where('data->meta->resource_id', $data->meta->resource_id);
+
+                        })->exists();
+
+                        if($existEventOrder)
+                            return response('',200);
+
+                    }
+
+                    $whu = WebhookUber::create(['data' => json_encode($data)]);
 
                     $data->webook_uber_id = $whu->id;
                     $data->store_id = $storeId;

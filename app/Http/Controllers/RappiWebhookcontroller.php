@@ -47,7 +47,7 @@ class RappiWebhookcontroller extends Controller
             ->where('strappi.store_id',$request->store->internal_id)->first();
 
             $customerIdentification = null;
-            $customerEmail = 'a@gmail.com';
+            $customerEmail = '';
             $customer = null;
             $customerAddress = null;
             $customerPhone = null;

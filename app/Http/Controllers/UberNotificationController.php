@@ -88,7 +88,7 @@ class UberNotificationController extends Controller
                         }
 
                         $customerIdentification = null;
-                        $customerEmail = 'a@gmail.com';
+                        $customerEmail = '';
                         $customer = null;
                         $customerAddress = null;
                         $customerPhone = null;
