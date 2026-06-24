@@ -42,8 +42,12 @@ class UberWebhookController extends Controller
                     if(!isset($data->meta->order_id))
                         return response('',403);
 
-                    $whkNotifcation = json_decode(WebhookUber::where('data->meta->resource_id',$data->meta->order_id)->first()->data);
+                    $whkNotifcationRow = WebhookUber::where('data->meta->resource_id',$data->meta->order_id)->first();
 
+                    if(!isset($whkNotifcationRow))
+                        return response('',404);
+
+                    $whkNotifcation = json_decode($whkNotifcationRow->data);
                     $storeId = $whkNotifcation->meta->user_id;
 
                 }
@@ -52,6 +56,9 @@ class UberWebhookController extends Controller
                     throw new \Exception('No se ha encontrado el storeId en la bd para la petición '.$request->__toString());
 
                 $company = Company::where('token',$storeId)->first();
+
+                if(!isset($company))
+                    return response('',404);
 
                 $data->connect = $company->connect;
 
@@ -113,7 +120,7 @@ class UberWebhookController extends Controller
 
         } catch (\Exception $e) {
 
-            info($e->getMessage());
+            info('Error getNotification UBER: '.$e->getMessage().' '.$e->getLine().' '.$e->getFile());
             return response('',200);
 
 

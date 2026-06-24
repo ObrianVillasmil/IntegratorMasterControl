@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\RetryGetUberOrder;
 use App\Models\Company;
 use App\Models\WebhookUber;
 use Illuminate\Http\Request;
@@ -433,6 +434,15 @@ class UberNotificationController extends Controller
                 info(json_encode($data));
                 info('$response:');
                 info(json_encode($response));
+
+                $store = DB::connection($data->connect)->table('sucursal_tienda_uber as stu')
+                ->join('sucursal as s','s.id_sucursal','stu.id_sucursal')
+                ->where('stu.store_id',$data->store_id)->first();
+
+                $data->token = $store->token;
+
+                RetryGetUberOrder::dispatch($data)->delay(now()->addSeconds(5))->onQueue('retry-get-uber-order');
+
             }
 
         } catch (\Exception $e) {
