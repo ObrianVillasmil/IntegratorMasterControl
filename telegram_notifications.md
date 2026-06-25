@@ -840,7 +840,7 @@ Documenta:
 | 9 | `app/Console/Commands/TelegramRegisterChat.php` | Comando |
 | 10 | `app/Console/Commands/TelegramTestNotify.php` | Comando |
 | 11 | `routes/api.php` | Modificacion (1 linea) |
-| 12 | `.env.example` | Modificacion (vars) |
+| 12 | `.env` | Modificacion (vars) |
 | 13 | `.opencode/skills/telegram-notifications/SKILL.md` | Skill |
 
 ---
