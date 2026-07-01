@@ -213,32 +213,59 @@ class RetrySendOrderMp implements ShouldQueue
 
                     $imp = $connection->table('impuesto')->where('valor',$item->tax)->first();
 
-                    $detPrec = $connection->table('detalle_precuenta')->orderBy('id_detalle_precuenta', 'desc')->first();
+                    if (in_array($this->conexion, ['pos_pepitosgrill2', 'pos_pepitosgrill3', 'pos_pepitosgrill1'])) {
 
-                    $detPrecuentaId = !isset($detPrec) ? 1 : ($detPrec->id_detalle_precuenta+1);
+                        $connection->table('detalle_precuenta')->insert([
+                            'id_sucursal' => $this->data['id_branch_office'],
+                            'id_precuenta' => $precuentaId,
+                            'id_producto' => $item->id,
+                            'tipo' => $item->type,
+                            'nombre' => $item->name . (isset($item->comment) && $item->comment != '' ? (' | ' . $item->comment) : ''),
+                            'impuesto' => $item->tax,
+                            'cantidad' => $item->quantity,
+                            'ingrediente' => $item->ingredient == 1,
+                            'id_impuesto' => $imp->id_impuesto,
+                            'comentario' => $item->comment,
+                            'impreso' => false,
+                            'precio' => $item->sub_total_price,
+                            'id_pos_configuracion_producto_pregunta' => $item->id_pcpp,
+                            'id_cajero' => '1000',
+                            'monto_descuento' => $item->discount,
+                            'json_descuento' => isset($item->json_discount) ? $item->json_discount : null
+                        ]);
 
-                    while ($connection->table('detalle_precuenta')->where('id_detalle_precuenta', $detPrecuentaId)->exists())
-                        $detPrecuentaId++;
+                    }else{
 
-                    $connection->table('detalle_precuenta')->insert([
-                        'id_detalle_precuenta' => $detPrecuentaId,
-                        'id_sucursal' => $this->data['id_branch_office'],
-                        'id_precuenta' => $precuentaId,
-                        'id_producto' => $item->id,
-                        'tipo' => $item->type,
-                        'nombre' => $item->name.(isset($item->comment) && $item->comment != '' ? (' | '.$item->comment) : ''),
-                        'impuesto' => $item->tax,
-                        'cantidad' => $item->quantity,
-                        'ingrediente' => $item->ingredient == 1,
-                        'id_impuesto' => $imp->id_impuesto,
-                        'comentario' => $item->comment,
-                        'impreso' => false,
-                        'precio' => $item->sub_total_price,
-                        'id_pos_configuracion_producto_pregunta' => $item->id_pcpp,
-                        'id_cajero'=> '1000',
-                        'monto_descuento' => $item->discount,
-                        'json_descuento' => isset($item->json_discount) ? $item->json_discount : null
-                    ]);
+                        $detPrec = $connection->table('detalle_precuenta')->orderBy('id_detalle_precuenta', 'desc')->first();
+
+                        $detPrecuentaId = !isset($detPrec) ? 1 : ($detPrec->id_detalle_precuenta + 1);
+
+                        while ($connection->table('detalle_precuenta')->where('id_detalle_precuenta', $detPrecuentaId)->exists())
+                            $detPrecuentaId++;
+
+                        $connection->table('detalle_precuenta')->insert([
+                            'id_detalle_precuenta' => $detPrecuentaId,
+                            'id_sucursal' => $this->data['id_branch_office'],
+                            'id_precuenta' => $precuentaId,
+                            'id_producto' => $item->id,
+                            'tipo' => $item->type,
+                            'nombre' => $item->name . (isset($item->comment) && $item->comment != '' ? (' | ' . $item->comment) : ''),
+                            'impuesto' => $item->tax,
+                            'cantidad' => $item->quantity,
+                            'ingrediente' => $item->ingredient == 1,
+                            'id_impuesto' => $imp->id_impuesto,
+                            'comentario' => $item->comment,
+                            'impreso' => false,
+                            'precio' => $item->sub_total_price,
+                            'id_pos_configuracion_producto_pregunta' => $item->id_pcpp,
+                            'id_cajero' => '1000',
+                            'monto_descuento' => $item->discount,
+                            'json_descuento' => isset($item->json_discount) ? $item->json_discount : null
+                        ]);
+
+                    }
+
+
 
                 }
 
