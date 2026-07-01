@@ -109,39 +109,70 @@ class RetrySendOrderMp implements ShouldQueue
                     }
 
                 }
-
-                $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
-
-                $precuentaId = !isset($prec) ? 1 : ($prec->id_precuenta+1);
                 /* info('$precuentaId '. $precuentaId);
                 info('id_branch_office '. $this->data['id_branch_office']);
                 info('$prec');
                 info((array)$prec); */
-                $connection->table('precuenta')->insert([
-                    'id_precuenta' => $precuentaId,
-                    'id_sucursal' => $this->data['id_branch_office'],
-                    'nombre' => $this->data['name'],
-                    'id_pos' => $pos->id_pos,
-                    'id_usuario' => '1000',
-                    'id_comprador' => $customerId,
-                    'default_name' => $this->data['order_id'],
-                    'comenzales' => 1,
-                    'id_cliente_externo' => $this->data['sale_type_id'],
-                    'venta_web' => true,
-                    'total_venta_web' => $this->data['total'],
-                    'tipo_pago_venta_web' => $this->data['payment_type_id'],
-                    'tipo' => $this->data['ordering_platform'],
-                    'json_descuento' => isset($this->data['json_desc_subtotal']) ? json_encode($this->data['json_desc_subtotal']) : null,
-                    'base0' => 0,
-                    'base12' => 0,
-                    'propina' => 0,
-                    'descuento1' => 0,
-                    'descuento2' => 0,
-                    'subtotal12' => 0,
-                    'subtotal0' => 0,
-                    'impuesto' => 0,
-                    'servicio' => 0,
-                ]);
+                if(in_array($this->conexion,['pos_pepitosgrill2', 'pos_pepitosgrill3', 'pos_pepitosgrill1'])){
+
+                    $precuentaId = $connection->table('precuenta')->insertGetId([
+                        'id_sucursal' => $this->data['id_branch_office'],
+                        'nombre' => $this->data['name'],
+                        'id_pos' => $pos->id_pos,
+                        'id_usuario' => '1000',
+                        'id_comprador' => $customerId,
+                        'default_name' => $this->data['order_id'],
+                        'comenzales' => 1,
+                        'id_cliente_externo' => $this->data['sale_type_id'],
+                        'venta_web' => true,
+                        'total_venta_web' => $this->data['total'],
+                        'tipo_pago_venta_web' => $this->data['payment_type_id'],
+                        'tipo' => $this->data['ordering_platform'],
+                        'json_descuento' => isset($this->data['json_desc_subtotal']) ? json_encode($this->data['json_desc_subtotal']) : null,
+                        'base0' => 0,
+                        'base12' => 0,
+                        'propina' => 0,
+                        'descuento1' => 0,
+                        'descuento2' => 0,
+                        'subtotal12' => 0,
+                        'subtotal0' => 0,
+                        'impuesto' => 0,
+                        'servicio' => 0,
+                    ], 'id_precuenta');
+
+                }else{
+
+                    $prec = $connection->table('precuenta')->orderBy('id_precuenta', 'desc')->first();
+
+                    $precuentaId = !isset($prec) ? 1 : ($prec->id_precuenta + 1);
+
+                    $connection->table('precuenta')->insert([
+                        'id_precuenta' => $precuentaId,
+                        'id_sucursal' => $this->data['id_branch_office'],
+                        'nombre' => $this->data['name'],
+                        'id_pos' => $pos->id_pos,
+                        'id_usuario' => '1000',
+                        'id_comprador' => $customerId,
+                        'default_name' => $this->data['order_id'],
+                        'comenzales' => 1,
+                        'id_cliente_externo' => $this->data['sale_type_id'],
+                        'venta_web' => true,
+                        'total_venta_web' => $this->data['total'],
+                        'tipo_pago_venta_web' => $this->data['payment_type_id'],
+                        'tipo' => $this->data['ordering_platform'],
+                        'json_descuento' => isset($this->data['json_desc_subtotal']) ? json_encode($this->data['json_desc_subtotal']) : null,
+                        'base0' => 0,
+                        'base12' => 0,
+                        'propina' => 0,
+                        'descuento1' => 0,
+                        'descuento2' => 0,
+                        'subtotal12' => 0,
+                        'subtotal0' => 0,
+                        'impuesto' => 0,
+                        'servicio' => 0,
+                    ]);
+
+                }
 
                 //SOLO PARA APPS DE DELIVERY, LOS ECCOMERCE EXTERNOS ENTRAN COMO UNA PRECUENTA NORMAL
                 if(isset($this->data['app_deliverys']) && $this->data['app_deliverys']){
