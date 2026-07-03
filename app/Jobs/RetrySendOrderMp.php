@@ -213,7 +213,7 @@ class RetrySendOrderMp implements ShouldQueue
 
                     $imp = $connection->table('impuesto')->where('valor',$item->tax)->first();
 
-                    if (in_array($this->conexion, ['pos_pepitosgrill2', 'pos_pepitosgrill3', 'pos_pepitosgrill1', 'masterpos'])) {
+                    if (in_array($this->conexion, ['pos_pepitosgrill2', 'pos_pepitosgrill3', 'pos_pepitosgrill1', 'pos_master'])) {
 
                         $connection->table('detalle_precuenta')->insert([
                             'id_sucursal' => $this->data['id_branch_office'],
