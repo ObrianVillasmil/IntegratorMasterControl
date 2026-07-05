@@ -430,18 +430,23 @@ class UberNotificationController extends Controller
 
             }else{
 
-                info('El webhook de uber no tiene la propiedad order :');
-                info(json_encode($data));
-                info('$response:');
-                info(json_encode($response));
+                //SOLO DEBE EJECUTARSE CUANDO ES EL OFFERED DEL PEDIDO
+                if($data->event_type === 'orders.notification'){
 
-                $store = DB::connection($data->connect)->table('sucursal_tienda_uber as stu')
-                ->join('sucursal as s','s.id_sucursal','stu.id_sucursal')
-                ->where('stu.store_id',$data->store_id)->first();
+                    info('El webhook de uber no tiene la propiedad order :');
+                    info(json_encode($data));
+                    info('$response:');
+                    info(json_encode($response));
 
-                $data->token = $store->token;
+                    $store = DB::connection($data->connect)->table('sucursal_tienda_uber as stu')
+                    ->join('sucursal as s','s.id_sucursal','stu.id_sucursal')
+                    ->where('stu.store_id',$data->store_id)->first();
 
-                RetryGetUberOrder::dispatch($data)->delay(now()->addSeconds(5))->onQueue('retry-get-uber-order');
+                    $data->token = $store->token;
+
+                    RetryGetUberOrder::dispatch($data)->delay(now()->addSeconds(3))->onQueue('retry-get-uber-order');
+
+                }
 
             }
 

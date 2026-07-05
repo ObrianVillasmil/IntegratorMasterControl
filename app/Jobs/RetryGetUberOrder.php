@@ -71,6 +71,8 @@ class RetryGetUberOrder implements ShouldQueue
                 : "Uber respondió con HTTP {$codigoHttp}";
 
             info("RetryGetUberOrder intento {$this->attempts()}/{$this->tries} fallido para el webhook {$this->data->webook_uber_id}: {$reason}");
+            info('$Response');
+            info($response);
 
             if($this->attempts() < $this->tries){
 
