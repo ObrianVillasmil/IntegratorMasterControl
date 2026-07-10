@@ -113,7 +113,7 @@ class RetrySendOrderMp implements ShouldQueue
                 info('id_branch_office '. $this->data['id_branch_office']);
                 info('$prec');
                 info((array)$prec); */
-                if(in_array($this->conexion,['pos_pepitosgrill2', 'pos_pepitosgrill3', 'pos_pepitosgrill1', 'pos_master'])){
+                if(in_array($this->conexion,['pos_pepitosgrill2', 'pos_pepitosgrill3', 'pos_pepitosgrill1', 'pos_master', 'pos_topten1', 'pos_topten2', 'pos_lailai1', 'pos_lailai2', 'pos_lailai3', 'pos_lailai4'])){
 
                     $precuentaId = $connection->table('precuenta')->insertGetId([
                         'id_sucursal' => $this->data['id_branch_office'],
@@ -213,7 +213,7 @@ class RetrySendOrderMp implements ShouldQueue
 
                     $imp = $connection->table('impuesto')->where('valor',$item->tax)->first();
 
-                    if (in_array($this->conexion, ['pos_pepitosgrill2', 'pos_pepitosgrill3', 'pos_pepitosgrill1', 'pos_master'])) {
+                    if (in_array($this->conexion, ['pos_pepitosgrill2', 'pos_pepitosgrill3', 'pos_pepitosgrill1', 'pos_master', 'pos_topten1', 'pos_topten2', 'pos_lailai1', 'pos_lailai2', 'pos_lailai3', 'pos_lailai4'])) {
 
                         $connection->table('detalle_precuenta')->insert([
                             'id_sucursal' => $this->data['id_branch_office'],
