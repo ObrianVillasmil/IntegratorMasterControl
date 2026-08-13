@@ -43,37 +43,9 @@ class RetrySendDeUnaNotificationMp implements ShouldQueue
 
             try {
 
-                $connection->beginTransaction();
-
-                $branchOffice = $connection->table('sucursal')->where('estatus',true)->first();
-
-                $transaction = $connection->table('pago_deuna')
-                ->where('transaccion_id',$this->data->idTransaction)
-                ->where('referencia', $this->data->internalTransactionReference)->first();
-
-                if(!$transaction)
-                    throw new \Exception("No se ha encontrado la transacción de deuna con id: {$this->data->idTransaction} en la conexión: {$this->data->connect}");
-
-                $connection->table('pago_deuna')->where('transaccion_id',$this->data->idTransaction)->update([
-                    'status' => 'APPROVED',
-                    'id_sucursal' => $branchOffice->id_sucursal,
-                    'nombre_comprador' => $this->data->customerFullName,
-                    'numero_transferencia' => $this->data->transferNumber,
-                    'pos' => $this->data->posId,
-                    'monto' => $this->data->amount,
-                    'data' => json_encode($this->data)
-                ]);
-
-                $connection->table('pago_deuna_status')->insert([
-                    'id_pago_deuna' => $transaction->id_pago_deuna,
-                    'id_sucursal' => $branchOffice->id_sucursal,
-                    'status' => 'APPROVED',
-                    'id_usuario' => '1000',
-                    'fecha' => now()->toDateTimeString(),
-                    'data' => json_encode($this->data)
-                ]);
-
-                $connection->commit();
+                $this->data->system_deuna === 'MASTERPOS'
+                ? $this->transactionMasterPos()
+                : $this->transactionMasterKiosko();
 
             } catch (\Exception $e) {
 
@@ -89,4 +61,75 @@ class RetrySendDeUnaNotificationMp implements ShouldQueue
 
         }
     }
+
+    public function transactionMasterPos()
+    {
+        $connection = DB::connection($this->data->connect);
+        $connection->beginTransaction();
+
+        $branchOffice = $connection->table('sucursal')->where('estatus', true)->first();
+
+        $transaction = $connection->table('pago_deuna')
+            ->where('transaccion_id', $this->data->idTransaction)
+            ->where('referencia', $this->data->internalTransactionReference)->first();
+
+        if (!$transaction)
+            throw new \Exception("No se ha encontrado la transacción de deuna con id: {$this->data->idTransaction} en la conexión: {$this->data->connect}");
+
+        $connection->table('pago_deuna')->where('transaccion_id', $this->data->idTransaction)->update([
+            'status' => 'APPROVED',
+            'id_sucursal' => $branchOffice->id_sucursal,
+            'nombre_comprador' => $this->data->customerFullName,
+            'numero_transferencia' => $this->data->transferNumber,
+            'pos' => $this->data->posId,
+            'monto' => $this->data->amount,
+            'data' => json_encode($this->data)
+        ]);
+
+        $connection->table('pago_deuna_status')->insert([
+            'id_pago_deuna' => $transaction->id_pago_deuna,
+            'id_sucursal' => $branchOffice->id_sucursal,
+            'status' => 'APPROVED',
+            'id_usuario' => '1000',
+            'fecha' => now()->toDateTimeString(),
+            'data' => json_encode($this->data)
+        ]);
+
+        $connection->commit();
+    }
+
+
+    public function transactionMasterKiosko() {
+
+        $connection = DB::connection($this->data->connect);
+        $connection->beginTransaction();
+
+        $branchOffice = $connection->table('branch_offices')
+        ->whereNull('deleted_at')
+        ->where('deuna_point_of_sale', $this->data->branchId)->first();
+
+        $transaction = $connection->table('kiosko_deuna_payments')
+            ->where('transaccion_id', $this->data->idTransaction)
+            ->where('internal_transaction_reference', $this->data->internalTransactionReference)->first();
+
+        if (!$transaction)
+            throw new \Exception("No se ha encontrado la transacción de deuna con id: {$this->data->idTransaction} en la conexión: {$this->data->connect}");
+
+        $connection->table('kiosko_deuna_payments')
+        ->where('transaccion_id', $this->data->idTransaction)
+        ->where('internal_transaction_reference', $this->data->internalTransactionReference)
+        ->update([
+            'status' => 'SUCCESS',
+            'id_sucursal' => $branchOffice->id,
+            'nombre_comprador' => $this->data->customerFullName,
+            'numero_transferencia' => $this->data->transferNumber,
+            'pos' => $this->data->posId,
+            'monto' => $this->data->amount,
+            'deuna_response' => json_encode($this->data)
+        ]);
+
+        $connection->commit();
+
+    }
+
 }

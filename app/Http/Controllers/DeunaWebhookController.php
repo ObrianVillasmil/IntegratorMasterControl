@@ -52,9 +52,13 @@ class DeunaWebhookController extends Controller
                 'data' => json_encode($data)
             ]);
 
-            if(self::pingMp($company->connect)){
+            $data->connect = $company->connect;
+            $data->system_deuna = 'MASTERPOS';
 
-                $data->connect = $company->connect;
+            if(isset($company->system_deuna) && $company->system_deuna !== '')
+                $data->system_deuna = $company->system_deuna;
+
+            if(self::pingMp($company->connect)){
 
                 RetrySendDeUnaNotificationMp::dispatchNow($data);
 

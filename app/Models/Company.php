@@ -14,7 +14,8 @@ class Company extends Model
         'name',
         'connect',
         'error_emails',
-        'discount_type'
+        'discount_type',
+        'system_deuna'
     ];
 
 }
