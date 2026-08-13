@@ -109,22 +109,21 @@ class RetrySendDeUnaNotificationMp implements ShouldQueue
         ->where('deuna_point_of_sale', $this->data->branchId)->first();
 
         $transaction = $connection->table('kiosko_deuna_payments')
-            ->where('transaccion_id', $this->data->idTransaction)
+            ->where('transaction_id', $this->data->idTransaction)
             ->where('internal_transaction_reference', $this->data->internalTransactionReference)->first();
 
         if (!$transaction)
             throw new \Exception("No se ha encontrado la transacción de deuna con id: {$this->data->idTransaction} en la conexión: {$this->data->connect}");
 
         $connection->table('kiosko_deuna_payments')
-        ->where('transaccion_id', $this->data->idTransaction)
+        ->where('transaction_id', $this->data->idTransaction)
         ->where('internal_transaction_reference', $this->data->internalTransactionReference)
         ->update([
             'status' => 'SUCCESS',
-            'id_sucursal' => $branchOffice->id,
-            'nombre_comprador' => $this->data->customerFullName,
-            'numero_transferencia' => $this->data->transferNumber,
-            'pos' => $this->data->posId,
-            'monto' => $this->data->amount,
+            'branch_office_id' => $branchOffice->id,
+            'client' => $this->data->customerFullName,
+            'transfer_number' => $this->data->transferNumber,
+            'amount' => $this->data->amount,
             'deuna_response' => json_encode($this->data)
         ]);
 
