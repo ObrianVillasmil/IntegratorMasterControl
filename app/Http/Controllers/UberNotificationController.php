@@ -162,7 +162,7 @@ class UberNotificationController extends Controller
 
                                     if (isset($priceBreakdownMap[$item->cart_item_id])) {
                                         $pb = $priceBreakdownMap[$item->cart_item_id];
-                                        $totalDeseado = $pb['discount_gross'] / $pb['quantity'];
+                                        $totalDeseado = $pb['discount_gross'] / $pb['quantity']; // SI SE COMENTA $pb['quantity'] es posible => $discount = max(0, -x) = 0   ← $jsonDiscount queda NULL
                                         $ivaRate = $dataItem[5] / 100;
                                         $discount = $subTotal - ($totalDeseado / (1 + $ivaRate));
                                         $discount = max(0, min($discount, $subTotal));
