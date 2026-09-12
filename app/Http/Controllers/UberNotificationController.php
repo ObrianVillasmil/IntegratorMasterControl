@@ -161,11 +161,16 @@ class UberNotificationController extends Controller
                                 if ($useUberDiscountCalc) {
 
                                     if (isset($priceBreakdownMap[$item->cart_item_id])) {
-                                        $pb = $priceBreakdownMap[$item->cart_item_id];
+                                        /* $pb = $priceBreakdownMap[$item->cart_item_id];
                                         $totalDeseado = $pb['discount_gross'] / $pb['quantity']; // SI SE COMENTA $pb['quantity'] es posible => $discount = max(0, -x) = 0   ← $jsonDiscount queda NULL
                                         $ivaRate = $dataItem[5] / 100;
                                         $discount = $subTotal - ($totalDeseado / (1 + $ivaRate));
-                                        $discount = max(0, min($discount, $subTotal));
+                                        $discount = max(0, min($discount, $subTotal)); */
+
+                                        $pb = $priceBreakdownMap[$item->cart_item_id];
+                                        $ivaRate = $dataItem[5] / 100;
+                                        $discount = $subTotal * $item->quantity->amount - ($pb['discount_gross'] / (1 + $ivaRate));
+                                        $discount = max(0, min($discount, $subTotal * $item->quantity->amount));
 
                                         if ($discount > 0) {
                                             $jsonDiscount = json_encode([
@@ -246,11 +251,15 @@ class UberNotificationController extends Controller
                                                 if ($useUberDiscountCalc) {
 
                                                     if (isset($priceBreakdownMap[$res->cart_item_id])) {
-                                                        $pb = $priceBreakdownMap[$res->cart_item_id];
+                                                        /* $pb = $priceBreakdownMap[$res->cart_item_id];
                                                         $totalDeseado = $pb['discount_gross'] / $pb['quantity'];
                                                         $ivaRate = $dataResponse[7] / 100;
                                                         $discount = $subTotal - ($totalDeseado / (1 + $ivaRate));
-                                                        $discount = max(0, min($discount, $subTotal));
+                                                        $discount = max(0, min($discount, $subTotal)); */
+                                                        $pb = $priceBreakdownMap[$res->cart_item_id];
+                                                        $ivaRate = $dataResponse[7] / 100;
+                                                        $discount = $subTotal * $res->quantity->amount - ($pb['discount_gross'] / (1 + $ivaRate));
+                                                        $discount = max(0, min($discount, $subTotal * $res->quantity->amount));
 
                                                         if ($discount > 0) {
                                                             $jsonDiscount = json_encode([
