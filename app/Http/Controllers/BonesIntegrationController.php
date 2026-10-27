@@ -427,14 +427,15 @@ class BonesIntegrationController extends Controller
 
                 $idPurchase = $c->id_sucursal.'-'.$c->id_factura;
                 $supplier = $connection->table('proveedor')->where('id_proveedor',$c->id_proveedor)->first();
-                $numero = strlen($c->autorizacion) > 24 ? substr($c->autorizacion, 24, 15) : $c->autorizacion;
+                $serie = substr($c->numero, 0, 6);
 
                 $data = (object)[
                     "DOC_ID"=> $idPurchase,
                     "FECHA"=> $c->fecha_factura,
                     "FECHA_CADUCIDAD" => $c->fecha_expiracion_factura,
-                    "NUMERO"=> !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $numero,
+                    "NUMERO"=> $c->numero,
                     "AUTORIZACION" => !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $c->autorizacion,
+                    "SERIE" => $serie,
                     "ID_TIPO_VENTA"=> $tipoVenta->id_cliente ?? '*',
                     "CUENTA"=>"*",
                     "SUBTOTAL"=> $c->sub_total,
