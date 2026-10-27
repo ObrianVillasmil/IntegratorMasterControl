@@ -427,12 +427,13 @@ class BonesIntegrationController extends Controller
 
                 $idPurchase = $c->id_sucursal.'-'.$c->id_factura;
                 $supplier = $connection->table('proveedor')->where('id_proveedor',$c->id_proveedor)->first();
+                $numero = strlen($c->autorizacion) > 24 ? substr($c->autorizacion, 24, 15) : $c->autorizacion;
 
                 $data = (object)[
                     "DOC_ID"=> $idPurchase,
                     "FECHA"=> $c->fecha_factura,
                     "FECHA_CADUCIDAD" => $c->fecha_expiracion_factura,
-                    "NUMERO"=> !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : substr($c->autorizacion,24,15),
+                    "NUMERO"=> !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $numero,
                     "AUTORIZACION" => !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $c->autorizacion,
                     "ID_TIPO_VENTA"=> $tipoVenta->id_cliente ?? '*',
                     "CUENTA"=>"*",
@@ -467,8 +468,8 @@ class BonesIntegrationController extends Controller
                     $data->DETALLE[] = [
                         "DOC_ID"=> $idPurchase,
                         "CODIGO"=> $det->id_sucursal.'-'.$det->id_detalle_factura,
-                        "CANTIDAD"=> number_format(($det->cantidad < 0 ? $det->cantidad*-1 : $det->cantidad),2,'.',''),
-                        "PRECIO"=> number_format($det->neto,2,'.',''),
+                        "CANTIDAD"=> number_format(($det->cantidad < 0 ? $det->cantidad*-1 : $det->cantidad),6,'.',''),
+                        "PRECIO"=> number_format($det->costo_unitario,6,'.',''),
                         "IVA"=> number_format($det->iva,2,'.',''),
                         "SERVICIO"=> 0,
                         "TOTAL"=> number_format($det->total,2,'.',''),
@@ -520,10 +521,12 @@ class BonesIntegrationController extends Controller
                 $idPurchase = $c->id_sucursal.'-'.$c->id_factura.'-CN';
                 $supplier = $connection->table('proveedor')->where('id_proveedor',$c->id_proveedor)->first();
 
+                $numero = strlen($c->autorizacion) > 24 ? substr($c->autorizacion,24,15) : $c->autorizacion;
+
                 $data = (object)[
                     "DOC_ID"=> $idPurchase,
                     "FECHA"=> $c->fecha_factura,
-                    "NUMERO"=> !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : substr($c->autorizacion,24,15),
+                    "NUMERO"=> !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $numero,
                     'AUTORIZACION' => !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $c->autorizacion,
                     "ID_TIPO_VENTA" => $tipoVenta->id_cliente ?? '*',
                     "SUBTOTAL"=> $c->sub_total,
@@ -557,8 +560,8 @@ class BonesIntegrationController extends Controller
                     $data->DETALLE[] = [
                         "DOC_ID"=> $idPurchase,
                         "CODIGO"=> $det->id_sucursal.'-'.$det->id_detalle_factura,
-                        "CANTIDAD"=> $det->cantidad < 0 ? $det->cantidad*-1 : $det->cantidad,
-                        "PRECIO"=> $det->neto,
+                        "CANTIDAD"=> $det->cantidad < 0 ? number_format($det->cantidad*-1,6,'.','') : number_format($det->cantidad,6,'.',''),
+                        "PRECIO"=> number_format($det->costo_unitario,6,'.',''),
                         "IVA"=> number_format($det->iva,2,'.',''),
                         "SERVICIO"=> 0,
                         "TOTAL"=> $det->total,
