@@ -432,7 +432,7 @@ class BonesIntegrationController extends Controller
                 $data = (object)[
                     "DOC_ID"=> $idPurchase,
                     "FECHA"=> $c->fecha_factura,
-                    "FECHA_CADUCIDAD" => $c->fecha_expiracion_factura,
+                    "FECHA_CADUCIDAD" => $c->fecha_expiracion_factura ?? '*',
                     "NUMERO"=> $c->numero,
                     "AUTORIZACION" => !isset($c->autorizacion) || $c->autorizacion =='' ? '*' : $c->autorizacion,
                     "SERIE" => $serie,
