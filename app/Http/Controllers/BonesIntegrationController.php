@@ -448,7 +448,7 @@ class BonesIntegrationController extends Controller
                     "LLEGADA"=> "*",
                     "SALIDA"=> "*",
                     "NUMERO_MODIFICADO"=> "*",
-                    "TIPO"=> "FC",
+                    "TIPO"=> $c->tipo == 0 ? "NV" : "FC",
                     "RUC"=> $c->ruc_proveedor,
                     "NOMBRE"=> strtoupper($c->nombre_proveedor),
                     "DIRECCION"=> $supplier->direccion  ?? '*',
